@@ -253,7 +253,10 @@ func process(ctx context.Context, client *github.Client, config Configuration, i
 				log.Println(err)
 			}
 
-			mjolnir.CloseRelatedIssues(ctx, client, config.Owner, config.RepositoryName, pr)
+			err = mjolnir.CloseRelatedIssues(ctx, client, config.Owner, config.RepositoryName, pr, config.DryRun)
+			if err != nil {
+				log.Println(err)
+			}
 		}
 
 	} else {
