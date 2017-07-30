@@ -17,9 +17,6 @@ func (a byUpdated) Less(i, j int) bool {
 	return a[i].GetUpdatedAt().Before(a[j].GetUpdatedAt())
 }
 
-// Parameter search parameter
-type Parameter func() string
-
 // FindOpenPR find open PR
 func FindOpenPR(ctx context.Context, client *github.Client, owner string, repositoryName string, parameters ...Parameter) ([]github.Issue, error) {
 
@@ -30,7 +27,7 @@ func FindOpenPR(ctx context.Context, client *github.Client, owner string, reposi
 		}
 	}
 
-	query := fmt.Sprintf("repo:%s/%s type:pr state:open review:approved %s", owner, repositoryName, filter)
+	query := fmt.Sprintf("repo:%s/%s type:pr state:open %s", owner, repositoryName, filter)
 	log.Println(query)
 
 	options := &github.SearchOptions{
@@ -64,26 +61,4 @@ func findIssues(ctx context.Context, client *github.Client, query string, search
 		searchOptions.Page = resp.NextPage
 	}
 	return allIssues, nil
-}
-
-// WithLabels add a search filter by labels
-func WithLabels(labels ...string) Parameter {
-	var labelsFilter string
-	for _, lbl := range labels {
-		labelsFilter += fmt.Sprintf("label:%s ", lbl)
-	}
-	return func() string {
-		return " " + labelsFilter
-	}
-}
-
-// WithExcludedLabels add a search filter by unwanted labels
-func WithExcludedLabels(labels ...string) Parameter {
-	var labelsFilter string
-	for _, lbl := range labels {
-		labelsFilter += fmt.Sprintf("-label:%s ", lbl)
-	}
-	return func() string {
-		return " " + labelsFilter
-	}
 }

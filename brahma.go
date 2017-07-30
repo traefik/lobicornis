@@ -93,7 +93,8 @@ func execute(config Configuration) {
 
 	issuesMIP, err := search.FindOpenPR(ctx, client, config.Owner, config.RepositoryName,
 		search.WithLabels(config.LabelMarkers.NeedMerge, config.LabelMarkers.MergeInProgress),
-		search.WithExcludedLabels(config.LabelMarkers.NeedHumanMerge))
+		search.WithExcludedLabels(config.LabelMarkers.NeedHumanMerge),
+		search.Cond(config.MinReview > 0, search.WithReviewApproved))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -103,7 +104,7 @@ func execute(config Configuration) {
 
 	if len(issuesMIP) == 1 {
 		issue := issuesMIP[0]
-		fmt.Println(issue.GetNumber(), issue.GetUpdatedAt())
+		log.Printf("Find PR #%d, updated at %v", issue.GetNumber(), issue.GetUpdatedAt())
 
 		err = process(ctx, client, config, issue)
 		if err != nil {
@@ -112,7 +113,9 @@ func execute(config Configuration) {
 
 	} else {
 		issues, err := search.FindOpenPR(ctx, client, config.Owner, config.RepositoryName,
-			search.WithLabels(config.LabelMarkers.NeedMerge))
+			search.WithLabels(config.LabelMarkers.NeedMerge),
+			search.WithExcludedLabels(config.LabelMarkers.NeedHumanMerge),
+			search.Cond(config.MinReview > 0, search.WithReviewApproved))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -121,7 +124,7 @@ func execute(config Configuration) {
 			log.Println("Nothing to merge.")
 		} else {
 			for _, issue := range issues {
-				log.Println(issue.GetNumber(), issue.GetUpdatedAt())
+				log.Printf("Find PR #%d, updated at %v", issue.GetNumber(), issue.GetUpdatedAt())
 			}
 
 			err = process(ctx, client, config, issues[0])
