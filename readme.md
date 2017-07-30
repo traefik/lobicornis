@@ -25,6 +25,23 @@ Flags:
 -h, --help                     Print Help (this message) and exit
 ```
 
+## Description
+
+The bot:
+- find all open PRs with a specific label (`--marker.need-merge`)
+- take one PR
+    - with a specific label (`--marker.merge-in-progress`) if exists
+    - or the least recently updated PR
+- verify:
+    - GitHub checks (CI, ...)
+    - "Mergeability"
+    - Reviews (`--min-review`)
+- check if the PR need to be updated
+    - if yes: rebase or merge with the base PR branch (ex: `master`)
+- merge the PR with the chosen merge method. (`--merge-method`, `--merge-method-prefix`)
+- closes related issues and add the same milestone as the PR
+- if errors occurs add a specific label (`--marker.need-human-merge`)
+
 ## Examples
  
 ```bash
