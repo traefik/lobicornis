@@ -84,7 +84,16 @@ func (g *GHub) GetStatus(pr *github.PullRequest) (string, error) {
 		return "", err
 	}
 
-	if sts.GetState() == Pending || sts.GetState() == Success {
+	if sts.GetState() == Success {
+		return sts.GetState(), nil
+	}
+
+	// pending: if there are no statuses or a context is pending
+	// https://developer.github.com/v3/repos/statuses/#get-the-combined-status-for-a-specific-ref
+	if sts.GetState() == Pending {
+		if sts.GetTotalCount() == 0 {
+			return Success, nil
+		}
 		return sts.GetState(), nil
 	}
 
