@@ -148,6 +148,8 @@ func process(ctx context.Context, client *github.Client, config Configuration, i
 
 	err = ghub.HasReviewsApprove(pr, config.MinReview)
 	if err != nil {
+		log.Printf("PR #%d: needs more reviews: %v", prNumber, err)
+
 		err = ghub.AddLabelsToPR(pr, config.LabelMarkers.NeedHumanMerge)
 		if err != nil {
 			log.Println(err)
@@ -158,23 +160,24 @@ func process(ctx context.Context, client *github.Client, config Configuration, i
 		}
 
 		// STOP
-		log.Printf("PR #%d: needs more reviews", prNumber)
-		return err
+		return nil
 	}
 
 	status, err := ghub.GetStatus(pr)
 	if err != nil {
-		err = ghub.AddLabelsToPR(pr, config.LabelMarkers.NeedHumanMerge)
-		if err != nil {
-			log.Println(err)
+		log.Printf("checks status: %v", err)
+
+		errlabel := ghub.AddLabelsToPR(pr, config.LabelMarkers.NeedHumanMerge)
+		if errlabel != nil {
+			log.Println(errlabel)
 		}
-		err = ghub.RemoveLabelForPR(pr, config.LabelMarkers.MergeInProgress)
-		if err != nil {
-			log.Println(err)
+		errlabel = ghub.RemoveLabelForPR(pr, config.LabelMarkers.MergeInProgress)
+		if errlabel != nil {
+			log.Println(errlabel)
 		}
 
 		// - STOP
-		return err
+		return nil
 	}
 	if status == gh.Pending {
 		// - skip
@@ -189,7 +192,8 @@ func process(ctx context.Context, client *github.Client, config Configuration, i
 		}
 
 		// STOP
-		return fmt.Errorf("the PR #%d is already merged", prNumber)
+		log.Printf("the PR #%d is already merged", prNumber)
+		return nil
 	}
 
 	if !pr.GetMergeable() {
@@ -203,7 +207,8 @@ func process(ctx context.Context, client *github.Client, config Configuration, i
 		}
 
 		// STOP
-		return fmt.Errorf("conflicts must be resolve in the PR #%d", prNumber)
+		log.Printf("conflicts must be resolve in the PR #%d", prNumber)
+		return nil
 	}
 
 	// rebase
