@@ -49,31 +49,34 @@ func (g *GHub) FindFirstCommitSHA(pr *github.PullRequest) (string, error) {
 	return commits[0].GetSHA(), nil
 }
 
-// RemoveLabelForPR remove a label on a PR
-func (g *GHub) RemoveLabelForPR(pr *github.PullRequest, label string) error {
-	log.Printf("Remove label: %s. Dry run: %v", label, g.dryRun)
+// RemoveLabel remove a label on an issue (PR)
+func (g *GHub) RemoveLabel(issue *github.Issue, owner string, repositoryName string, label string) error {
+	if hasLabel(issue, label) {
+		log.Printf("Remove label: %s. Dry run: %v", label, g.dryRun)
 
-	if g.dryRun {
-		return nil
+		if g.dryRun {
+			return nil
+		}
+
+		resp, err := g.client.Issues.RemoveLabelForIssue(g.ctx, owner, repositoryName, issue.GetNumber(), label)
+		if resp.StatusCode != http.StatusOK {
+			return fmt.Errorf("Failed to remove label %s. Status code: %d", label, resp.StatusCode)
+		}
+
+		return err
 	}
-
-	resp, err := g.client.Issues.RemoveLabelForIssue(g.ctx, pr.Base.Repo.Owner.GetLogin(), pr.Base.Repo.GetName(), pr.GetNumber(), label)
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("Failed to remove label %s. Status code: %d", label, resp.StatusCode)
-	}
-
-	return err
+	return nil
 }
 
-// AddLabelsToPR add some labels on a PR
-func (g *GHub) AddLabelsToPR(pr *github.PullRequest, labels ...string) error {
+// AddLabels add some labels on an issue (PR)
+func (g *GHub) AddLabels(issue *github.Issue, owner string, repositoryName string, labels ...string) error {
 	log.Printf("Add labels: %s. Dry run: %v", labels, g.dryRun)
 
 	if g.dryRun {
 		return nil
 	}
 
-	_, resp, err := g.client.Issues.AddLabelsToIssue(g.ctx, pr.Base.Repo.Owner.GetLogin(), pr.Base.Repo.GetName(), pr.GetNumber(), labels)
+	_, resp, err := g.client.Issues.AddLabelsToIssue(g.ctx, owner, repositoryName, issue.GetNumber(), labels)
 
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("Failed to add labels %v. Status code: %d", labels, resp.StatusCode)
@@ -93,6 +96,15 @@ func (g *GHub) AddComment(pr *github.PullRequest, msg string) error {
 	}
 
 	return err
+}
+
+func hasLabel(issue *github.Issue, label string) bool {
+	for _, lbl := range issue.Labels {
+		if lbl.GetName() == label {
+			return true
+		}
+	}
+	return false
 }
 
 // NewGitHubClient create a new GitHub client

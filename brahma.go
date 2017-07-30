@@ -1,54 +1,28 @@
 package main
 
 import (
-	"context"
-	"fmt"
 	"log"
 	"os"
 
+	"github.com/containous/brahma/core"
 	"github.com/containous/brahma/gh"
-	"github.com/containous/brahma/mjolnir"
-	"github.com/containous/brahma/search"
-	"github.com/containous/brahma/updater"
 	"github.com/containous/flaeg"
-	"github.com/google/go-github/github"
 )
 
-// Configuration task configuration.
-type Configuration struct {
-	Owner              string        `short:"o" description:"Repository owner. [required]"`
-	RepositoryName     string        `long:"repo-name" short:"r" description:"Repository name. [required]"`
-	GitHubToken        string        `long:"token" short:"t" description:"GitHub Token. [required]"`
-	MinReview          int           `long:"min-review" description:"Minimal number of review."`
-	DryRun             bool          `long:"dry-run" description:"Dry run mode."`
-	Debug              bool          `long:"debug" description:"Debug mode."`
-	SSH                bool          `description:"Use SSH instead HTTPS."`
-	DefaultMergeMethod string        `long:"merge-method" description:"Default merge method.(merge|squash|rebase)"`
-	MergeMethodPrefix  string        `long:"merge-method-prefix" description:"Use to override default merge method for a PR."`
-	LabelMarkers       *LabelMarkers `long:"marker" description:"GitHub Labels."`
-}
-
-// LabelMarkers Labels use to control actions.
-type LabelMarkers struct {
-	NeedHumanMerge  string `long:"need-human-merge" description:"Label use when the bot cannot perform a merge."`
-	NeedMerge       string `long:"need-merge" description:"Label use when you want the bot perform a merge."`
-	MergeInProgress string `long:"merge-in-progress" description:"Label use when the bot update the PR (merge/rebase)."`
-}
-
 func main() {
-	config := &Configuration{
+	config := &core.Configuration{
 		MinReview:          1,
 		DryRun:             true,
 		DefaultMergeMethod: gh.MergeMethodSquash,
 		MergeMethodPrefix:  "bot/merge-method-",
-		LabelMarkers: &LabelMarkers{
+		LabelMarkers: &core.LabelMarkers{
 			NeedHumanMerge:  "bot/need-human-merge",
 			NeedMerge:       "status/3-needs-merge",
 			MergeInProgress: "status/4-merge-in-progress",
 		},
 	}
 
-	defaultPointersConfig := &Configuration{LabelMarkers: &LabelMarkers{}}
+	defaultPointersConfig := &core.Configuration{LabelMarkers: &core.LabelMarkers{}}
 	rootCmd := &flaeg.Command{
 		Name: "brahma",
 		Description: `Brahma, God of Creation.
@@ -68,12 +42,13 @@ Update and Merge Pull Request from GitHub.
 			required(config.GitHubToken, "token")
 			required(config.Owner, "owner")
 			required(config.RepositoryName, "repo-name")
+			required(config.DefaultMergeMethod, "merge-method")
 
 			required(config.LabelMarkers.NeedMerge, "need-merge")
 			required(config.LabelMarkers.MergeInProgress, "merge-in-progress")
 			required(config.LabelMarkers.NeedHumanMerge, "need-human-merge")
 
-			execute(*config)
+			core.Execute(*config)
 			return nil
 		},
 	}
@@ -87,240 +62,4 @@ func required(field string, fieldName string) error {
 		log.Fatalf("%s is mandatory.", fieldName)
 	}
 	return nil
-}
-
-func execute(config Configuration) {
-	ctx := context.Background()
-	client := gh.NewGitHubClient(ctx, config.GitHubToken)
-
-	issuesMIP, err := search.FindOpenPR(ctx, client, config.Owner, config.RepositoryName,
-		search.WithLabels(config.LabelMarkers.NeedMerge, config.LabelMarkers.MergeInProgress),
-		search.WithExcludedLabels(config.LabelMarkers.NeedHumanMerge),
-		search.Cond(config.MinReview > 0, search.WithReviewApproved))
-	if err != nil {
-		log.Fatal(err)
-	}
-	if len(issuesMIP) > 1 {
-		log.Fatalf("Illegal state: multiple label: %s", config.LabelMarkers.MergeInProgress)
-	}
-
-	if len(issuesMIP) == 1 {
-		issue := issuesMIP[0]
-		log.Printf("Find PR #%d, updated at %v", issue.GetNumber(), issue.GetUpdatedAt())
-
-		err = process(ctx, client, config, issue)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-	} else {
-		issues, err := search.FindOpenPR(ctx, client, config.Owner, config.RepositoryName,
-			search.WithLabels(config.LabelMarkers.NeedMerge),
-			search.WithExcludedLabels(config.LabelMarkers.NeedHumanMerge),
-			search.Cond(config.MinReview > 0, search.WithReviewApproved))
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		if len(issues) == 0 {
-			log.Println("Nothing to merge.")
-		} else {
-			for _, issue := range issues {
-				log.Printf("Find PR #%d, updated at %v", issue.GetNumber(), issue.GetUpdatedAt())
-			}
-
-			err = process(ctx, client, config, issues[0])
-			if err != nil {
-				log.Fatal(err)
-			}
-		}
-	}
-}
-
-func process(ctx context.Context, client *github.Client, config Configuration, issue github.Issue) error {
-
-	pr, _, err := client.PullRequests.Get(ctx, config.Owner, config.RepositoryName, issue.GetNumber())
-	if err != nil {
-		return err
-	}
-
-	ghub := gh.NewGHub(ctx, client, config.DryRun)
-
-	prNumber := pr.GetNumber()
-
-	err = ghub.HasReviewsApprove(pr, config.MinReview)
-	if err != nil {
-		log.Printf("PR #%d: needs more reviews: %v", prNumber, err)
-
-		err = ghub.AddLabelsToPR(pr, config.LabelMarkers.NeedHumanMerge)
-		if err != nil {
-			log.Println(err)
-		}
-		if hasLabel(issue, config.LabelMarkers.MergeInProgress) {
-			err = ghub.RemoveLabelForPR(pr, config.LabelMarkers.MergeInProgress)
-			if err != nil {
-				log.Println(err)
-			}
-		}
-
-		// STOP
-		return nil
-	}
-
-	status, err := ghub.GetStatus(pr)
-	if err != nil {
-		log.Printf("checks status: %v", err)
-
-		errlabel := ghub.AddLabelsToPR(pr, config.LabelMarkers.NeedHumanMerge)
-		if errlabel != nil {
-			log.Println(errlabel)
-		}
-		if hasLabel(issue, config.LabelMarkers.MergeInProgress) {
-			errlabel = ghub.RemoveLabelForPR(pr, config.LabelMarkers.MergeInProgress)
-			if errlabel != nil {
-				log.Println(errlabel)
-			}
-		}
-
-		// - STOP
-		return nil
-	}
-	if status == gh.Pending {
-		// - skip
-		log.Println("State: pending. Waiting for the CI.")
-		return nil
-	}
-
-	if pr.GetMerged() {
-		if hasLabel(issue, config.LabelMarkers.MergeInProgress) {
-			err = ghub.RemoveLabelForPR(pr, config.LabelMarkers.MergeInProgress)
-			if err != nil {
-				log.Println(err)
-			}
-		}
-
-		// STOP
-		log.Printf("the PR #%d is already merged", prNumber)
-		return nil
-	}
-
-	if !pr.GetMergeable() {
-		err = ghub.AddLabelsToPR(pr, config.LabelMarkers.NeedHumanMerge)
-		if err != nil {
-			log.Println(err)
-		}
-		if hasLabel(issue, config.LabelMarkers.MergeInProgress) {
-			err = ghub.RemoveLabelForPR(pr, config.LabelMarkers.MergeInProgress)
-			if err != nil {
-				log.Println(err)
-			}
-		}
-
-		// STOP
-		log.Printf("conflicts must be resolve in the PR #%d", prNumber)
-		return nil
-	}
-
-	// rebase
-	ok, err := ghub.IsUpdatedBranch(pr)
-	if err != nil {
-		return err
-	}
-	if ok {
-		mergeMethod := getMergeMethod(issue, config)
-
-		fmt.Printf("MERGE(%s): PR #%d\n", mergeMethod, prNumber)
-
-		if hasLabel(issue, config.LabelMarkers.MergeInProgress) {
-			err = ghub.RemoveLabelForPR(pr, config.LabelMarkers.MergeInProgress)
-			if err != nil {
-				log.Println(err)
-			}
-		}
-
-		if !config.DryRun {
-			mergeOptions := &github.PullRequestOptions{
-				MergeMethod: mergeMethod,
-				CommitTitle: pr.GetTitle(),
-			}
-			result, _, err := client.PullRequests.Merge(ctx, config.Owner, config.RepositoryName, prNumber, "", mergeOptions)
-			if err != nil {
-				log.Println(err)
-			}
-
-			log.Println(result.GetMessage())
-
-			if !result.GetMerged() {
-				err = ghub.AddLabelsToPR(pr, config.LabelMarkers.NeedHumanMerge)
-				if err != nil {
-					log.Println(err)
-				}
-				if hasLabel(issue, config.LabelMarkers.MergeInProgress) {
-					err := ghub.RemoveLabelForPR(pr, config.LabelMarkers.MergeInProgress)
-					if err != nil {
-						log.Println(err)
-					}
-				}
-				return fmt.Errorf("failed to merge PR #%d", prNumber)
-			}
-		}
-
-		err = ghub.RemoveLabelForPR(pr, config.LabelMarkers.NeedMerge)
-		if err != nil {
-			log.Println(err)
-		}
-
-		err = mjolnir.CloseRelatedIssues(ctx, client, config.Owner, config.RepositoryName, pr, config.DryRun)
-		if err != nil {
-			log.Println(err)
-		}
-
-	} else {
-		fmt.Printf("UPDATE: PR #%d\n", prNumber)
-
-		err := ghub.AddLabelsToPR(pr, config.LabelMarkers.MergeInProgress)
-		if err != nil {
-			log.Println(err)
-		}
-
-		err = updater.Process(ghub, pr, config.SSH, config.GitHubToken, config.DryRun, config.Debug)
-		if err != nil {
-			err = ghub.AddLabelsToPR(pr, config.LabelMarkers.NeedHumanMerge)
-			if err != nil {
-				log.Println(err)
-			}
-			err = ghub.RemoveLabelForPR(pr, config.LabelMarkers.MergeInProgress)
-			if err != nil {
-				log.Println(err)
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-func hasLabel(issue github.Issue, label string) bool {
-	for _, lbl := range issue.Labels {
-		if lbl.GetName() == label {
-			return true
-		}
-	}
-	return false
-}
-
-func getMergeMethod(issue github.Issue, config Configuration) string {
-	if hasLabel(issue, config.MergeMethodPrefix+gh.MergeMethodSquash) {
-		return gh.MergeMethodSquash
-	}
-
-	if hasLabel(issue, config.MergeMethodPrefix+gh.MergeMethodMerge) {
-		return gh.MergeMethodMerge
-	}
-
-	if hasLabel(issue, config.MergeMethodPrefix+gh.MergeMethodRebase) {
-		return gh.MergeMethodRebase
-	}
-
-	return config.DefaultMergeMethod
 }
