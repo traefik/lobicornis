@@ -67,6 +67,10 @@ Update and Merge Pull Request from GitHub.
 			required(config.Owner, "owner")
 			required(config.RepositoryName, "repo-name")
 
+			required(config.LabelMarkers.NeedMerge, "need-merge")
+			required(config.LabelMarkers.MergeInProgress, "merge-in-progress")
+			required(config.LabelMarkers.NeedHumanMerge, "need-human-merge")
+
 			execute(*config)
 			return nil
 		},
