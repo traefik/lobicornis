@@ -155,9 +155,11 @@ func process(ctx context.Context, client *github.Client, config Configuration, i
 		if err != nil {
 			log.Println(err)
 		}
-		err = ghub.RemoveLabelForPR(pr, config.LabelMarkers.MergeInProgress)
-		if err != nil {
-			log.Println(err)
+		if hasLabel(issue, config.LabelMarkers.MergeInProgress) {
+			err = ghub.RemoveLabelForPR(pr, config.LabelMarkers.MergeInProgress)
+			if err != nil {
+				log.Println(err)
+			}
 		}
 
 		// STOP
@@ -172,9 +174,11 @@ func process(ctx context.Context, client *github.Client, config Configuration, i
 		if errlabel != nil {
 			log.Println(errlabel)
 		}
-		errlabel = ghub.RemoveLabelForPR(pr, config.LabelMarkers.MergeInProgress)
-		if errlabel != nil {
-			log.Println(errlabel)
+		if hasLabel(issue, config.LabelMarkers.MergeInProgress) {
+			errlabel = ghub.RemoveLabelForPR(pr, config.LabelMarkers.MergeInProgress)
+			if errlabel != nil {
+				log.Println(errlabel)
+			}
 		}
 
 		// - STOP
@@ -187,9 +191,11 @@ func process(ctx context.Context, client *github.Client, config Configuration, i
 	}
 
 	if pr.GetMerged() {
-		err = ghub.RemoveLabelForPR(pr, config.LabelMarkers.MergeInProgress)
-		if err != nil {
-			log.Println(err)
+		if hasLabel(issue, config.LabelMarkers.MergeInProgress) {
+			err = ghub.RemoveLabelForPR(pr, config.LabelMarkers.MergeInProgress)
+			if err != nil {
+				log.Println(err)
+			}
 		}
 
 		// STOP
@@ -202,9 +208,11 @@ func process(ctx context.Context, client *github.Client, config Configuration, i
 		if err != nil {
 			log.Println(err)
 		}
-		err = ghub.RemoveLabelForPR(pr, config.LabelMarkers.MergeInProgress)
-		if err != nil {
-			log.Println(err)
+		if hasLabel(issue, config.LabelMarkers.MergeInProgress) {
+			err = ghub.RemoveLabelForPR(pr, config.LabelMarkers.MergeInProgress)
+			if err != nil {
+				log.Println(err)
+			}
 		}
 
 		// STOP
@@ -220,12 +228,14 @@ func process(ctx context.Context, client *github.Client, config Configuration, i
 	if ok {
 		fmt.Printf("MERGE(%s): PR #%d\n", config.DefaultMergeMethod, prNumber)
 
-		if !config.DryRun {
+		if hasLabel(issue, config.LabelMarkers.MergeInProgress) {
 			err = ghub.RemoveLabelForPR(pr, config.LabelMarkers.MergeInProgress)
 			if err != nil {
 				log.Println(err)
 			}
+		}
 
+		if !config.DryRun {
 			mergeOptions := &github.PullRequestOptions{
 				MergeMethod: config.DefaultMergeMethod,
 				CommitTitle: pr.GetTitle(),
@@ -242,22 +252,24 @@ func process(ctx context.Context, client *github.Client, config Configuration, i
 				if err != nil {
 					log.Println(err)
 				}
-				err := ghub.RemoveLabelForPR(pr, config.LabelMarkers.MergeInProgress)
-				if err != nil {
-					log.Println(err)
+				if hasLabel(issue, config.LabelMarkers.MergeInProgress) {
+					err := ghub.RemoveLabelForPR(pr, config.LabelMarkers.MergeInProgress)
+					if err != nil {
+						log.Println(err)
+					}
 				}
 				return fmt.Errorf("failed to merge PR #%d", prNumber)
 			}
+		}
 
-			err = ghub.RemoveLabelForPR(pr, config.LabelMarkers.NeedMerge)
-			if err != nil {
-				log.Println(err)
-			}
+		err = ghub.RemoveLabelForPR(pr, config.LabelMarkers.NeedMerge)
+		if err != nil {
+			log.Println(err)
+		}
 
-			err = mjolnir.CloseRelatedIssues(ctx, client, config.Owner, config.RepositoryName, pr, config.DryRun)
-			if err != nil {
-				log.Println(err)
-			}
+		err = mjolnir.CloseRelatedIssues(ctx, client, config.Owner, config.RepositoryName, pr, config.DryRun)
+		if err != nil {
+			log.Println(err)
 		}
 
 	} else {
