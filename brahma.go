@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/containous/brahma/gh"
+	"github.com/containous/brahma/mjolnir"
 	"github.com/containous/brahma/search"
 	"github.com/containous/brahma/updater"
 	"github.com/containous/flaeg"
@@ -239,6 +240,8 @@ func process(ctx context.Context, client *github.Client, config Configuration, i
 			if err != nil {
 				log.Println(err)
 			}
+
+			mjolnir.CloseRelatedIssues(ctx, client, config.Owner, config.RepositoryName, pr)
 		}
 
 	} else {
