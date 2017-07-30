@@ -16,6 +16,7 @@ Flags:
     --marker.need-human-merge  Label use when the bot cannot perform a merge.       (default "bot/need-human-merge")
     --marker.need-merge        Label use when you want the bot perform a merge.     (default "status/3-needs-merge")
     --merge-method             Default merge method.(merge|squash|rebase)           (default "squash")
+    --merge-method-prefix      Use to override default merge method for a PR.       (default "bot/merge-method-")
     --min-review               Minimal number of review.                            (default "1")
 -o, --owner                    Repository owner. [required]
 -r, --repo-name                Repository name. [required]

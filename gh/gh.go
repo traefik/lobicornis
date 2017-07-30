@@ -10,6 +10,15 @@ import (
 	"golang.org/x/oauth2"
 )
 
+const (
+	// MergeMethodSquash 'squash' merge method.
+	MergeMethodSquash = "squash"
+	// MergeMethodRebase 'rebase' merge method.
+	MergeMethodRebase = "rebase"
+	// MergeMethodMerge 'merge' merge method.
+	MergeMethodMerge = "merge"
+)
+
 // GHub GitHub helper
 type GHub struct {
 	ctx    context.Context
