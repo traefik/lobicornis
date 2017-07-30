@@ -14,18 +14,18 @@ import (
 	"github.com/google/go-github/github"
 )
 
-const mergeMethod = "squash"
-
 // Configuration task configuration.
 type Configuration struct {
-	Owner          string        `short:"o" description:"Repository owner. [required]"`
-	RepositoryName string        `long:"repo-name" short:"r" description:"Repository name. [required]"`
-	GitHubToken    string        `long:"token" short:"t" description:"GitHub Token. [required]"`
-	MinReview      int           `long:"min-review" description:"Minimal number of review."`
-	DryRun         bool          `long:"dry-run" description:"Dry run mode."`
-	Debug          bool          `long:"debug" description:"Debug mode."`
-	SSH            bool          `description:"Use SSH instead HTTPS."`
-	LabelMarkers   *LabelMarkers `long:"marker" description:"GitHub Labels."`
+	Owner          string `short:"o" description:"Repository owner. [required]"`
+	RepositoryName string `long:"repo-name" short:"r" description:"Repository name. [required]"`
+	GitHubToken    string `long:"token" short:"t" description:"GitHub Token. [required]"`
+	MinReview      int    `long:"min-review" description:"Minimal number of review."`
+	DryRun         bool   `long:"dry-run" description:"Dry run mode."`
+	Debug          bool   `long:"debug" description:"Debug mode."`
+	SSH            bool   `description:"Use SSH instead HTTPS."`
+	// TODO use a label to change merge method
+	DefaultMergeMethod string        `long:"merge-method" description:"Default merge method.(merge|squash|rebase)"`
+	LabelMarkers       *LabelMarkers `long:"marker" description:"GitHub Labels."`
 }
 
 // LabelMarkers Labels use to control actions.
@@ -37,8 +37,9 @@ type LabelMarkers struct {
 
 func main() {
 	config := &Configuration{
-		MinReview: 1,
-		DryRun:    true,
+		MinReview:          1,
+		DryRun:             true,
+		DefaultMergeMethod: "squash",
 		LabelMarkers: &LabelMarkers{
 			NeedHumanMerge:  "bot/need-human-merge",
 			NeedMerge:       "status/3-needs-merge",
@@ -217,7 +218,7 @@ func process(ctx context.Context, client *github.Client, config Configuration, i
 		return err
 	}
 	if ok {
-		fmt.Printf("MERGE(%s): PR #%d\n", mergeMethod, prNumber)
+		fmt.Printf("MERGE(%s): PR #%d\n", config.DefaultMergeMethod, prNumber)
 
 		if !config.DryRun {
 			err = ghub.RemoveLabelForPR(pr, config.LabelMarkers.MergeInProgress)
@@ -226,7 +227,7 @@ func process(ctx context.Context, client *github.Client, config Configuration, i
 			}
 
 			mergeOptions := &github.PullRequestOptions{
-				MergeMethod: mergeMethod,
+				MergeMethod: config.DefaultMergeMethod,
 				CommitTitle: pr.GetTitle(),
 			}
 			result, _, err := client.PullRequests.Merge(ctx, config.Owner, config.RepositoryName, prNumber, "", mergeOptions)
@@ -282,4 +283,13 @@ func process(ctx context.Context, client *github.Client, config Configuration, i
 	}
 
 	return nil
+}
+
+func hasLabel(issue github.Issue, label string) bool {
+	for _, lbl := range issue.Labels {
+		if lbl.GetName() == label {
+			return true
+		}
+	}
+	return false
 }

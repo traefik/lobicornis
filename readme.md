@@ -15,6 +15,7 @@ Flags:
     --marker.merge-in-progress Label use when the bot update the PR (merge/rebase). (default "status/4-merge-in-progress")
     --marker.need-human-merge  Label use when the bot cannot perform a merge.       (default "bot/need-human-merge")
     --marker.need-merge        Label use when you want the bot perform a merge.     (default "status/3-needs-merge")
+    --merge-method             Default merge method.(merge|squash|rebase)           (default "squash")
     --min-review               Minimal number of review.                            (default "1")
 -o, --owner                    Repository owner. [required]
 -r, --repo-name                Repository name. [required]
