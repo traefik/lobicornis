@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/containous/brahma/gh"
 	"github.com/containous/brahma/mjolnir"
@@ -66,6 +67,7 @@ func searchIssuePR(ctx context.Context, client *github.Client, config Configurat
 			issue = &issues[0]
 		}
 	}
+
 	return issue, nil
 }
 
@@ -145,75 +147,32 @@ func process(ctx context.Context, client *github.Client, config Configuration, i
 		return nil
 	}
 
-	// rebase
-	ok, err := ghub.IsUpdatedBranch(pr)
+	// Get status checks
+	rcs, _, err := client.Repositories.GetRequiredStatusChecks(ctx, config.Owner, config.RepositoryName, pr.Base.GetRef())
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to get status checks: %v", err)
 	}
-	if ok {
-		mergeMethod := getMergeMethod(issuePR, config)
 
-		fmt.Printf("MERGE(%s): PR #%d\n", mergeMethod, prNumber)
-
-		err = ghub.RemoveLabel(issuePR, config.Owner, config.RepositoryName, config.LabelMarkers.MergeInProgress)
+	// Need to be up to date?
+	if rcs.Strict {
+		ok, err := ghub.IsUpToDateBranch(pr)
 		if err != nil {
-			log.Println(err)
+			return err
 		}
-
-		if !config.DryRun {
-			mergeOptions := &github.PullRequestOptions{
-				MergeMethod: mergeMethod,
-				CommitTitle: pr.GetTitle(),
-			}
-			result, _, err := client.PullRequests.Merge(ctx, config.Owner, config.RepositoryName, prNumber, "", mergeOptions)
+		if ok {
+			err = mergePR(ctx, client, ghub, config, issuePR, pr)
 			if err != nil {
-				log.Println(err)
+				return err
 			}
-
-			log.Println(result.GetMessage())
-
-			if !result.GetMerged() {
-				err = ghub.AddLabels(issuePR, config.Owner, config.RepositoryName, config.LabelMarkers.NeedHumanMerge)
-				if err != nil {
-					log.Println(err)
-				}
-				err := ghub.RemoveLabel(issuePR, config.Owner, config.RepositoryName, config.LabelMarkers.MergeInProgress)
-				if err != nil {
-					log.Println(err)
-				}
-				return fmt.Errorf("failed to merge PR #%d", prNumber)
+		} else {
+			err = updatePR(ghub, config, issuePR, pr)
+			if err != nil {
+				return err
 			}
 		}
-
-		err = ghub.RemoveLabel(issuePR, config.Owner, config.RepositoryName, config.LabelMarkers.NeedMerge)
-		if err != nil {
-			log.Println(err)
-		}
-
-		err = mjolnir.CloseRelatedIssues(ctx, client, config.Owner, config.RepositoryName, pr, config.DryRun)
-		if err != nil {
-			log.Println(err)
-		}
-
 	} else {
-		fmt.Printf("UPDATE: PR #%d\n", prNumber)
-
-		err := ghub.AddLabels(issuePR, config.Owner, config.RepositoryName, config.LabelMarkers.MergeInProgress)
+		err = mergePR(ctx, client, ghub, config, issuePR, pr)
 		if err != nil {
-			log.Println(err)
-		}
-
-		err = updater.Process(ghub, pr, config.SSH, config.GitHubToken, config.DryRun, config.Debug)
-		if err != nil {
-			err = ghub.AddLabels(issuePR, config.Owner, config.RepositoryName, config.LabelMarkers.NeedHumanMerge)
-			if err != nil {
-				log.Println(err)
-			}
-			// if
-			err = ghub.RemoveLabel(issuePR, config.Owner, config.RepositoryName, config.LabelMarkers.MergeInProgress)
-			if err != nil {
-				log.Println(err)
-			}
 			return err
 		}
 	}
@@ -221,18 +180,111 @@ func process(ctx context.Context, client *github.Client, config Configuration, i
 	return nil
 }
 
-func getMergeMethod(issue *github.Issue, config Configuration) string {
-	for _, lbl := range issue.Labels {
-		if lbl.GetName() == config.MergeMethodPrefix+gh.MergeMethodSquash {
-			return gh.MergeMethodSquash
+func updatePR(ghub *gh.GHub, config Configuration, issuePR *github.Issue, pr *github.PullRequest) error {
+	fmt.Printf("UPDATE: PR #%d\n", issuePR.GetNumber())
+
+	err := ghub.AddLabels(issuePR, config.Owner, config.RepositoryName, config.LabelMarkers.MergeInProgress)
+	if err != nil {
+		log.Println(err)
+	}
+
+	err = updater.Process(ghub, pr, config.SSH, config.GitHubToken, config.DryRun, config.Debug)
+	if err != nil {
+		err = ghub.AddLabels(issuePR, config.Owner, config.RepositoryName, config.LabelMarkers.NeedHumanMerge)
+		if err != nil {
+			log.Println(err)
 		}
-		if lbl.GetName() == config.MergeMethodPrefix+gh.MergeMethodMerge {
-			return gh.MergeMethodMerge
+		// if
+		err = ghub.RemoveLabel(issuePR, config.Owner, config.RepositoryName, config.LabelMarkers.MergeInProgress)
+		if err != nil {
+			log.Println(err)
+		}
+		return err
+	}
+	return nil
+}
+
+func mergePR(ctx context.Context, client *github.Client, ghub *gh.GHub, config Configuration, issuePR *github.Issue, pr *github.PullRequest) error {
+
+	mergeMethod, err := getMergeMethod(issuePR, config)
+	if err != nil {
+		return err
+	}
+
+	prNumber := issuePR.GetNumber()
+
+	fmt.Printf("MERGE(%s): PR #%d\n", mergeMethod, prNumber)
+
+	err = ghub.RemoveLabel(issuePR, config.Owner, config.RepositoryName, config.LabelMarkers.MergeInProgress)
+	if err != nil {
+		log.Println(err)
+	}
+
+	if !config.DryRun {
+		mergeOptions := &github.PullRequestOptions{
+			MergeMethod: mergeMethod,
+			CommitTitle: pr.GetTitle(),
+		}
+		result, _, err := client.PullRequests.Merge(ctx, config.Owner, config.RepositoryName, prNumber, "", mergeOptions)
+		if err != nil {
+			log.Println(err)
 		}
 
-		if lbl.GetName() == config.MergeMethodPrefix+gh.MergeMethodRebase {
-			return gh.MergeMethodRebase
+		log.Println(result.GetMessage())
+
+		if !result.GetMerged() {
+			err = ghub.AddLabels(issuePR, config.Owner, config.RepositoryName, config.LabelMarkers.NeedHumanMerge)
+			if err != nil {
+				log.Println(err)
+			}
+			err := ghub.RemoveLabel(issuePR, config.Owner, config.RepositoryName, config.LabelMarkers.MergeInProgress)
+			if err != nil {
+				log.Println(err)
+			}
+			return fmt.Errorf("failed to merge PR #%d", prNumber)
 		}
 	}
-	return config.DefaultMergeMethod
+
+	err = ghub.RemoveLabel(issuePR, config.Owner, config.RepositoryName, config.LabelMarkers.NeedMerge)
+	if err != nil {
+		log.Println(err)
+	}
+
+	err = mjolnir.CloseRelatedIssues(ctx, client, config.Owner, config.RepositoryName, pr, config.DryRun)
+	if err != nil {
+		log.Println(err)
+	}
+
+	return nil
+}
+
+func getMergeMethod(issuePR *github.Issue, config Configuration) (string, error) {
+
+	if len(config.MergeMethodPrefix) != 0 {
+		var labels []string
+		for _, lbl := range issuePR.Labels {
+			if strings.HasPrefix(lbl.GetName(), config.MergeMethodPrefix) {
+				labels = append(labels, lbl.GetName())
+			}
+		}
+
+		if len(labels) == 0 {
+			return config.DefaultMergeMethod, nil
+		}
+
+		if len(labels) > 1 {
+			return "", fmt.Errorf("PR #%d: too many custom merge method labels: %v", issuePR, labels)
+		}
+
+		switch labels[0] {
+		case config.MergeMethodPrefix + gh.MergeMethodSquash:
+			return gh.MergeMethodSquash, nil
+		case config.MergeMethodPrefix + gh.MergeMethodMerge:
+			return gh.MergeMethodMerge, nil
+		case config.MergeMethodPrefix + gh.MergeMethodRebase:
+			return gh.MergeMethodRebase, nil
+		}
+	}
+
+	return config.DefaultMergeMethod, nil
 }

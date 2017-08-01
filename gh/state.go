@@ -21,39 +21,40 @@ const (
 
 // HasReviewsApprove check if a PR have the required number of review
 func (g *GHub) HasReviewsApprove(pr *github.PullRequest, minReview int) error {
+	if minReview != 0 {
 
-	owner := pr.Base.Repo.Owner.GetLogin()
-	repositoryName := pr.Base.Repo.GetName()
-	prNumber := pr.GetNumber()
+		owner := pr.Base.Repo.Owner.GetLogin()
+		repositoryName := pr.Base.Repo.GetName()
+		prNumber := pr.GetNumber()
 
-	reviews, _, err := g.client.PullRequests.ListReviews(g.ctx, owner, repositoryName, prNumber, nil)
-	if err != nil {
-		return err
-	}
+		reviews, _, err := g.client.PullRequests.ListReviews(g.ctx, owner, repositoryName, prNumber, nil)
+		if err != nil {
+			return err
+		}
 
-	reviewsState := make(map[string]string)
-	for _, review := range reviews {
-		if review.GetState() != Commented {
-			reviewsState[review.User.GetLogin()] = review.GetState()
-			// TODO debug level: log.Printf("PR%d - %s: %s\n", prNumber, review.User.GetLogin(), review.GetState())
+		reviewsState := make(map[string]string)
+		for _, review := range reviews {
+			if review.GetState() != Commented {
+				reviewsState[review.User.GetLogin()] = review.GetState()
+				// TODO debug level: log.Printf("PR%d - %s: %s\n", prNumber, review.User.GetLogin(), review.GetState())
+			}
+		}
+
+		if len(reviewsState) < minReview {
+			return fmt.Errorf("Need more review [%v/2]", len(reviewsState))
+		}
+
+		for login, state := range reviewsState {
+			if state != Approved {
+				return fmt.Errorf("%s by %s", state, login)
+			}
 		}
 	}
-
-	if len(reviewsState) < minReview {
-		return fmt.Errorf("Need more review [%v/2]", len(reviewsState))
-	}
-
-	for login, state := range reviewsState {
-		if state != Approved {
-			return fmt.Errorf("%s by %s", state, login)
-		}
-	}
-
 	return nil
 }
 
-// IsUpdatedBranch check if a PR is up to date
-func (g *GHub) IsUpdatedBranch(pr *github.PullRequest) (bool, error) {
+// IsUpToDateBranch check if a PR is up to date
+func (g *GHub) IsUpToDateBranch(pr *github.PullRequest) (bool, error) {
 
 	branch := pr.Base.GetRef()
 
