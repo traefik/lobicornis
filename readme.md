@@ -1,5 +1,7 @@
 # Myrmica Lobicornis - Update and Merge Pull Request
 
+[![Build Status](https://travis-ci.org/containous/lobicornis.svg?branch=master)](https://travis-ci.org/containous/lobicornis)
+
 ```bash
 Myrmica Lobicornis:  Update and Merge Pull Request from GitHub.
 
