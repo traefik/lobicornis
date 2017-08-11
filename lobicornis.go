@@ -20,6 +20,7 @@ func main() {
 			NeedMerge:       "status/3-needs-merge",
 			MergeInProgress: "status/4-merge-in-progress",
 		},
+		ForceNeedUpToDate: true,
 	}
 
 	defaultPointersConfig := &core.Configuration{LabelMarkers: &core.LabelMarkers{}}

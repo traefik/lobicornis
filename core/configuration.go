@@ -12,6 +12,8 @@ type Configuration struct {
 	DefaultMergeMethod string        `long:"merge-method" description:"Default merge method.(merge|squash|rebase)"`
 	MergeMethodPrefix  string        `long:"merge-method-prefix" description:"Use to override default merge method for a PR."`
 	LabelMarkers       *LabelMarkers `long:"marker" description:"GitHub Labels."`
+	CheckNeedUpToDate  bool          `long:"check-up-to-date" description:"Use GitHub repository configuration to check the need to be up-to-date."`
+	ForceNeedUpToDate  bool          `long:"force-up-to-date" description:"Force need up-to-date. (check-up-to-date must be false)"`
 }
 
 // LabelMarkers Labels use to control actions.

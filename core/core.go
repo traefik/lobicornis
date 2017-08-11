@@ -148,13 +148,19 @@ func process(ctx context.Context, client *github.Client, config Configuration, i
 	}
 
 	// Get status checks
-	rcs, _, err := client.Repositories.GetRequiredStatusChecks(ctx, config.Owner, config.RepositoryName, pr.Base.GetRef())
-	if err != nil {
-		return fmt.Errorf("unable to get status checks: %v", err)
+	var needUpdate bool
+	if config.CheckNeedUpToDate {
+		rcs, _, err := client.Repositories.GetRequiredStatusChecks(ctx, config.Owner, config.RepositoryName, pr.Base.GetRef())
+		if err != nil {
+			return fmt.Errorf("unable to get status checks: %v", err)
+		}
+		needUpdate = rcs.Strict
+	} else if config.ForceNeedUpToDate {
+		needUpdate = true
 	}
 
 	// Need to be up to date?
-	if rcs.Strict {
+	if needUpdate {
 		ok, err := ghub.IsUpToDateBranch(pr)
 		if err != nil {
 			return err
