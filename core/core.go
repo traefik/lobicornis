@@ -255,6 +255,18 @@ func mergePR(ctx context.Context, client *github.Client, ghub *gh.GHub, config C
 	if err != nil {
 		log.Println(err)
 	}
+	err = ghub.RemoveLabel(issuePR, config.Owner, config.RepositoryName, config.MergeMethodPrefix+gh.MergeMethodSquash)
+	if err != nil {
+		log.Println(err)
+	}
+	err = ghub.RemoveLabel(issuePR, config.Owner, config.RepositoryName, config.MergeMethodPrefix+gh.MergeMethodMerge)
+	if err != nil {
+		log.Println(err)
+	}
+	err = ghub.RemoveLabel(issuePR, config.Owner, config.RepositoryName, config.MergeMethodPrefix+gh.MergeMethodRebase)
+	if err != nil {
+		log.Println(err)
+	}
 
 	err = mjolnir.CloseRelatedIssues(ctx, client, config.Owner, config.RepositoryName, pr, config.DryRun)
 	if err != nil {
