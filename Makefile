@@ -1,14 +1,18 @@
 .PHONY: all
 
-GOLIST := $(shell go list ./... | grep -v '/vendor/')
-
-default: test-unit build
+default: clean test-unit validate build
 
 dependencies:
 	dep ensure
 
 build:
-	go build -o lobicornis
+	go build
+
+validate:
+	./_script/make.sh validate-gofmt validate-govet validate-golint validate-misspell
 
 test-unit:
-	go test -v $(GOLIST)
+	./_script/make.sh test-unit
+
+clean:
+	rm -f cover.out lobicornis
