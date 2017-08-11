@@ -1,12 +1,10 @@
-# Brahma - Update and Merge Pull Request
+# Myrmica Lobicornis - Update and Merge Pull Request
 
 ```bash
-Brahma, God of Creation.
-Update and Merge Pull Request from GitHub.
+Myrmica Lobicornis:  Update and Merge Pull Request from GitHub.
 
-
-Usage: brahma [--flag=flag_argument] [-f[flag_argument]] ...     set flag_argument to flag(s)
-   or: brahma [--flag[=true|false| ]] [-f[true|false| ]] ...     set true/false to boolean flag(s)
+Usage: lobicornis [--flag=flag_argument] [-f[flag_argument]] ...     set flag_argument to flag(s)
+   or: lobicornis [--flag[=true|false| ]] [-f[true|false| ]] ...     set true/false to boolean flag(s)
 
 Flags:
     --debug                    Debug mode.                                          (default "false")
@@ -45,11 +43,11 @@ The bot:
 ## Examples
  
 ```bash
-brahma --debug --ssh -t xxxxxxxxxxxxx -o containous -r traefik --min-review=3
+lobicornis --debug --ssh -t xxxxxxxxxxxxx -o containous -r traefik --min-review=3
 ```
 
 ```bash
-brahma --debug --ssh -t xxxxxxxxxxxxx -o containous -r traefik --min-review=3 \
+lobicornis --debug --ssh -t xxxxxxxxxxxxx -o containous -r traefik --min-review=3 \
     --marker.merge-in-progress="merge-pending" \
     --marker.need-human-merge="merge-fail" \
     --marker.need-merge="merge"

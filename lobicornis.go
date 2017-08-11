@@ -4,9 +4,9 @@ import (
 	"log"
 	"os"
 
-	"github.com/containous/brahma/core"
-	"github.com/containous/brahma/gh"
 	"github.com/containous/flaeg"
+	"github.com/containous/lobicornis/core"
+	"github.com/containous/lobicornis/gh"
 )
 
 func main() {
@@ -24,15 +24,13 @@ func main() {
 
 	defaultPointersConfig := &core.Configuration{LabelMarkers: &core.LabelMarkers{}}
 	rootCmd := &flaeg.Command{
-		Name: "brahma",
-		Description: `Brahma, God of Creation.
-Update and Merge Pull Request from GitHub.
-		`,
+		Name:                  "lobicornis",
+		Description:           `Myrmica Lobicornis:  Update and Merge Pull Request from GitHub.`,
 		Config:                config,
 		DefaultPointersConfig: defaultPointersConfig,
 		Run: func() error {
 			if config.Debug {
-				log.Printf("Run Brahma command with config : %+v\n", config)
+				log.Printf("Run Lobicornis command with config : %+v\n", config)
 			}
 
 			if config.DryRun {

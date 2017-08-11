@@ -5,7 +5,7 @@ import (
 	"log"
 	"strings"
 
-	"github.com/containous/brahma/gh"
+	"github.com/containous/lobicornis/gh"
 	"github.com/google/go-github/github"
 	"github.com/ldez/go-git-cmd-wrapper/git"
 	"github.com/ldez/go-git-cmd-wrapper/merge"

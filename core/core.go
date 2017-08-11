@@ -6,10 +6,10 @@ import (
 	"log"
 	"strings"
 
-	"github.com/containous/brahma/gh"
-	"github.com/containous/brahma/mjolnir"
-	"github.com/containous/brahma/search"
-	"github.com/containous/brahma/updater"
+	"github.com/containous/lobicornis/gh"
+	"github.com/containous/lobicornis/mjolnir"
+	"github.com/containous/lobicornis/search"
+	"github.com/containous/lobicornis/updater"
 	"github.com/google/go-github/github"
 )
 

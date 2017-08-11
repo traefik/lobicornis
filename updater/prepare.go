@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/containous/brahma/gh"
+	"github.com/containous/lobicornis/gh"
 	"github.com/google/go-github/github"
 )
 
@@ -26,7 +26,7 @@ func Process(ghub *gh.GHub, pr *github.PullRequest, ssh bool, gitHubToken string
 	forkURL := makeRepositoryURL(pr.Head.Repo.GetGitURL(), ssh, gitHubToken)
 	baseURL := makeRepositoryURL(pr.Base.Repo.GetGitURL(), ssh, "")
 
-	dir, err := ioutil.TempDir("", "brahma")
+	dir, err := ioutil.TempDir("", "myrmica-lobicornis")
 	defer os.RemoveAll(dir)
 	if err != nil {
 		return err

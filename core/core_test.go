@@ -3,7 +3,7 @@ package core
 import (
 	"testing"
 
-	"github.com/containous/brahma/gh"
+	"github.com/containous/lobicornis/gh"
 	"github.com/google/go-github/github"
 )
 
