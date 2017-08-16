@@ -1,8 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"log"
+	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/containous/flaeg"
 	"github.com/containous/lobicornis/core"
@@ -21,6 +24,7 @@ func main() {
 			MergeInProgress: "status/4-merge-in-progress",
 		},
 		ForceNeedUpToDate: true,
+		ServerPort:        80,
 	}
 
 	defaultPointersConfig := &core.Configuration{LabelMarkers: &core.LabelMarkers{}}
@@ -51,7 +55,7 @@ func main() {
 			required(config.LabelMarkers.MergeInProgress, "merge-in-progress")
 			required(config.LabelMarkers.NeedHumanMerge, "need-human-merge")
 
-			core.Execute(*config)
+			launch(config)
 			return nil
 		},
 	}
@@ -60,9 +64,44 @@ func main() {
 	flag.Run()
 }
 
+func launch(config *core.Configuration) {
+	if config.ServerMode {
+		server := &server{config: config}
+		server.ListenAndServe()
+		return
+	}
+
+	core.Execute(*config)
+}
+
 func required(field string, fieldName string) error {
 	if len(field) == 0 {
 		log.Fatalf("%s is mandatory.", fieldName)
 	}
 	return nil
+}
+
+type server struct {
+	config *core.Configuration
+}
+
+func (s *server) ListenAndServe() error {
+	return http.ListenAndServe(":"+strconv.Itoa(s.config.ServerPort), s)
+}
+
+func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		log.Printf("Invalid http method: %s", r.Method)
+		http.Error(w, "405 Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	err := core.Execute(*s.config)
+	if err != nil {
+		log.Printf("Report error: %v", err)
+		http.Error(w, "Report error.", http.StatusInternalServerError)
+		return
+	}
+
+	fmt.Fprint(w, "Scheluded.")
 }

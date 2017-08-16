@@ -14,13 +14,13 @@ import (
 )
 
 // Execute core process
-func Execute(config Configuration) {
+func Execute(config Configuration) error {
 	ctx := context.Background()
 	client := gh.NewGitHubClient(ctx, config.GitHubToken)
 
 	issue, err := searchIssuePR(ctx, client, config)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	if issue == nil {
@@ -28,9 +28,10 @@ func Execute(config Configuration) {
 	} else {
 		err = process(ctx, client, config, issue)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 	}
+	return nil
 }
 
 func searchIssuePR(ctx context.Context, client *github.Client, config Configuration) (*github.Issue, error) {

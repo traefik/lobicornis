@@ -14,6 +14,8 @@ type Configuration struct {
 	LabelMarkers       *LabelMarkers `long:"marker" description:"GitHub Labels."`
 	CheckNeedUpToDate  bool          `long:"check-up-to-date" description:"Use GitHub repository configuration to check the need to be up-to-date."`
 	ForceNeedUpToDate  bool          `long:"force-up-to-date" description:"Force need up-to-date. (check-up-to-date must be false)"`
+	ServerMode         bool          `long:"server" description:"Server mode."`
+	ServerPort         int           `long:"port" description:"Server port."`
 }
 
 // LabelMarkers Labels use to control actions.
