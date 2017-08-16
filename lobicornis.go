@@ -38,6 +38,10 @@ func main() {
 				log.Print("IMPORTANT: you are using the dry-run mode. Use `--dry-run=false` to disable this mode.")
 			}
 
+			if len(config.GitHubToken) == 0 {
+				config.GitHubToken = os.Getenv("GITHUB_TOKEN")
+			}
+
 			required(config.GitHubToken, "token")
 			required(config.Owner, "owner")
 			required(config.RepositoryName, "repo-name")
