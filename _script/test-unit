@@ -11,8 +11,7 @@ TEXTRESET=$'\033[0m' # reset the foreground colour
 find_dirs() {
     find . -not \( \
          \( \
-         -path './.glide/*' \
-         -o -path './vendor/*' \
+         -path './vendor/*' \
          -o -path './.git/*' \
          \) \
          -prune \
