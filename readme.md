@@ -13,6 +13,8 @@ Flags:
     --debug                    Debug mode.                                                             (default "false")
     --dry-run                  Dry run mode.                                                           (default "true")
     --force-up-to-date         Force need up-to-date. (check-up-to-date must be false)                 (default "true")
+    --git-email                Git user email.
+    --git-name                 Git user name.
     --marker                   GitHub Labels.                                                          (default "true")
     --marker.merge-in-progress Label use when the bot update the PR (merge/rebase).                    (default "status/4-merge-in-progress")
     --marker.need-human-merge  Label use when the bot cannot perform a merge.                          (default "bot/need-human-merge")

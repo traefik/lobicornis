@@ -16,6 +16,8 @@ type Configuration struct {
 	ForceNeedUpToDate  bool          `long:"force-up-to-date" description:"Force need up-to-date. (check-up-to-date must be false)"`
 	ServerMode         bool          `long:"server" description:"Server mode."`
 	ServerPort         int           `long:"port" description:"Server port."`
+	GitUserEmail       string        `long:"git-email" description:"Git user email."`
+	GitUserName        string        `long:"git-name" description:"Git user name."`
 }
 
 // LabelMarkers Labels use to control actions.
