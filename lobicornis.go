@@ -10,8 +10,6 @@ import (
 	"github.com/containous/flaeg"
 	"github.com/containous/lobicornis/core"
 	"github.com/containous/lobicornis/gh"
-	"github.com/ldez/go-git-cmd-wrapper/config"
-	"github.com/ldez/go-git-cmd-wrapper/git"
 )
 
 func main() {
@@ -70,37 +68,12 @@ func main() {
 }
 
 func launch(config *core.Configuration) error {
-	err := configureGitUserInfo(config.GitUserName, config.GitUserEmail)
-	if err != nil {
-		return err
-	}
-
 	if config.ServerMode {
 		server := &server{config: config}
 		return server.ListenAndServe()
 	}
 
 	return core.Execute(*config)
-}
-
-func configureGitUserInfo(gitUserName string, gitUserEmail string) error {
-	if len(gitUserEmail) != 0 {
-		output, err := git.Config(config.Entry("user.email", gitUserEmail))
-		if err != nil {
-			log.Println(output)
-			return err
-		}
-	}
-
-	if len(gitUserName) != 0 {
-		output, err := git.Config(config.Entry("user.name", gitUserName))
-		if err != nil {
-			log.Println(output)
-			return err
-		}
-	}
-
-	return nil
 }
 
 func required(field string, fieldName string) error {

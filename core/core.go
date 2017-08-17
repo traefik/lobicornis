@@ -195,7 +195,7 @@ func updatePR(ghub *gh.GHub, config Configuration, issuePR *github.Issue, pr *gi
 		log.Println(err)
 	}
 
-	err = updater.Process(ghub, pr, config.SSH, config.GitHubToken, config.DryRun, config.Debug)
+	err = updater.Process(ghub, pr, config.SSH, config.GitHubToken, config.GitUserName, config.GitUserEmail, config.DryRun, config.Debug)
 	if err != nil {
 		err = ghub.AddLabels(issuePR, config.Owner, config.RepositoryName, config.LabelMarkers.NeedHumanMerge)
 		if err != nil {

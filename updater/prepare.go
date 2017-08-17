@@ -8,6 +8,8 @@ import (
 
 	"github.com/containous/lobicornis/gh"
 	"github.com/google/go-github/github"
+	"github.com/ldez/go-git-cmd-wrapper/config"
+	"github.com/ldez/go-git-cmd-wrapper/git"
 )
 
 const (
@@ -20,7 +22,7 @@ const (
 )
 
 // Process clone a PR and update if needed.
-func Process(ghub *gh.GHub, pr *github.PullRequest, ssh bool, gitHubToken string, dryRun bool, debug bool) error {
+func Process(ghub *gh.GHub, pr *github.PullRequest, ssh bool, gitHubToken string, gitUserName string, gitUserEmail string, dryRun bool, debug bool) error {
 	log.Println("Base branch: ", pr.Base.GetRef(), "- Fork branch: ", pr.Head.GetRef())
 
 	forkURL := makeRepositoryURL(pr.Head.Repo.GetGitURL(), ssh, gitHubToken)
@@ -42,10 +44,35 @@ func Process(ghub *gh.GHub, pr *github.PullRequest, ssh bool, gitHubToken string
 		return err
 	}
 
+	err = configureGitUserInfo(gitUserName, gitUserEmail)
+	if err != nil {
+		return err
+	}
+
 	output, err := updatePR(ghub, pr, mainRemote, dryRun, debug)
 	log.Println(output)
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func configureGitUserInfo(gitUserName string, gitUserEmail string) error {
+	if len(gitUserEmail) != 0 {
+		output, err := git.Config(config.Entry("user.email", gitUserEmail))
+		if err != nil {
+			log.Println(output)
+			return err
+		}
+	}
+
+	if len(gitUserName) != 0 {
+		output, err := git.Config(config.Entry("user.name", gitUserName))
+		if err != nil {
+			log.Println(output)
+			return err
+		}
 	}
 
 	return nil
