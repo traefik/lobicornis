@@ -27,17 +27,27 @@ func (g *GHub) HasReviewsApprove(pr *github.PullRequest, minReview int) error {
 		repositoryName := pr.Base.Repo.GetName()
 		prNumber := pr.GetNumber()
 
-		reviews, _, err := g.client.PullRequests.ListReviews(g.ctx, owner, repositoryName, prNumber, nil)
-		if err != nil {
-			return err
+		opt := &github.ListOptions{
+			PerPage: 100,
 		}
 
 		reviewsState := make(map[string]string)
-		for _, review := range reviews {
-			if review.GetState() != Commented {
-				reviewsState[review.User.GetLogin()] = review.GetState()
-				// TODO debug level: log.Printf("PR%d - %s: %s\n", prNumber, review.User.GetLogin(), review.GetState())
+		for {
+			reviews, resp, err := g.client.PullRequests.ListReviews(g.ctx, owner, repositoryName, prNumber, opt)
+			if err != nil {
+				return err
 			}
+
+			for _, review := range reviews {
+				if review.GetState() != Commented {
+					reviewsState[review.User.GetLogin()] = review.GetState()
+					// TODO debug level: log.Printf("PR%d - %s: %s\n", prNumber, review.User.GetLogin(), review.GetState())
+				}
+			}
+			if resp.NextPage == 0 {
+				break
+			}
+			opt.Page = resp.NextPage
 		}
 
 		if len(reviewsState) < minReview {
