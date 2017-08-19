@@ -36,7 +36,7 @@ func Execute(config Configuration) error {
 
 func searchIssuePR(ctx context.Context, client *github.Client, config Configuration) (*github.Issue, error) {
 
-	issuesMIP, err := search.FindOpenPR(ctx, client, config.Owner, config.RepositoryName,
+	issuesMIP, err := search.FindOpenPR(ctx, client, config.Owner, config.RepositoryName, config.Debug,
 		search.WithLabels(config.LabelMarkers.NeedMerge, config.LabelMarkers.MergeInProgress),
 		search.WithExcludedLabels(config.LabelMarkers.NeedHumanMerge),
 		search.Cond(config.MinReview > 0, search.WithReviewApproved))
@@ -53,7 +53,7 @@ func searchIssuePR(ctx context.Context, client *github.Client, config Configurat
 		issue = &issuesMIP[0]
 		log.Printf("Find PR #%d, updated at %v", issue.GetNumber(), issue.GetUpdatedAt())
 	} else {
-		issues, err := search.FindOpenPR(ctx, client, config.Owner, config.RepositoryName,
+		issues, err := search.FindOpenPR(ctx, client, config.Owner, config.RepositoryName, config.Debug,
 			search.WithLabels(config.LabelMarkers.NeedMerge),
 			search.WithExcludedLabels(config.LabelMarkers.NeedHumanMerge),
 			search.Cond(config.MinReview > 0, search.WithReviewApproved))

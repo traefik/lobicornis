@@ -41,7 +41,6 @@ func (g *GHub) HasReviewsApprove(pr *github.PullRequest, minReview int) error {
 			for _, review := range reviews {
 				if review.GetState() != Commented {
 					reviewsState[review.User.GetLogin()] = review.GetState()
-					// TODO debug level: log.Printf("PR%d - %s: %s\n", prNumber, review.User.GetLogin(), review.GetState())
 				}
 			}
 			if resp.NextPage == 0 {

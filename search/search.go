@@ -18,7 +18,7 @@ func (a byUpdated) Less(i, j int) bool {
 }
 
 // FindOpenPR find open PR
-func FindOpenPR(ctx context.Context, client *github.Client, owner string, repositoryName string, parameters ...Parameter) ([]github.Issue, error) {
+func FindOpenPR(ctx context.Context, client *github.Client, owner string, repositoryName string, debug bool, parameters ...Parameter) ([]github.Issue, error) {
 
 	var filter string
 	for _, param := range parameters {
@@ -28,7 +28,9 @@ func FindOpenPR(ctx context.Context, client *github.Client, owner string, reposi
 	}
 
 	query := fmt.Sprintf("repo:%s/%s type:pr state:open %s", owner, repositoryName, filter)
-	log.Println(query)
+	if debug {
+		log.Println(query)
+	}
 
 	options := &github.SearchOptions{
 		Sort:        "updated",
