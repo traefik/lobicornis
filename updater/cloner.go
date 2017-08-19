@@ -50,8 +50,14 @@ func cloneFromMainRepository(pr *github.PullRequest, baseURL string, debug bool)
 		return output, err
 	}
 
-	git.Config(config.Entry("rebase.autoSquash", "true"))
-	git.Config(config.Entry("push.default", "current"))
+	output, err = git.Config(config.Entry("rebase.autoSquash", "true"))
+	if err != nil {
+		return output, err
+	}
+	output, err = git.Config(config.Entry("push.default", "current"))
+	if err != nil {
+		return output, err
+	}
 
 	output, err = git.Checkout(checkout.Branch(pr.Head.GetRef()), git.Debugger(debug))
 	if err != nil {
@@ -72,8 +78,14 @@ func cloneFromFork(pr *github.PullRequest, remoteName, forkURL, baseURL string, 
 		return output, err
 	}
 
-	git.Config(config.Entry("rebase.autoSquash", "true"), git.Debugger(debug))
-	git.Config(config.Entry("push.default", "current"))
+	output, err = git.Config(config.Entry("rebase.autoSquash", "true"))
+	if err != nil {
+		return output, err
+	}
+	output, err = git.Config(config.Entry("push.default", "current"))
+	if err != nil {
+		return output, err
+	}
 
 	output, err = git.Remote(remote.Add(remoteName, baseURL), git.Debugger(debug))
 	if err != nil {

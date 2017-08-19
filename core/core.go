@@ -87,13 +87,13 @@ func process(ctx context.Context, client *github.Client, config Configuration, i
 	if err != nil {
 		log.Printf("PR #%d: needs more reviews: %v", prNumber, err)
 
-		err = ghub.AddLabels(issuePR, config.Owner, config.RepositoryName, config.LabelMarkers.NeedHumanMerge)
-		if err != nil {
-			log.Println(err)
+		errLabel := ghub.AddLabels(issuePR, config.Owner, config.RepositoryName, config.LabelMarkers.NeedHumanMerge)
+		if errLabel != nil {
+			log.Println(errLabel)
 		}
-		err = ghub.RemoveLabel(issuePR, config.Owner, config.RepositoryName, config.LabelMarkers.MergeInProgress)
-		if err != nil {
-			log.Println(err)
+		errLabel = ghub.RemoveLabel(issuePR, config.Owner, config.RepositoryName, config.LabelMarkers.MergeInProgress)
+		if errLabel != nil {
+			log.Println(errLabel)
 		}
 
 		return nil
@@ -121,13 +121,13 @@ func process(ctx context.Context, client *github.Client, config Configuration, i
 	}
 
 	if pr.GetMerged() {
-		err = ghub.RemoveLabel(issuePR, config.Owner, config.RepositoryName, config.LabelMarkers.MergeInProgress)
-		if err != nil {
-			log.Println(err)
+		errLabel := ghub.RemoveLabel(issuePR, config.Owner, config.RepositoryName, config.LabelMarkers.MergeInProgress)
+		if errLabel != nil {
+			log.Println(errLabel)
 		}
-		err = ghub.RemoveLabel(issuePR, config.Owner, config.RepositoryName, config.LabelMarkers.NeedMerge)
-		if err != nil {
-			log.Println(err)
+		errLabel = ghub.RemoveLabel(issuePR, config.Owner, config.RepositoryName, config.LabelMarkers.NeedMerge)
+		if errLabel != nil {
+			log.Println(errLabel)
 		}
 
 		log.Printf("the PR #%d is already merged", prNumber)
@@ -135,13 +135,13 @@ func process(ctx context.Context, client *github.Client, config Configuration, i
 	}
 
 	if !pr.GetMergeable() {
-		err = ghub.AddLabels(issuePR, config.Owner, config.RepositoryName, config.LabelMarkers.NeedHumanMerge)
-		if err != nil {
-			log.Println(err)
+		errLabel := ghub.AddLabels(issuePR, config.Owner, config.RepositoryName, config.LabelMarkers.NeedHumanMerge)
+		if errLabel != nil {
+			log.Println(errLabel)
 		}
-		err = ghub.RemoveLabel(issuePR, config.Owner, config.RepositoryName, config.LabelMarkers.MergeInProgress)
-		if err != nil {
-			log.Println(err)
+		errLabel = ghub.RemoveLabel(issuePR, config.Owner, config.RepositoryName, config.LabelMarkers.MergeInProgress)
+		if errLabel != nil {
+			log.Println(errLabel)
 		}
 
 		log.Printf("conflicts must be resolve in the PR #%d", prNumber)
@@ -167,18 +167,18 @@ func process(ctx context.Context, client *github.Client, config Configuration, i
 			return err
 		}
 		if ok {
-			err = mergePR(ctx, client, ghub, config, issuePR, pr)
+			err := mergePR(ctx, client, ghub, config, issuePR, pr)
 			if err != nil {
 				return err
 			}
 		} else {
-			err = updatePR(ghub, config, issuePR, pr)
+			err := updatePR(ghub, config, issuePR, pr)
 			if err != nil {
 				return err
 			}
 		}
 	} else {
-		err = mergePR(ctx, client, ghub, config, issuePR, pr)
+		err := mergePR(ctx, client, ghub, config, issuePR, pr)
 		if err != nil {
 			return err
 		}

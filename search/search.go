@@ -54,9 +54,7 @@ func findIssues(ctx context.Context, client *github.Client, query string, search
 		if err != nil {
 			return nil, err
 		}
-		for _, issue := range issuesSearchResult.Issues {
-			allIssues = append(allIssues, issue)
-		}
+		allIssues = append(allIssues, issuesSearchResult.Issues...)
 		if resp.NextPage == 0 {
 			break
 		}

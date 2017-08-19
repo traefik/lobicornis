@@ -34,7 +34,10 @@ func Process(ghub *gh.GHub, pr *github.PullRequest, ssh bool, gitHubToken string
 		return err
 	}
 
-	os.Chdir(dir)
+	err = os.Chdir(dir)
+	if err != nil {
+		return err
+	}
 
 	tempDir, _ := os.Getwd()
 	log.Println(tempDir)
@@ -51,11 +54,8 @@ func Process(ghub *gh.GHub, pr *github.PullRequest, ssh bool, gitHubToken string
 
 	output, err := updatePR(ghub, pr, mainRemote, dryRun, debug)
 	log.Println(output)
-	if err != nil {
-		return err
-	}
 
-	return nil
+	return err
 }
 
 func configureGitUserInfo(gitUserName string, gitUserEmail string) error {

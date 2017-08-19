@@ -25,18 +25,18 @@ func updatePR(ghub *gh.GHub, pr *github.PullRequest, mainRemote string, dryRun b
 		log.Printf("Rebase PR #%d", pr.GetNumber())
 
 		//rebase
-		output, err := rebasePR(pr, mainRemote, debug)
-		if err != nil {
-			log.Print(err)
+		output, errRebase := rebasePR(pr, mainRemote, debug)
+		if errRebase != nil {
+			log.Print(errRebase)
 			return output, fmt.Errorf("PR #%d: failed to rebase:\n %s", pr.GetNumber(), output)
 		}
 	} else {
 		log.Printf("Merge PR #%d", pr.GetNumber())
 
 		// merge
-		output, err := mergeBaseHeadIntoPR(pr, mainRemote, debug)
-		if err != nil {
-			log.Print(err)
+		output, errMerge := mergeBaseHeadIntoPR(pr, mainRemote, debug)
+		if errMerge != nil {
+			log.Print(errMerge)
 			return output, fmt.Errorf("PR #%d: failed to merge base HEAD:\n %s", pr.GetNumber(), output)
 		}
 	}

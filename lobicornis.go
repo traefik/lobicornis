@@ -46,16 +46,12 @@ func main() {
 				config.GitHubToken = os.Getenv("GITHUB_TOKEN")
 			}
 
-			required(config.GitHubToken, "token")
-			required(config.Owner, "owner")
-			required(config.RepositoryName, "repo-name")
-			required(config.DefaultMergeMethod, "merge-method")
+			err := validateConfig(config)
+			if err != nil {
+				log.Fatal(err)
+			}
 
-			required(config.LabelMarkers.NeedMerge, "need-merge")
-			required(config.LabelMarkers.MergeInProgress, "merge-in-progress")
-			required(config.LabelMarkers.NeedHumanMerge, "need-human-merge")
-
-			err := launch(config)
+			err = launch(config)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -74,6 +70,35 @@ func launch(config *core.Configuration) error {
 	}
 
 	return core.Execute(*config)
+}
+
+func validateConfig(config *core.Configuration) error {
+	err := required(config.GitHubToken, "token")
+	if err != nil {
+		return err
+	}
+	err = required(config.Owner, "owner")
+	if err != nil {
+		return err
+	}
+	err = required(config.RepositoryName, "repo-name")
+	if err != nil {
+		return err
+	}
+	err = required(config.DefaultMergeMethod, "merge-method")
+	if err != nil {
+		return err
+	}
+
+	err = required(config.LabelMarkers.NeedMerge, "need-merge")
+	if err != nil {
+		return err
+	}
+	err = required(config.LabelMarkers.MergeInProgress, "merge-in-progress")
+	if err != nil {
+		return err
+	}
+	return required(config.LabelMarkers.NeedHumanMerge, "need-human-merge")
 }
 
 func required(field string, fieldName string) error {
