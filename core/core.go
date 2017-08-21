@@ -162,6 +162,10 @@ func process(ctx context.Context, client *github.Client, config Configuration, i
 
 	// Need to be up to date?
 	if needUpdate {
+		if !pr.GetMaintainerCanModify() {
+			return fmt.Errorf("PR #%d: the contributor doesn't allow maintainer modification (GitHub option)", prNumber)
+		}
+
 		ok, err := ghub.IsUpToDateBranch(pr)
 		if err != nil {
 			return err
@@ -201,7 +205,6 @@ func updatePR(ghub *gh.GHub, config Configuration, issuePR *github.Issue, pr *gi
 		if err != nil {
 			log.Println(err)
 		}
-		// if
 		err = ghub.RemoveLabel(issuePR, config.Owner, config.RepositoryName, config.LabelMarkers.MergeInProgress)
 		if err != nil {
 			log.Println(err)
