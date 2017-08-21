@@ -59,11 +59,14 @@ func (g *GHub) RemoveLabel(issue *github.Issue, owner string, repositoryName str
 		}
 
 		resp, err := g.client.Issues.RemoveLabelForIssue(g.ctx, owner, repositoryName, issue.GetNumber(), label)
+
+		if err != nil {
+			return err
+		}
+
 		if resp.StatusCode != http.StatusOK {
 			return fmt.Errorf("Failed to remove label %s. Status code: %d", label, resp.StatusCode)
 		}
-
-		return err
 	}
 	return nil
 }
@@ -78,11 +81,15 @@ func (g *GHub) AddLabels(issue *github.Issue, owner string, repositoryName strin
 
 	_, resp, err := g.client.Issues.AddLabelsToIssue(g.ctx, owner, repositoryName, issue.GetNumber(), labels)
 
+	if err != nil {
+		return err
+	}
+
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("Failed to add labels %v. Status code: %d", labels, resp.StatusCode)
 	}
 
-	return err
+	return nil
 }
 
 // AddComment add a comment on a PR
@@ -91,11 +98,15 @@ func (g *GHub) AddComment(pr *github.PullRequest, msg string) error {
 
 	_, resp, err := g.client.Issues.CreateComment(g.ctx, pr.Base.Repo.Owner.GetLogin(), pr.Base.Repo.GetName(), pr.GetNumber(), comment)
 
+	if err != nil {
+		return err
+	}
+
 	if resp.StatusCode != http.StatusCreated {
 		return fmt.Errorf("Failed to add comment %s. Status code: %d", msg, resp.StatusCode)
 	}
 
-	return err
+	return nil
 }
 
 func hasLabel(issue *github.Issue, label string) bool {
