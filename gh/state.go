@@ -66,31 +66,19 @@ func (g *GHub) HasReviewsApprove(pr *github.PullRequest, minReview int) error {
 // IsUpToDateBranch check if a PR is up to date
 func (g *GHub) IsUpToDateBranch(pr *github.PullRequest) (bool, error) {
 
-	firstPRCommit, err := g.FindFirstCommit(pr)
+	cc, _, err := g.client.Repositories.CompareCommits(g.ctx,
+		pr.Base.Repo.Owner.GetLogin(), pr.Base.Repo.GetName(),
+		pr.Base.GetRef(), fmt.Sprintf("%s:%s", pr.Head.User.GetLogin(), pr.Head.GetRef()))
 	if err != nil {
 		return false, err
 	}
 
-	if len(firstPRCommit.Parents) > 1 {
-		log.Println("WARN: the PR first commit have several parents:", firstPRCommit.Parents)
+	if g.debug {
+		log.Println("Merge Base Commit:", cc.MergeBaseCommit.GetSHA())
+		log.Println("Behind By:", cc.GetBehindBy())
 	}
 
-	mergeBaseSHA := firstPRCommit.Parents[0].GetSHA()
-
-	branch := pr.Base.GetRef()
-
-	ref, _, err := g.client.Git.GetRef(
-		g.ctx,
-		pr.Base.Repo.Owner.GetLogin(),
-		pr.Base.Repo.GetName(),
-		fmt.Sprintf("heads/%s", branch))
-	if err != nil {
-		return false, err
-	}
-
-	branchHeadSHA := ref.Object.GetSHA()
-
-	return mergeBaseSHA == branchHeadSHA, nil
+	return cc.GetBehindBy() == 0, nil
 }
 
 // GetStatus provide checks status (CI)

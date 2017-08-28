@@ -79,7 +79,7 @@ func process(ctx context.Context, client *github.Client, config Configuration, i
 		return err
 	}
 
-	ghub := gh.NewGHub(ctx, client, config.DryRun)
+	ghub := gh.NewGHub(ctx, client, config.DryRun, config.Debug)
 
 	prNumber := pr.GetNumber()
 

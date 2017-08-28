@@ -24,11 +24,12 @@ type GHub struct {
 	ctx    context.Context
 	client *github.Client
 	dryRun bool
+	debug  bool
 }
 
 // NewGHub create a new GHub
-func NewGHub(ctx context.Context, client *github.Client, dryRun bool) *GHub {
-	return &GHub{ctx: ctx, client: client, dryRun: dryRun}
+func NewGHub(ctx context.Context, client *github.Client, dryRun bool, debug bool) *GHub {
+	return &GHub{ctx: ctx, client: client, dryRun: dryRun, debug: debug}
 }
 
 // FindFirstCommit find the first commit of a PR
