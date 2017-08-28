@@ -163,7 +163,7 @@ func process(ctx context.Context, client *github.Client, config Configuration, i
 	// Need to be up to date?
 	if needUpdate {
 
-		if !pr.GetMaintainerCanModify() {
+		if !pr.GetMaintainerCanModify() && !isOnMainRepository(pr) {
 
 			repo, _, err := client.Repositories.Get(ctx, config.Owner, config.RepositoryName)
 			if err != nil {
@@ -327,4 +327,8 @@ func getMergeMethod(issuePR *github.Issue, config Configuration) (string, error)
 	}
 
 	return config.DefaultMergeMethod, nil
+}
+
+func isOnMainRepository(pr *github.PullRequest) bool {
+	return pr.Base.Repo.GetGitURL() == pr.Head.Repo.GetGitURL()
 }
