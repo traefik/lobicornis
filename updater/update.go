@@ -58,7 +58,7 @@ func updatePR(ghub *gh.GHub, pr *github.PullRequest, mainRemote string, dryRun b
 
 func getUpdateAction(ghub *gh.GHub, pr *github.PullRequest) (string, error) {
 	// find the first commit of the PR
-	firstCommitSHA, err := ghub.FindFirstCommitSHA(pr)
+	firstCommit, err := ghub.FindFirstCommit(pr)
 	if err != nil {
 		return "", fmt.Errorf("PR #%d: unable to find the first commit: %v", pr.GetNumber(), err)
 	}
@@ -67,7 +67,7 @@ func getUpdateAction(ghub *gh.GHub, pr *github.PullRequest) (string, error) {
 	output, err := git.Raw("log", func(g *types.Cmd) {
 		g.AddOptions("--oneline")
 		g.AddOptions("--merges")
-		g.AddOptions(fmt.Sprintf("%s^..HEAD", firstCommitSHA))
+		g.AddOptions(fmt.Sprintf("%s^..HEAD", firstCommit.GetSHA()))
 	})
 	if err != nil {
 		log.Println(output)

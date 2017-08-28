@@ -3,6 +3,7 @@ package gh
 import (
 	"errors"
 	"fmt"
+	"log"
 
 	"github.com/google/go-github/github"
 )
@@ -65,6 +66,17 @@ func (g *GHub) HasReviewsApprove(pr *github.PullRequest, minReview int) error {
 // IsUpToDateBranch check if a PR is up to date
 func (g *GHub) IsUpToDateBranch(pr *github.PullRequest) (bool, error) {
 
+	firstPRCommit, err := g.FindFirstCommit(pr)
+	if err != nil {
+		return false, err
+	}
+
+	if len(firstPRCommit.Parents) > 1 {
+		log.Println("WARN: the PR first commit have several parents:", firstPRCommit.Parents)
+	}
+
+	mergeBaseSHA := firstPRCommit.Parents[0].GetSHA()
+
 	branch := pr.Base.GetRef()
 
 	ref, _, err := g.client.Git.GetRef(
@@ -76,10 +88,9 @@ func (g *GHub) IsUpToDateBranch(pr *github.PullRequest) (bool, error) {
 		return false, err
 	}
 
-	prSHA := pr.Base.GetSHA()
 	branchHeadSHA := ref.Object.GetSHA()
 
-	return prSHA == branchHeadSHA, nil
+	return mergeBaseSHA == branchHeadSHA, nil
 }
 
 // GetStatus provide checks status (CI)

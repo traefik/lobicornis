@@ -31,8 +31,8 @@ func NewGHub(ctx context.Context, client *github.Client, dryRun bool) *GHub {
 	return &GHub{ctx: ctx, client: client, dryRun: dryRun}
 }
 
-// FindFirstCommitSHA find the first commit SHA of a PR
-func (g *GHub) FindFirstCommitSHA(pr *github.PullRequest) (string, error) {
+// FindFirstCommit find the first commit of a PR
+func (g *GHub) FindFirstCommit(pr *github.PullRequest) (*github.RepositoryCommit, error) {
 	options := &github.ListOptions{
 		PerPage: 1,
 	}
@@ -43,10 +43,10 @@ func (g *GHub) FindFirstCommitSHA(pr *github.PullRequest) (string, error) {
 		pr.GetNumber(),
 		options)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return commits[0].GetSHA(), nil
+	return commits[0], nil
 }
 
 // RemoveLabel remove a label on an issue (PR)
