@@ -52,7 +52,7 @@ func (g *GHub) FindFirstCommit(pr *github.PullRequest) (*github.RepositoryCommit
 
 // RemoveLabel remove a label on an issue (PR)
 func (g *GHub) RemoveLabel(issue *github.Issue, owner string, repositoryName string, label string) error {
-	if hasLabel(issue, label) {
+	if HasLabel(issue, label) {
 		log.Printf("Remove label: %s. Dry run: %v", label, g.dryRun)
 
 		if g.dryRun {
@@ -66,7 +66,7 @@ func (g *GHub) RemoveLabel(issue *github.Issue, owner string, repositoryName str
 		}
 
 		if resp.StatusCode != http.StatusOK {
-			return fmt.Errorf("Failed to remove label %s. Status code: %d", label, resp.StatusCode)
+			return fmt.Errorf("failed to remove label %s. Status code: %d", label, resp.StatusCode)
 		}
 	}
 	return nil
@@ -87,7 +87,7 @@ func (g *GHub) AddLabels(issue *github.Issue, owner string, repositoryName strin
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("Failed to add labels %v. Status code: %d", labels, resp.StatusCode)
+		return fmt.Errorf("failed to add labels %v. Status code: %d", labels, resp.StatusCode)
 	}
 
 	return nil
@@ -104,13 +104,13 @@ func (g *GHub) AddComment(pr *github.PullRequest, msg string) error {
 	}
 
 	if resp.StatusCode != http.StatusCreated {
-		return fmt.Errorf("Failed to add comment %s. Status code: %d", msg, resp.StatusCode)
+		return fmt.Errorf("failed to add comment %s. Status code: %d", msg, resp.StatusCode)
 	}
 
 	return nil
 }
 
-func hasLabel(issue *github.Issue, label string) bool {
+func HasLabel(issue *github.Issue, label string) bool {
 	for _, lbl := range issue.Labels {
 		if lbl.GetName() == label {
 			return true

@@ -61,27 +61,16 @@ func Test_getMergeMethod(t *testing.T) {
 		},
 	}
 
-	for _, test := range testCases {
+	for i, test := range testCases {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 
-			var labels []github.Label
+			issue := makeIssueWithLabels(test.labels, i)
 
-			for _, labelName := range test.labels {
-				labels = append(labels, github.Label{
-					Name: github.String(labelName),
-				})
-			}
+			labelMarkers := &LabelMarkers{MergeMethodPrefix: test.mergeMethodPrefix}
 
-			issue := &github.Issue{Labels: labels}
-
-			config := Configuration{
-				DefaultMergeMethod: test.defaultMergeMethod,
-				MergeMethodPrefix:  test.mergeMethodPrefix,
-			}
-
-			method, err := getMergeMethod(issue, config)
+			method, err := getMergeMethod(issue, labelMarkers, test.defaultMergeMethod)
 
 			if test.expectedError && err == nil {
 				t.Fatalf("Got no error, expected an error.")
@@ -95,4 +84,63 @@ func Test_getMergeMethod(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_getMinReview(t *testing.T) {
+
+	testCases := []struct {
+		name              string
+		config            Configuration
+		labels            []string
+		expectedMinReview int
+	}{
+		{
+			name: "with light review label",
+			config: Configuration{
+				MinReview:      3,
+				MinLightReview: 1,
+				LabelMarkers: &LabelMarkers{
+					LightReview: "bot/light-review",
+				},
+			},
+			labels:            []string{"bot/light-review"},
+			expectedMinReview: 1,
+		},
+		{
+			name: "without light review label",
+			config: Configuration{
+				MinReview:      3,
+				MinLightReview: 1,
+				LabelMarkers: &LabelMarkers{
+					LightReview: "bot/light-review",
+				},
+			},
+			expectedMinReview: 3,
+		},
+	}
+
+	for i, test := range testCases {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			issue := makeIssueWithLabels(test.labels, i)
+
+			minReview := getMinReview(test.config, issue)
+
+			if minReview != test.expectedMinReview {
+				t.Errorf("Got %d, want %d.", minReview, test.expectedMinReview)
+			}
+		})
+	}
+}
+
+func makeIssueWithLabels(labelNames []string, issueNumber int) *github.Issue {
+	var labels []github.Label
+	for _, labelName := range labelNames {
+		labels = append(labels, github.Label{
+			Name: github.String(labelName),
+		})
+	}
+	return &github.Issue{Labels: labels, Number: github.Int(issueNumber)}
 }

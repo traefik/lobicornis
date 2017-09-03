@@ -44,7 +44,7 @@ func searchIssuePR(ctx context.Context, client *github.Client, config Configurat
 		return nil, err
 	}
 	if len(issuesMIP) > 1 {
-		return nil, fmt.Errorf("Illegal state: multiple PR with the label: %s", config.LabelMarkers.MergeInProgress)
+		return nil, fmt.Errorf("illegal state: multiple PR with the label: %s", config.LabelMarkers.MergeInProgress)
 	}
 
 	var issue *github.Issue
@@ -83,9 +83,9 @@ func process(ctx context.Context, client *github.Client, config Configuration, i
 
 	prNumber := pr.GetNumber()
 
-	err = ghub.HasReviewsApprove(pr, config.MinReview)
+	err = ghub.HasReviewsApprove(pr, getMinReview(config, issuePR))
 	if err != nil {
-		log.Printf("PR #%d: needs more reviews: %v", prNumber, err)
+		log.Printf("PR #%d: Needs more reviews: %v", prNumber, err)
 
 		errLabel := ghub.AddLabels(issuePR, config.Owner, config.RepositoryName, config.LabelMarkers.NeedHumanMerge)
 		if errLabel != nil {
@@ -101,7 +101,7 @@ func process(ctx context.Context, client *github.Client, config Configuration, i
 
 	status, err := ghub.GetStatus(pr)
 	if err != nil {
-		log.Printf("checks status: %v", err)
+		log.Printf("PR #%d: Checks status: %v", prNumber, err)
 
 		errLabel := ghub.AddLabels(issuePR, config.Owner, config.RepositoryName, config.LabelMarkers.NeedHumanMerge)
 		if errLabel != nil {
@@ -144,7 +144,7 @@ func process(ctx context.Context, client *github.Client, config Configuration, i
 			log.Println(errLabel)
 		}
 
-		log.Printf("conflicts must be resolve in the PR #%d", prNumber)
+		log.Printf("PR #%d: Conflicts must be resolve in the PR.", prNumber)
 		return nil
 	}
 
@@ -210,7 +210,7 @@ func process(ctx context.Context, client *github.Client, config Configuration, i
 }
 
 func updatePR(ghub *gh.GHub, config Configuration, issuePR *github.Issue, pr *github.PullRequest) error {
-	fmt.Printf("UPDATE: PR #%d\n", issuePR.GetNumber())
+	log.Printf("PR #%d: UPDATE", issuePR.GetNumber())
 
 	err := ghub.AddLabels(issuePR, config.Owner, config.RepositoryName, config.LabelMarkers.MergeInProgress)
 	if err != nil {
@@ -234,14 +234,14 @@ func updatePR(ghub *gh.GHub, config Configuration, issuePR *github.Issue, pr *gi
 
 func mergePR(ctx context.Context, client *github.Client, ghub *gh.GHub, config Configuration, issuePR *github.Issue, pr *github.PullRequest) error {
 
-	mergeMethod, err := getMergeMethod(issuePR, config)
+	mergeMethod, err := getMergeMethod(issuePR, config.LabelMarkers, config.DefaultMergeMethod)
 	if err != nil {
 		return err
 	}
 
 	prNumber := issuePR.GetNumber()
 
-	fmt.Printf("MERGE(%s): PR #%d\n", mergeMethod, prNumber)
+	log.Printf("PR #%d: MERGE(%s)\n", prNumber, mergeMethod)
 
 	err = ghub.RemoveLabel(issuePR, config.Owner, config.RepositoryName, config.LabelMarkers.MergeInProgress)
 	if err != nil {
@@ -277,15 +277,15 @@ func mergePR(ctx context.Context, client *github.Client, ghub *gh.GHub, config C
 	if err != nil {
 		log.Println(err)
 	}
-	err = ghub.RemoveLabel(issuePR, config.Owner, config.RepositoryName, config.MergeMethodPrefix+gh.MergeMethodSquash)
+	err = ghub.RemoveLabel(issuePR, config.Owner, config.RepositoryName, config.LabelMarkers.MergeMethodPrefix+gh.MergeMethodSquash)
 	if err != nil {
 		log.Println(err)
 	}
-	err = ghub.RemoveLabel(issuePR, config.Owner, config.RepositoryName, config.MergeMethodPrefix+gh.MergeMethodMerge)
+	err = ghub.RemoveLabel(issuePR, config.Owner, config.RepositoryName, config.LabelMarkers.MergeMethodPrefix+gh.MergeMethodMerge)
 	if err != nil {
 		log.Println(err)
 	}
-	err = ghub.RemoveLabel(issuePR, config.Owner, config.RepositoryName, config.MergeMethodPrefix+gh.MergeMethodRebase)
+	err = ghub.RemoveLabel(issuePR, config.Owner, config.RepositoryName, config.LabelMarkers.MergeMethodPrefix+gh.MergeMethodRebase)
 	if err != nil {
 		log.Println(err)
 	}
@@ -298,37 +298,45 @@ func mergePR(ctx context.Context, client *github.Client, ghub *gh.GHub, config C
 	return nil
 }
 
-func getMergeMethod(issuePR *github.Issue, config Configuration) (string, error) {
+func getMergeMethod(issuePR *github.Issue, markers *LabelMarkers, defaultMergeMethod string) (string, error) {
 
-	if len(config.MergeMethodPrefix) != 0 {
+	if len(markers.MergeMethodPrefix) != 0 {
 		var labels []string
 		for _, lbl := range issuePR.Labels {
-			if strings.HasPrefix(lbl.GetName(), config.MergeMethodPrefix) {
+			if strings.HasPrefix(lbl.GetName(), markers.MergeMethodPrefix) {
 				labels = append(labels, lbl.GetName())
 			}
 		}
 
 		if len(labels) == 0 {
-			return config.DefaultMergeMethod, nil
+			return defaultMergeMethod, nil
 		}
 
 		if len(labels) > 1 {
-			return "", fmt.Errorf("PR #%d: too many custom merge method labels: %v", issuePR, labels)
+			return "", fmt.Errorf("PR #%d: too many custom merge method labels: %v", issuePR.GetNumber(), labels)
 		}
 
 		switch labels[0] {
-		case config.MergeMethodPrefix + gh.MergeMethodSquash:
+		case markers.MergeMethodPrefix + gh.MergeMethodSquash:
 			return gh.MergeMethodSquash, nil
-		case config.MergeMethodPrefix + gh.MergeMethodMerge:
+		case markers.MergeMethodPrefix + gh.MergeMethodMerge:
 			return gh.MergeMethodMerge, nil
-		case config.MergeMethodPrefix + gh.MergeMethodRebase:
+		case markers.MergeMethodPrefix + gh.MergeMethodRebase:
 			return gh.MergeMethodRebase, nil
 		}
 	}
 
-	return config.DefaultMergeMethod, nil
+	return defaultMergeMethod, nil
 }
 
 func isOnMainRepository(pr *github.PullRequest) bool {
 	return pr.Base.Repo.GetGitURL() == pr.Head.Repo.GetGitURL()
+}
+
+// getMinReview Get minimal number of review for an issue.
+func getMinReview(config Configuration, issue *github.Issue) int {
+	if config.MinLightReview != 0 && gh.HasLabel(issue, config.LabelMarkers.LightReview) {
+		return config.MinLightReview
+	}
+	return config.MinReview
 }
