@@ -10,7 +10,7 @@ type Configuration struct {
 	DryRun             bool          `long:"dry-run" description:"Dry run mode."`
 	Debug              bool          `long:"debug" description:"Debug mode."`
 	SSH                bool          `description:"Use SSH instead HTTPS."`
-	DefaultMergeMethod string        `long:"merge-method" description:"Default merge method.(merge|squash|rebase)"`
+	DefaultMergeMethod string        `long:"merge-method" description:"Default merge method. (merge|squash|rebase)"`
 	LabelMarkers       *LabelMarkers `long:"marker" description:"GitHub Labels."`
 	CheckNeedUpToDate  bool          `long:"check-up-to-date" description:"Use GitHub repository configuration to check the need to be up-to-date."`
 	ForceNeedUpToDate  bool          `long:"force-up-to-date" description:"Force need up-to-date. (check-up-to-date must be false)"`
@@ -27,4 +27,5 @@ type LabelMarkers struct {
 	MergeInProgress   string `long:"merge-in-progress" description:"Label use when the bot update the PR (merge/rebase)."`
 	MergeMethodPrefix string `long:"merge-method-prefix" description:"Use to override default merge method for a PR."`
 	LightReview       string `long:"light-review" description:"Label use when a pull request need a lower minimal review as default."`
+	NoMerge           string `long:"no-merge" description:"Label use when a PR must not be merge."`
 }

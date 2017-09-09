@@ -110,6 +110,7 @@ func (g *GHub) AddComment(pr *github.PullRequest, msg string) error {
 	return nil
 }
 
+// HasLabel checks if an issue has a specific label
 func HasLabel(issue *github.Issue, label string) bool {
 	for _, lbl := range issue.Labels {
 		if lbl.GetName() == label {

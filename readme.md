@@ -23,6 +23,7 @@ Flags:
     --marker.merge-method-prefix Use to override default merge method for a PR.                          (default "bot/merge-method-")
     --marker.need-human-merge    Label use when the bot cannot perform a merge.                          (default "bot/need-human-merge")
     --marker.need-merge          Label use when you want the bot perform a merge.                        (default "status/3-needs-merge")
+    --marker.no-merge            Label use when a PR must not be merge.                                  (default "bot/no-merge")
     --merge-method               Default merge method.(merge|squash|rebase)                              (default "squash")
     --min-light-review           Minimal number of review (light review).                                (default "0")
     --min-review                 Minimal number of review.                                               (default "1")

@@ -38,7 +38,7 @@ func searchIssuePR(ctx context.Context, client *github.Client, config Configurat
 
 	issuesMIP, err := search.FindOpenPR(ctx, client, config.Owner, config.RepositoryName, config.Debug,
 		search.WithLabels(config.LabelMarkers.NeedMerge, config.LabelMarkers.MergeInProgress),
-		search.WithExcludedLabels(config.LabelMarkers.NeedHumanMerge),
+		search.WithExcludedLabels(config.LabelMarkers.NeedHumanMerge, config.LabelMarkers.NoMerge),
 		search.Cond(config.MinReview > 0, search.WithReviewApproved))
 	if err != nil {
 		return nil, err
@@ -55,7 +55,7 @@ func searchIssuePR(ctx context.Context, client *github.Client, config Configurat
 	} else {
 		issues, err := search.FindOpenPR(ctx, client, config.Owner, config.RepositoryName, config.Debug,
 			search.WithLabels(config.LabelMarkers.NeedMerge),
-			search.WithExcludedLabels(config.LabelMarkers.NeedHumanMerge),
+			search.WithExcludedLabels(config.LabelMarkers.NeedHumanMerge, config.LabelMarkers.NoMerge),
 			search.Cond(config.MinReview > 0, search.WithReviewApproved))
 		if err != nil {
 			return nil, err
@@ -253,27 +253,31 @@ func mergePR(ctx context.Context, client *github.Client, ghub *gh.GHub, config C
 			MergeMethod: mergeMethod,
 			CommitTitle: pr.GetTitle(),
 		}
-		result, _, err := client.PullRequests.Merge(ctx, config.Owner, config.RepositoryName, prNumber, "", mergeOptions)
-		if err != nil {
-			log.Println(err)
+		result, _, errMerge := client.PullRequests.Merge(ctx, config.Owner, config.RepositoryName, prNumber, "", mergeOptions)
+		if errMerge != nil {
+			log.Println(errMerge)
 		}
 
 		log.Println(result.GetMessage())
 
 		if !result.GetMerged() {
-			err = ghub.AddLabels(issuePR, config.Owner, config.RepositoryName, config.LabelMarkers.NeedHumanMerge)
-			if err != nil {
-				log.Println(err)
+			errLabel := ghub.AddLabels(issuePR, config.Owner, config.RepositoryName, config.LabelMarkers.NeedHumanMerge)
+			if errLabel != nil {
+				log.Println(errLabel)
 			}
-			err := ghub.RemoveLabel(issuePR, config.Owner, config.RepositoryName, config.LabelMarkers.MergeInProgress)
-			if err != nil {
-				log.Println(err)
+			errLabel = ghub.RemoveLabel(issuePR, config.Owner, config.RepositoryName, config.LabelMarkers.MergeInProgress)
+			if errLabel != nil {
+				log.Println(errLabel)
 			}
 			return fmt.Errorf("failed to merge PR #%d", prNumber)
 		}
 	}
 
 	err = ghub.RemoveLabel(issuePR, config.Owner, config.RepositoryName, config.LabelMarkers.NeedMerge)
+	if err != nil {
+		log.Println(err)
+	}
+	err = ghub.RemoveLabel(issuePR, config.Owner, config.RepositoryName, config.LabelMarkers.LightReview)
 	if err != nil {
 		log.Println(err)
 	}

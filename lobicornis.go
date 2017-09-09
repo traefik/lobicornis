@@ -23,6 +23,7 @@ func main() {
 			MergeInProgress:   "status/4-merge-in-progress",
 			MergeMethodPrefix: "bot/merge-method-",
 			LightReview:       "bot/light-review",
+			NoMerge:           "bot/no-merge",
 		},
 		ForceNeedUpToDate: true,
 		ServerPort:        80,
@@ -96,6 +97,10 @@ func validateConfig(config *core.Configuration) error {
 		return err
 	}
 	err = required(config.LabelMarkers.MergeInProgress, "merge-in-progress")
+	if err != nil {
+		return err
+	}
+	err = required(config.LabelMarkers.NoMerge, "no-merge")
 	if err != nil {
 		return err
 	}

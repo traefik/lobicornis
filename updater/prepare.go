@@ -29,7 +29,12 @@ func Process(ghub *gh.GHub, pr *github.PullRequest, ssh bool, gitHubToken string
 	baseURL := makeRepositoryURL(pr.Base.Repo.GetGitURL(), ssh, "")
 
 	dir, err := ioutil.TempDir("", "myrmica-lobicornis")
-	defer os.RemoveAll(dir)
+	defer func() {
+		errRemove := os.RemoveAll(dir)
+		if errRemove != nil {
+			log.Println(errRemove)
+		}
+	}()
 	if err != nil {
 		return err
 	}

@@ -13,7 +13,7 @@ RUN make build
 
 FROM alpine:3.6
 RUN apk --update upgrade \
-&& apk --no-cache --no-progress add git \
-&& rm -rf /var/cache/apk/*
+    && apk --no-cache --no-progress add ca-certificates \
+    && rm -rf /var/cache/apk/*
 COPY --from=builder /go/src/github.com/containous/lobicornis/lobicornis .
 CMD ["./lobicornis", "-h"]
