@@ -13,9 +13,10 @@ type Configuration struct {
 	DefaultMergeMethod string        `long:"merge-method" description:"Default merge method. (merge|squash|rebase)"`
 	LabelMarkers       *LabelMarkers `long:"marker" description:"GitHub Labels."`
 	CheckNeedUpToDate  bool          `long:"check-up-to-date" description:"Use GitHub repository configuration to check the need to be up-to-date."`
-	ForceNeedUpToDate  bool          `long:"force-up-to-date" description:"Force need up-to-date. (check-up-to-date must be false)"`
+	ForceNeedUpToDate  bool          `long:"force-up-to-date" description:"Forcing need up-to-date. (check-up-to-date must be false)"`
 	ServerMode         bool          `long:"server" description:"Server mode."`
 	ServerPort         int           `long:"port" description:"Server port."`
+	NeedMilestone      bool          `long:"need-milestone" description:"Forcing PR to have a milestone."`
 	GitUserEmail       string        `long:"git-email" description:"Git user email."`
 	GitUserName        string        `long:"git-name" description:"Git user name."`
 }

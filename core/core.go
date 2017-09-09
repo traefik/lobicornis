@@ -83,6 +83,21 @@ func process(ctx context.Context, client *github.Client, config Configuration, i
 
 	prNumber := pr.GetNumber()
 
+	if config.NeedMilestone && pr.Milestone == nil {
+		log.Printf("PR #%d: Must have a milestone.", prNumber)
+
+		errLabel := ghub.AddLabels(issuePR, config.Owner, config.RepositoryName, config.LabelMarkers.NeedHumanMerge)
+		if errLabel != nil {
+			log.Println(errLabel)
+		}
+		errLabel = ghub.RemoveLabel(issuePR, config.Owner, config.RepositoryName, config.LabelMarkers.MergeInProgress)
+		if errLabel != nil {
+			log.Println(errLabel)
+		}
+
+		return nil
+	}
+
 	err = ghub.HasReviewsApprove(pr, getMinReview(config, issuePR))
 	if err != nil {
 		log.Printf("PR #%d: Needs more reviews: %v", prNumber, err)

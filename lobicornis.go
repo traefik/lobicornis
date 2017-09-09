@@ -27,6 +27,7 @@ func main() {
 		},
 		ForceNeedUpToDate: true,
 		ServerPort:        80,
+		NeedMilestone:     true,
 	}
 
 	defaultPointersConfig := &core.Configuration{LabelMarkers: &core.LabelMarkers{}}

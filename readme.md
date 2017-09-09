@@ -14,7 +14,7 @@ Flags:
     --check-up-to-date           Use GitHub repository configuration to check the need to be up-to-date. (default "false")
     --debug                      Debug mode.                                                             (default "false")
     --dry-run                    Dry run mode.                                                           (default "true")
-    --force-up-to-date           Force need up-to-date. (check-up-to-date must be false)                 (default "true")
+    --force-up-to-date           Forcing need up-to-date. (check-up-to-date must be false)               (default "true")
     --git-email                  Git user email.
     --git-name                   Git user name.
     --marker                     GitHub Labels.                                                          (default "true")
@@ -24,9 +24,10 @@ Flags:
     --marker.need-human-merge    Label use when the bot cannot perform a merge.                          (default "bot/need-human-merge")
     --marker.need-merge          Label use when you want the bot perform a merge.                        (default "status/3-needs-merge")
     --marker.no-merge            Label use when a PR must not be merge.                                  (default "bot/no-merge")
-    --merge-method               Default merge method.(merge|squash|rebase)                              (default "squash")
+    --merge-method               Default merge method. (merge|squash|rebase)                             (default "squash")
     --min-light-review           Minimal number of review (light review).                                (default "0")
     --min-review                 Minimal number of review.                                               (default "1")
+    --need-milestone             Forcing PR to have a milestone.                                         (default "true")
 -o, --owner                      Repository owner. [required]
     --port                       Server port.                                                            (default "80")
 -r, --repo-name                  Repository name. [required]
