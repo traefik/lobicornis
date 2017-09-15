@@ -18,6 +18,8 @@ const (
 	Approved = "APPROVED"
 	// Commented Review state
 	Commented = "COMMENTED"
+	// Dismissed Review state
+	Dismissed = "DISMISSED"
 )
 
 // HasReviewsApprove check if a PR have the required number of review
@@ -40,7 +42,7 @@ func (g *GHub) HasReviewsApprove(pr *github.PullRequest, minReview int) error {
 			}
 
 			for _, review := range reviews {
-				if review.GetState() != Commented {
+				if review.GetState() != Commented && review.GetState() != Dismissed {
 					reviewsState[review.User.GetLogin()] = review.GetState()
 				}
 			}
@@ -51,7 +53,7 @@ func (g *GHub) HasReviewsApprove(pr *github.PullRequest, minReview int) error {
 		}
 
 		if len(reviewsState) < minReview {
-			return fmt.Errorf("Need more review [%v/2]", len(reviewsState))
+			return fmt.Errorf("need more review [%v/2]", len(reviewsState))
 		}
 
 		for login, state := range reviewsState {
