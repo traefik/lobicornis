@@ -137,5 +137,5 @@ func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprint(w, "Scheluded.")
+	fmt.Fprint(w, "Scheluded.\n")
 }
