@@ -20,3 +20,10 @@
 #  name = "github.com/x/y"
 #  version = "2.4.0"
 
+[[override]]
+  name = "google.golang.org/appengine"
+  branch = "master"
+
+[[override]]
+  name = "github.com/ogier/pflag"
+  branch = "master"

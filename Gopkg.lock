@@ -11,13 +11,13 @@
   branch = "master"
   name = "github.com/golang/protobuf"
   packages = ["proto"]
-  revision = "1909bc2f63dc92bb931deace8b8312c4db72d12f"
+  revision = "130e6b02ab059e7b717a096f397c5b60111cae74"
 
 [[projects]]
   branch = "master"
   name = "github.com/google/go-github"
   packages = ["github"]
-  revision = "6afafa88c26eb51b33a8307c944bd2f0ef227af7"
+  revision = "511f540f1887d30b88cee4a2fcd1f2922754acf4"
 
 [[projects]]
   branch = "master"
@@ -28,36 +28,36 @@
 [[projects]]
   name = "github.com/ldez/go-git-cmd-wrapper"
   packages = ["checkout","clone","config","fetch","git","merge","push","rebase","remote","types"]
-  revision = "590e8f3c63daa8e76077fa9c8c2446c421a15ef1"
-  version = "v0.18.0"
+  revision = "3a6a6763670595a30e13ff56624f341ad87a46a2"
+  version = "v0.19.0"
 
 [[projects]]
+  branch = "master"
   name = "github.com/ogier/pflag"
   packages = ["."]
-  revision = "32a05c62658bd1d7c7e75cbc8195de5d585fde0f"
-  version = "v0.0.1"
+  revision = "45c278ab3607870051a2ea9040bb85fcb8557481"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
   packages = ["context","context/ctxhttp"]
-  revision = "1c05540f6879653db88113bc4a2b70aec4bd491f"
+  revision = "0a9397675ba34b2845f758fe3cd68828369c6517"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/oauth2"
   packages = [".","internal"]
-  revision = "9a379c6b3e95a790ffc43293c2a78dee0d7b6e20"
+  revision = "13449ad91cb26cb47661c1b080790392170385fd"
 
 [[projects]]
+  branch = "master"
   name = "google.golang.org/appengine"
-  packages = [".","internal","internal/app_identity","internal/base","internal/datastore","internal/log","internal/modules","internal/remote_api","internal/urlfetch","urlfetch"]
-  revision = "150dc57a1b433e64154302bdc40b6bb8aefa313a"
-  version = "v1.0.0"
+  packages = ["internal","internal/base","internal/datastore","internal/log","internal/remote_api","internal/urlfetch","urlfetch"]
+  revision = "24e4144ec923c2374f6b06610c0df16a9222c3d9"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "2a89884dbf2285ce357fa91551ee7ad5a79edda20b48aa9d4d361b42b67110e3"
+  inputs-digest = "5ee69caa8600976e4f8f091e077e39de6819c4cc64d868639f368ecc5490891f"
   solver-name = "gps-cdcl"
   solver-version = 1
