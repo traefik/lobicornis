@@ -6,17 +6,17 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/containous/lobicornis/types"
 	"github.com/google/go-github/github"
 	"golang.org/x/oauth2"
 )
 
+// Merge Methods
 const (
-	// MergeMethodSquash 'squash' merge method.
-	MergeMethodSquash = "squash"
-	// MergeMethodRebase 'rebase' merge method.
-	MergeMethodRebase = "rebase"
-	// MergeMethodMerge 'merge' merge method.
-	MergeMethodMerge = "merge"
+	MergeMethodSquash      = "squash"
+	MergeMethodRebase      = "rebase"
+	MergeMethodMerge       = "merge"
+	MergeMethodFastForward = "ff"
 )
 
 // GHub GitHub helper
@@ -50,8 +50,29 @@ func (g *GHub) FindFirstCommit(pr *github.PullRequest) (*github.RepositoryCommit
 	return commits[0], nil
 }
 
+// RemoveLabels remove some labels on an issue (PR)
+func (g *GHub) RemoveLabels(issue *github.Issue, repoID types.RepoID, labelsToRemove []string) error {
+	freshIssue, _, err := g.client.Issues.Get(g.ctx, repoID.Owner, repoID.RepositoryName, issue.GetNumber())
+	if err != nil {
+		return err
+	}
+
+	newLabels := []string{}
+	for _, lbl := range freshIssue.Labels {
+		if !contains(labelsToRemove, lbl.GetName()) {
+			newLabels = append(newLabels, lbl.GetName())
+		}
+	}
+
+	if len(freshIssue.Labels) != len(newLabels) {
+		_, _, errLabels := g.client.Issues.ReplaceLabelsForIssue(g.ctx, repoID.Owner, repoID.RepositoryName, issue.GetNumber(), newLabels)
+		return errLabels
+	}
+	return nil
+}
+
 // RemoveLabel remove a label on an issue (PR)
-func (g *GHub) RemoveLabel(issue *github.Issue, owner string, repositoryName string, label string) error {
+func (g *GHub) RemoveLabel(issue *github.Issue, repoID types.RepoID, label string) error {
 	if HasLabel(issue, label) {
 		log.Printf("Remove label: %s. Dry run: %v", label, g.dryRun)
 
@@ -59,7 +80,7 @@ func (g *GHub) RemoveLabel(issue *github.Issue, owner string, repositoryName str
 			return nil
 		}
 
-		resp, err := g.client.Issues.RemoveLabelForIssue(g.ctx, owner, repositoryName, issue.GetNumber(), label)
+		resp, err := g.client.Issues.RemoveLabelForIssue(g.ctx, repoID.Owner, repoID.RepositoryName, issue.GetNumber(), label)
 
 		if err != nil {
 			return err
@@ -73,14 +94,14 @@ func (g *GHub) RemoveLabel(issue *github.Issue, owner string, repositoryName str
 }
 
 // AddLabels add some labels on an issue (PR)
-func (g *GHub) AddLabels(issue *github.Issue, owner string, repositoryName string, labels ...string) error {
+func (g *GHub) AddLabels(issue *github.Issue, repoID types.RepoID, labels ...string) error {
 	log.Printf("Add labels: %s. Dry run: %v", labels, g.dryRun)
 
 	if g.dryRun {
 		return nil
 	}
 
-	_, resp, err := g.client.Issues.AddLabelsToIssue(g.ctx, owner, repositoryName, issue.GetNumber(), labels)
+	_, resp, err := g.client.Issues.AddLabelsToIssue(g.ctx, repoID.Owner, repoID.RepositoryName, issue.GetNumber(), labels)
 
 	if err != nil {
 		return err
@@ -120,6 +141,11 @@ func HasLabel(issue *github.Issue, label string) bool {
 	return false
 }
 
+// IsOnMainRepository checks if the branch of the Pull Request in on the main repository.
+func IsOnMainRepository(pr *github.PullRequest) bool {
+	return pr.Base.Repo.GetGitURL() == pr.Head.Repo.GetGitURL()
+}
+
 // NewGitHubClient create a new GitHub client
 func NewGitHubClient(ctx context.Context, token string) *github.Client {
 	var client *github.Client
@@ -133,4 +159,13 @@ func NewGitHubClient(ctx context.Context, token string) *github.Client {
 		client = github.NewClient(tc)
 	}
 	return client
+}
+
+func contains(values []string, value string) bool {
+	for _, val := range values {
+		if value == val {
+			return true
+		}
+	}
+	return false
 }

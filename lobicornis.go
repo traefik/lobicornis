@@ -10,14 +10,15 @@ import (
 	"github.com/containous/flaeg"
 	"github.com/containous/lobicornis/core"
 	"github.com/containous/lobicornis/gh"
+	"github.com/containous/lobicornis/types"
 )
 
 func main() {
-	config := &core.Configuration{
+	config := &types.Configuration{
 		MinReview:          1,
 		DryRun:             true,
 		DefaultMergeMethod: gh.MergeMethodSquash,
-		LabelMarkers: &core.LabelMarkers{
+		LabelMarkers: &types.LabelMarkers{
 			NeedHumanMerge:    "bot/need-human-merge",
 			NeedMerge:         "status/3-needs-merge",
 			MergeInProgress:   "status/4-merge-in-progress",
@@ -30,52 +31,55 @@ func main() {
 		NeedMilestone:     true,
 	}
 
-	defaultPointersConfig := &core.Configuration{LabelMarkers: &core.LabelMarkers{}}
+	defaultPointersConfig := &types.Configuration{LabelMarkers: &types.LabelMarkers{}}
 	rootCmd := &flaeg.Command{
 		Name:                  "lobicornis",
 		Description:           `Myrmica Lobicornis:  Update and Merge Pull Request from GitHub.`,
-		Config:                config,
 		DefaultPointersConfig: defaultPointersConfig,
-		Run: func() error {
-			if config.Debug {
-				log.Printf("Run Lobicornis command with config : %+v\n", config)
-			}
-
-			if config.DryRun {
-				log.Print("IMPORTANT: you are using the dry-run mode. Use `--dry-run=false` to disable this mode.")
-			}
-
-			if len(config.GitHubToken) == 0 {
-				config.GitHubToken = os.Getenv("GITHUB_TOKEN")
-			}
-
-			err := validateConfig(config)
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			err = launch(config)
-			if err != nil {
-				log.Fatal(err)
-			}
-			return nil
-		},
+		Config:                config,
+		Run:                   runCommand(config),
 	}
 
 	flag := flaeg.New(rootCmd, os.Args[1:])
 	flag.Run()
 }
 
-func launch(config *core.Configuration) error {
+func runCommand(config *types.Configuration) func() error {
+	return func() error {
+		if config.Debug {
+			log.Printf("Run Lobicornis command with config : %+v\n", config)
+		}
+
+		if config.DryRun {
+			log.Print("IMPORTANT: you are using the dry-run mode. Use `--dry-run=false` to disable this mode.")
+		}
+
+		if len(config.GitHubToken) == 0 {
+			config.GitHubToken = os.Getenv("GITHUB_TOKEN")
+		}
+
+		err := validateConfig(config)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		err = launch(config)
+		if err != nil {
+			log.Fatal(err)
+		}
+		return nil
+	}
+}
+
+func launch(config *types.Configuration) error {
 	if config.ServerMode {
 		server := &server{config: config}
 		return server.ListenAndServe()
 	}
-
 	return core.Execute(*config)
 }
 
-func validateConfig(config *core.Configuration) error {
+func validateConfig(config *types.Configuration) error {
 	err := required(config.GitHubToken, "token")
 	if err != nil {
 		return err
@@ -116,7 +120,7 @@ func required(field string, fieldName string) error {
 }
 
 type server struct {
-	config *core.Configuration
+	config *types.Configuration
 }
 
 func (s *server) ListenAndServe() error {

@@ -1,4 +1,16 @@
-package core
+package types
+
+// Remote name.
+const (
+	RemoteOrigin   = "origin"
+	RemoteUpstream = "upstream"
+)
+
+// Merge action.
+const (
+	ActionMerge  = "merge"
+	ActionRebase = "rebase"
+)
 
 // Configuration task configuration.
 type Configuration struct {
@@ -10,7 +22,7 @@ type Configuration struct {
 	DryRun             bool          `long:"dry-run" description:"Dry run mode."`
 	Debug              bool          `long:"debug" description:"Debug mode."`
 	SSH                bool          `description:"Use SSH instead HTTPS."`
-	DefaultMergeMethod string        `long:"merge-method" description:"Default merge method. (merge|squash|rebase)"`
+	DefaultMergeMethod string        `long:"merge-method" description:"Default merge method. (merge|squash|rebase|ff)"`
 	LabelMarkers       *LabelMarkers `long:"marker" description:"GitHub Labels."`
 	CheckNeedUpToDate  bool          `long:"check-up-to-date" description:"Use GitHub repository configuration to check the need to be up-to-date."`
 	ForceNeedUpToDate  bool          `long:"force-up-to-date" description:"Forcing need up-to-date. (check-up-to-date must be false)"`
@@ -29,4 +41,44 @@ type LabelMarkers struct {
 	MergeMethodPrefix string `long:"merge-method-prefix" description:"Use to override default merge method for a PR."`
 	LightReview       string `long:"light-review" description:"Label use when a pull request need a lower minimal review as default."`
 	NoMerge           string `long:"no-merge" description:"Label use when a PR must not be merge."`
+}
+
+// GitConfig Git local configuration.
+type GitConfig struct {
+	GitHubToken string
+	SSH         bool
+	UserName    string
+	Email       string
+}
+
+// Review Review criterion.
+type Review struct {
+	Min      int
+	MinLight int
+}
+
+// Checks Pull request checks.
+type Checks struct {
+	CheckNeedUpToDate bool
+	ForceNeedUpToDate bool
+	NeedMilestone     bool
+	Review            Review
+}
+
+// RepoID Repository identifier.
+type RepoID struct {
+	Owner          string
+	RepositoryName string
+}
+
+// Extra configuration.
+type Extra struct {
+	DryRun bool
+	Debug  bool
+}
+
+// Result Merge result.
+type Result struct {
+	Message string
+	Merged  bool
 }

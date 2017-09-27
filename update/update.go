@@ -1,4 +1,4 @@
-package updater
+package update
 
 import (
 	"fmt"
@@ -6,22 +6,24 @@ import (
 	"strings"
 
 	"github.com/containous/lobicornis/gh"
+	"github.com/containous/lobicornis/types"
 	"github.com/google/go-github/github"
 	"github.com/ldez/go-git-cmd-wrapper/git"
 	"github.com/ldez/go-git-cmd-wrapper/merge"
 	"github.com/ldez/go-git-cmd-wrapper/push"
 	"github.com/ldez/go-git-cmd-wrapper/rebase"
-	"github.com/ldez/go-git-cmd-wrapper/types"
+	gtypes "github.com/ldez/go-git-cmd-wrapper/types"
 )
 
-func updatePR(ghub *gh.GHub, pr *github.PullRequest, mainRemote string, dryRun bool, debug bool) (string, error) {
+// PullRequest Update a pull request.
+func PullRequest(ghub *gh.GHub, pr *github.PullRequest, mainRemote string, dryRun bool, debug bool) (string, error) {
 
 	action, err := getUpdateAction(ghub, pr)
 	if err != nil {
 		return "", err
 	}
 
-	if action == ActionRebase {
+	if action == types.ActionRebase {
 		log.Printf("Rebase PR #%d", pr.GetNumber())
 
 		//rebase
@@ -44,8 +46,8 @@ func updatePR(ghub *gh.GHub, pr *github.PullRequest, mainRemote string, dryRun b
 	// push
 	output, err := git.Push(
 		git.Cond(dryRun, push.DryRun),
-		git.Cond(action == ActionRebase, push.ForceWithLease),
-		push.Remote(remoteOrigin),
+		git.Cond(action == types.ActionRebase, push.ForceWithLease),
+		push.Remote(types.RemoteOrigin),
 		push.RefSpec(pr.Head.GetRef()),
 		git.Debugger(debug))
 	if err != nil {
@@ -64,7 +66,7 @@ func getUpdateAction(ghub *gh.GHub, pr *github.PullRequest) (string, error) {
 	}
 
 	// check if PR contains merges
-	output, err := git.Raw("log", func(g *types.Cmd) {
+	output, err := git.Raw("log", func(g *gtypes.Cmd) {
 		g.AddOptions("--oneline")
 		g.AddOptions("--merges")
 		g.AddOptions(fmt.Sprintf("%s^..HEAD", firstCommit.GetSHA()))
@@ -76,10 +78,10 @@ func getUpdateAction(ghub *gh.GHub, pr *github.PullRequest) (string, error) {
 
 	if len(strings.TrimSpace(output)) > 0 {
 		// action merge
-		return ActionMerge, nil
+		return types.ActionMerge, nil
 	}
 	//action rebase
-	return ActionRebase, nil
+	return types.ActionRebase, nil
 }
 
 func rebasePR(pr *github.PullRequest, remoteName string, debug bool) (string, error) {

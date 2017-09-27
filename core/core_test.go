@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/containous/lobicornis/gh"
+	"github.com/containous/lobicornis/types"
 	"github.com/google/go-github/github"
 )
 
@@ -46,6 +47,13 @@ func Test_getMergeMethod(t *testing.T) {
 			expectedMergeMethod: gh.MergeMethodRebase,
 		},
 		{
+			name:                "use custom label for ff",
+			labels:              []string{"foo", "bar", "go-ff"},
+			defaultMergeMethod:  gh.MergeMethodSquash,
+			mergeMethodPrefix:   "go-",
+			expectedMergeMethod: gh.MergeMethodFastForward,
+		},
+		{
 			name:                "unknown custom label with prefix",
 			labels:              []string{"foo", "bar", "go-run"},
 			defaultMergeMethod:  gh.MergeMethodSquash,
@@ -68,7 +76,7 @@ func Test_getMergeMethod(t *testing.T) {
 
 			issue := makeIssueWithLabels(test.labels, i)
 
-			labelMarkers := &LabelMarkers{MergeMethodPrefix: test.mergeMethodPrefix}
+			labelMarkers := &types.LabelMarkers{MergeMethodPrefix: test.mergeMethodPrefix}
 
 			method, err := getMergeMethod(issue, labelMarkers, test.defaultMergeMethod)
 
@@ -90,30 +98,31 @@ func Test_getMinReview(t *testing.T) {
 
 	testCases := []struct {
 		name              string
-		config            Configuration
+		review            types.Review
+		markers           *types.LabelMarkers
 		labels            []string
 		expectedMinReview int
 	}{
 		{
 			name: "with light review label",
-			config: Configuration{
-				MinReview:      3,
-				MinLightReview: 1,
-				LabelMarkers: &LabelMarkers{
-					LightReview: "bot/light-review",
-				},
+			review: types.Review{
+				Min:      3,
+				MinLight: 1,
+			},
+			markers: &types.LabelMarkers{
+				LightReview: "bot/light-review",
 			},
 			labels:            []string{"bot/light-review"},
 			expectedMinReview: 1,
 		},
 		{
 			name: "without light review label",
-			config: Configuration{
-				MinReview:      3,
-				MinLightReview: 1,
-				LabelMarkers: &LabelMarkers{
-					LightReview: "bot/light-review",
-				},
+			review: types.Review{
+				Min:      3,
+				MinLight: 1,
+			},
+			markers: &types.LabelMarkers{
+				LightReview: "bot/light-review",
 			},
 			expectedMinReview: 3,
 		},
@@ -126,7 +135,7 @@ func Test_getMinReview(t *testing.T) {
 
 			issue := makeIssueWithLabels(test.labels, i)
 
-			minReview := getMinReview(test.config, issue)
+			minReview := getMinReview(issue, test.review, test.markers)
 
 			if minReview != test.expectedMinReview {
 				t.Errorf("Got %d, want %d.", minReview, test.expectedMinReview)

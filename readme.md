@@ -24,7 +24,7 @@ Flags:
     --marker.need-human-merge    Label use when the bot cannot perform a merge.                          (default "bot/need-human-merge")
     --marker.need-merge          Label use when you want the bot perform a merge.                        (default "status/3-needs-merge")
     --marker.no-merge            Label use when a PR must not be merge.                                  (default "bot/no-merge")
-    --merge-method               Default merge method. (merge|squash|rebase)                             (default "squash")
+    --merge-method               Default merge method. (merge|squash|rebase|ff)                          (default "squash")
     --min-light-review           Minimal number of review (light review).                                (default "0")
     --min-review                 Minimal number of review.                                               (default "1")
     --need-milestone             Forcing PR to have a milestone.                                         (default "true")
@@ -33,7 +33,7 @@ Flags:
 -r, --repo-name                  Repository name. [required]
     --server                     Server mode.                                                            (default "false")
     --ssh                        Use SSH instead HTTPS.                                                  (default "false")
--t, --token                      GitHub Token. [required]
+-t, --token                      GitHub Token. [required]                                                
 -h, --help                       Print Help (this message) and exit
 ```
 
