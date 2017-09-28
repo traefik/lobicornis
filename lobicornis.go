@@ -34,7 +34,7 @@ func main() {
 	defaultPointersConfig := &types.Configuration{LabelMarkers: &types.LabelMarkers{}}
 	rootCmd := &flaeg.Command{
 		Name:                  "lobicornis",
-		Description:           `Myrmica Lobicornis:  Update and Merge Pull Request from GitHub.`,
+		Description:           `Myrmica Lobicornis: Update and Merge Pull Request from GitHub.`,
 		DefaultPointersConfig: defaultPointersConfig,
 		Config:                config,
 		Run:                   runCommand(config),
@@ -141,5 +141,5 @@ func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprint(w, "Scheluded.\n")
+	fmt.Fprint(w, "Myrmica Lobicornis: Scheluded.\n")
 }

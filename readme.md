@@ -5,7 +5,7 @@
 
 
 ```bash
-Myrmica Lobicornis:  Update and Merge Pull Request from GitHub.
+Myrmica Lobicornis: Update and Merge Pull Request from GitHub.
 
 Usage: lobicornis [--flag=flag_argument] [-f[flag_argument]] ...     set flag_argument to flag(s)
    or: lobicornis [--flag[=true|false| ]] [-f[true|false| ]] ...     set true/false to boolean flag(s)
