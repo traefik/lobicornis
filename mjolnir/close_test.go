@@ -19,9 +19,16 @@ func Test_parseIssueFixes(t *testing.T) {
 			expectedNumbers: []int{},
 		},
 		{
-			name: "valid issue numbers",
+			name: "valid issue numbers coma",
 			text: `
 	Fixes #13 #14, #15,#16,
+`,
+			expectedNumbers: []int{13, 14, 15, 16},
+		},
+		{
+			name: "valid issue numbers space",
+			text: `
+	Fixes #13 #14 #15 #16
 `,
 			expectedNumbers: []int{13, 14, 15, 16},
 		},
@@ -31,6 +38,20 @@ func Test_parseIssueFixes(t *testing.T) {
 	Fixes #13#14,#15,#16,
 `,
 			expectedNumbers: []int{},
+		},
+		{
+			name: "french style",
+			text: `
+	Fixes : #13,#14,#15,#16,
+`,
+			expectedNumbers: []int{13, 14, 15, 16},
+		},
+		{
+			name: "valid issue numbers coma and :",
+			text: `
+	Fixes: #13,#14,#15,#16,
+`,
+			expectedNumbers: []int{13, 14, 15, 16},
 		},
 	}
 

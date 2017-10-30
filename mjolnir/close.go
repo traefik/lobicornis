@@ -6,6 +6,7 @@ import (
 	"log"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/google/go-github/github"
 )
@@ -75,7 +76,7 @@ func addComment(ctx context.Context, client *github.Client, owner string, reposi
 func parseIssueFixes(text string) []int {
 	var issueNumbers []int
 
-	submatch := globalFixesIssueRE.FindStringSubmatch(text)
+	submatch := globalFixesIssueRE.FindStringSubmatch(strings.Replace(text, ":", "", -1))
 
 	if len(submatch) != 0 {
 		issuesRaw := fixesIssueRE.Split(submatch[1], -1)
