@@ -61,41 +61,41 @@ func Execute(config types.Configuration) error {
 }
 
 func searchIssuePR(ctx context.Context, client *github.Client, repoID types.RepoID, markers *types.LabelMarkers, review types.Review, debug bool) (*github.Issue, error) {
-
-	issuesMIP, err := search.FindOpenPR(ctx, client, repoID.Owner, repoID.RepositoryName, debug,
+	// Find Merge In Progress
+	issues, err := search.FindOpenPR(ctx, client, repoID.Owner, repoID.RepositoryName, debug,
 		search.WithLabels(markers.NeedMerge, markers.MergeInProgress),
 		search.WithExcludedLabels(markers.NeedHumanMerge, markers.NoMerge),
 		search.Cond(review.Min > 0, search.WithReviewApproved))
 	if err != nil {
 		return nil, err
 	}
-	if len(issuesMIP) > 1 {
-		return nil, fmt.Errorf("illegal state: multiple PR with the label: %s", markers.MergeInProgress)
-	}
 
-	var issue *github.Issue
-
-	if len(issuesMIP) == 1 {
-		issue = &issuesMIP[0]
-		log.Printf("Find PR #%d, updated at %v", issue.GetNumber(), issue.GetUpdatedAt())
-	} else {
-		issues, err := search.FindOpenPR(ctx, client, repoID.Owner, repoID.RepositoryName, debug,
+	switch len(issues) {
+	case 0:
+		// Find Need Merge
+		issues, err = search.FindOpenPR(ctx, client, repoID.Owner, repoID.RepositoryName, debug,
 			search.WithLabels(markers.NeedMerge),
 			search.WithExcludedLabels(markers.NeedHumanMerge, markers.NoMerge),
 			search.Cond(review.Min > 0, search.WithReviewApproved))
 		if err != nil {
 			return nil, err
 		}
-
-		if len(issues) != 0 {
-			for _, issue := range issues {
-				log.Printf("Find PR #%d, updated at %v", issue.GetNumber(), issue.GetUpdatedAt())
-			}
-			issue = &issues[0]
-		}
+	case 1:
+		issue := &issues[0]
+		log.Printf("Find PR #%d, updated at %v", issue.GetNumber(), issue.GetUpdatedAt())
+		return issue, nil
+	default:
+		return nil, fmt.Errorf("illegal state: multiple PR with the label: %s", markers.MergeInProgress)
 	}
 
-	return issue, nil
+	if len(issues) != 0 {
+		for _, issue := range issues {
+			log.Printf("Find PR #%d, updated at %v", issue.GetNumber(), issue.GetUpdatedAt())
+		}
+		return &issues[0], nil
+	}
+
+	return nil, nil
 }
 
 func process(ctx context.Context, client *github.Client, issuePR *github.Issue,
