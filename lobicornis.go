@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/containous/flaeg"
 	"github.com/containous/lobicornis/core"
@@ -24,6 +25,7 @@ func main() {
 			NeedMerge:         "status/3-needs-merge",
 			MergeInProgress:   "status/4-merge-in-progress",
 			MergeMethodPrefix: "bot/merge-method-",
+			MergeRetryPrefix:  "bot/merge-retry-",
 			LightReview:       "bot/light-review",
 			NoMerge:           "bot/no-merge",
 		},
@@ -32,7 +34,13 @@ func main() {
 		NeedMilestone:     true,
 	}
 
-	defaultPointersConfig := &types.Configuration{LabelMarkers: &types.LabelMarkers{}}
+	defaultPointersConfig := &types.Configuration{
+		LabelMarkers: &types.LabelMarkers{},
+		Retry: &types.Retry{
+			Interval: flaeg.Duration(1 * time.Minute),
+		},
+	}
+
 	rootCmd := &flaeg.Command{
 		Name:                  "lobicornis",
 		Description:           `Myrmica Lobicornis: Update and Merge Pull Request from GitHub.`,

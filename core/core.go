@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/containous/lobicornis/gh"
 	"github.com/containous/lobicornis/search"
@@ -44,7 +46,7 @@ func Execute(config types.Configuration) error {
 		DryRun: config.DryRun,
 	}
 
-	issue, err := searchIssuePR(ctx, client, repoID, config.LabelMarkers, checks.Review, extra.Debug)
+	issue, err := searchIssuePR(ctx, client, repoID, config.LabelMarkers, checks.Review, config.Retry, extra.Debug)
 	if err != nil {
 		return err
 	}
@@ -52,7 +54,7 @@ func Execute(config types.Configuration) error {
 	if issue == nil {
 		log.Println("Nothing to merge.")
 	} else {
-		err = process(ctx, client, issue, repoID, config.LabelMarkers, gitConfig, checks, config.DefaultMergeMethod, extra)
+		err = process(ctx, client, issue, repoID, config.LabelMarkers, gitConfig, checks, config.Retry, config.DefaultMergeMethod, extra)
 		if err != nil {
 			return err
 		}
@@ -60,7 +62,9 @@ func Execute(config types.Configuration) error {
 	return nil
 }
 
-func searchIssuePR(ctx context.Context, client *github.Client, repoID types.RepoID, markers *types.LabelMarkers, review types.Review, debug bool) (*github.Issue, error) {
+func searchIssuePR(ctx context.Context, client *github.Client, repoID types.RepoID,
+	markers *types.LabelMarkers, review types.Review, retry *types.Retry, debug bool) (*github.Issue, error) {
+
 	// Find Merge In Progress
 	issues, err := search.FindOpenPR(ctx, client, repoID.Owner, repoID.RepositoryName, debug,
 		search.WithLabels(markers.NeedMerge, markers.MergeInProgress),
@@ -71,6 +75,26 @@ func searchIssuePR(ctx context.Context, client *github.Client, repoID types.Repo
 	}
 
 	switch len(issues) {
+	case 1, 2:
+		if retry != nil && retry.Number > 0 {
+			// find retry
+			var issuesRetry []github.Issue
+			for _, issue := range issues {
+				if len(gh.FindLabelPrefix(&issue, markers.MergeRetryPrefix)) > 0 {
+					issuesRetry = append(issuesRetry, issue)
+				}
+			}
+
+			if len(issuesRetry) > 0 {
+				for _, issue := range issuesRetry {
+					if time.Since(issue.GetUpdatedAt()) > time.Duration(retry.Interval) {
+						log.Printf("Find PR #%d, updated at %v", issue.GetNumber(), issue.GetUpdatedAt())
+						return &issue, nil
+					}
+				}
+				return nil, nil
+			}
+		}
 	case 0:
 		// Find Need Merge
 		issues, err = search.FindOpenPR(ctx, client, repoID.Owner, repoID.RepositoryName, debug,
@@ -80,8 +104,6 @@ func searchIssuePR(ctx context.Context, client *github.Client, repoID types.Repo
 		if err != nil {
 			return nil, err
 		}
-	case 1:
-		// continue
 	default:
 		return nil, fmt.Errorf("illegal state: multiple PR with the label: %s", markers.MergeInProgress)
 	}
@@ -100,7 +122,7 @@ func searchIssuePR(ctx context.Context, client *github.Client, repoID types.Repo
 // nolint: gocyclo
 func process(ctx context.Context, client *github.Client, issuePR *github.Issue,
 	repoID types.RepoID, markers *types.LabelMarkers, gitConfig types.GitConfig,
-	checks types.Checks, defaultMergeMethod string, extra types.Extra) error {
+	checks types.Checks, retry *types.Retry, defaultMergeMethod string, extra types.Extra) error {
 
 	pr, _, err := client.PullRequests.Get(ctx, repoID.Owner, repoID.RepositoryName, issuePR.GetNumber())
 	if err != nil {
@@ -145,16 +167,7 @@ func process(ctx context.Context, client *github.Client, issuePR *github.Issue,
 	status, err := ghub.GetStatus(pr)
 	if err != nil {
 		log.Printf("PR #%d: Checks status: %v", prNumber, err)
-
-		errLabel := ghub.AddLabels(issuePR, repoID, markers.NeedHumanMerge)
-		if errLabel != nil {
-			log.Println(errLabel)
-		}
-		errLabel = ghub.RemoveLabel(issuePR, repoID, markers.MergeInProgress)
-		if errLabel != nil {
-			log.Println(errLabel)
-		}
-
+		manageRetryLabel(ghub, repoID, issuePR, retry.OnStatuses, retry.Number, markers)
 		return nil
 	}
 
@@ -184,16 +197,8 @@ func process(ctx context.Context, client *github.Client, issuePR *github.Issue,
 	}
 
 	if !pr.GetMergeable() {
-		errLabel := ghub.AddLabels(issuePR, repoID, markers.NeedHumanMerge)
-		if errLabel != nil {
-			log.Println(errLabel)
-		}
-		errLabel = ghub.RemoveLabel(issuePR, repoID, markers.MergeInProgress)
-		if errLabel != nil {
-			log.Println(errLabel)
-		}
-
 		log.Printf("PR #%d: Conflicts must be resolve in the PR.", prNumber)
+		manageRetryLabel(ghub, repoID, issuePR, retry.OnMergeable, retry.Number, markers)
 		return nil
 	}
 
@@ -305,4 +310,70 @@ func getMinReview(issue *github.Issue, review types.Review, markers *types.Label
 		return review.MinLight
 	}
 	return review.Min
+}
+
+func extractRetryNumber(label, prefix string) int {
+	raw := strings.TrimPrefix(label, prefix)
+
+	number, err := strconv.Atoi(raw)
+	if err != nil {
+		// TODO manage error
+		log.Println(err)
+		return 0
+	}
+	return number
+}
+
+func manageRetryLabel(ghub *gh.GHub, repoID types.RepoID, issuePR *github.Issue, retry bool, retryNumber int, markers *types.LabelMarkers) {
+	if retry && retryNumber > 0 {
+		currentRetryLabel := gh.FindLabelPrefix(issuePR, markers.MergeRetryPrefix)
+		if len(currentRetryLabel) > 0 {
+			err := ghub.RemoveLabel(issuePR, repoID, currentRetryLabel)
+			if err != nil {
+				log.Println(err)
+			}
+
+			number := extractRetryNumber(currentRetryLabel, markers.MergeRetryPrefix)
+
+			if number >= retryNumber {
+				// Need Human
+				errLabel := ghub.AddLabels(issuePR, repoID, markers.NeedHumanMerge)
+				if errLabel != nil {
+					log.Println(errLabel)
+				}
+				errLabel = ghub.RemoveLabel(issuePR, repoID, markers.MergeInProgress)
+				if errLabel != nil {
+					log.Println(errLabel)
+				}
+			} else {
+				// retry
+				newRetryLabel := markers.MergeRetryPrefix + strconv.Itoa(number+1)
+				errLabel := ghub.AddLabels(issuePR, repoID, newRetryLabel)
+				if errLabel != nil {
+					log.Println(errLabel)
+				}
+			}
+		} else {
+			// first retry
+			newRetryLabel := markers.MergeRetryPrefix + strconv.Itoa(1)
+			errLabel := ghub.AddLabels(issuePR, repoID, newRetryLabel)
+			if errLabel != nil {
+				log.Println(errLabel)
+			}
+			errLabel = ghub.AddLabels(issuePR, repoID, markers.MergeInProgress)
+			if errLabel != nil {
+				log.Println(errLabel)
+			}
+		}
+	} else {
+		// Need Human
+		errLabel := ghub.AddLabels(issuePR, repoID, markers.NeedHumanMerge)
+		if errLabel != nil {
+			log.Println(errLabel)
+		}
+		errLabel = ghub.RemoveLabel(issuePR, repoID, markers.MergeInProgress)
+		if errLabel != nil {
+			log.Println(errLabel)
+		}
+	}
 }
