@@ -28,6 +28,7 @@ Flags:
     --min-light-review           Minimal number of review (light review).                                (default "0")
     --min-review                 Minimal number of review.                                               (default "1")
     --need-milestone             Forcing PR to have a milestone.                                         (default "true")
+    --stop-on-failed-tests       Put need-human-merge label if tests failed                              (default "true")
 -o, --owner                      Repository owner. [required]
     --port                       Server port.                                                            (default "80")
 -r, --repo-name                  Repository name. [required]
