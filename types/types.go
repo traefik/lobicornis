@@ -12,6 +12,9 @@ const (
 	ActionRebase = "rebase"
 )
 
+// NoOption empty struct.
+type NoOption struct{}
+
 // Configuration task configuration.
 type Configuration struct {
 	Owner              string        `short:"o" description:"Repository owner. [required]"`

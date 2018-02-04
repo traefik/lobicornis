@@ -14,7 +14,6 @@ import (
 )
 
 func TestPullRequestForUpdate(t *testing.T) {
-
 	testCases := []struct {
 		name                string
 		sameRepo            bool
@@ -95,7 +94,6 @@ func TestPullRequestForUpdate(t *testing.T) {
 }
 
 func TestPullRequestForMerge(t *testing.T) {
-
 	testCases := []struct {
 		name                string
 		sameRepo            bool

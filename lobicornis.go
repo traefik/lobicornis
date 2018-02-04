@@ -10,6 +10,7 @@ import (
 	"github.com/containous/flaeg"
 	"github.com/containous/lobicornis/core"
 	"github.com/containous/lobicornis/gh"
+	"github.com/containous/lobicornis/meta"
 	"github.com/containous/lobicornis/types"
 )
 
@@ -41,7 +42,25 @@ func main() {
 	}
 
 	flag := flaeg.New(rootCmd, os.Args[1:])
-	flag.Run()
+
+	// version
+	versionCmd := &flaeg.Command{
+		Name:                  "version",
+		Description:           "Display the version.",
+		Config:                &types.NoOption{},
+		DefaultPointersConfig: &types.NoOption{},
+		Run: func() error {
+			meta.DisplayVersion()
+			return nil
+		},
+	}
+
+	flag.AddCommand(versionCmd)
+
+	err := flag.Run()
+	if err != nil {
+		log.Printf("Error: %v\n", err)
+	}
 }
 
 func runCommand(config *types.Configuration) func() error {

@@ -96,6 +96,8 @@ func searchIssuePR(ctx context.Context, client *github.Client, repoID types.Repo
 	return nil, nil
 }
 
+// TODO simplify this function
+// nolint: gocyclo
 func process(ctx context.Context, client *github.Client, issuePR *github.Issue,
 	repoID types.RepoID, markers *types.LabelMarkers, gitConfig types.GitConfig,
 	checks types.Checks, defaultMergeMethod string, extra types.Extra) error {
