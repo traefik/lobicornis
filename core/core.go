@@ -81,9 +81,7 @@ func searchIssuePR(ctx context.Context, client *github.Client, repoID types.Repo
 			return nil, err
 		}
 	case 1:
-		issue := &issues[0]
-		log.Printf("Find PR #%d, updated at %v", issue.GetNumber(), issue.GetUpdatedAt())
-		return issue, nil
+		// continue
 	default:
 		return nil, fmt.Errorf("illegal state: multiple PR with the label: %s", markers.MergeInProgress)
 	}
