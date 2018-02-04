@@ -10,6 +10,10 @@ Myrmica Lobicornis: Update and Merge Pull Request from GitHub.
 Usage: lobicornis [--flag=flag_argument] [-f[flag_argument]] ...     set flag_argument to flag(s)
    or: lobicornis [--flag[=true|false| ]] [-f[true|false| ]] ...     set true/false to boolean flag(s)
 
+Available Commands:
+	version                                            Display the version.
+Use "lobicornis [command] --help" for more information about a command.
+
 Flags:
     --check-up-to-date           Use GitHub repository configuration to check the need to be up-to-date. (default "false")
     --debug                      Debug mode.                                                             (default "false")
@@ -21,6 +25,7 @@ Flags:
     --marker.light-review        Label use when a pull request need a lower minimal review as default.   (default "bot/light-review")
     --marker.merge-in-progress   Label use when the bot update the PR (merge/rebase).                    (default "status/4-merge-in-progress")
     --marker.merge-method-prefix Use to override default merge method for a PR.                          (default "bot/merge-method-")
+    --marker.merge-retry-prefix  Use to manage merge retry.                                              (default "bot/merge-retry-")
     --marker.need-human-merge    Label use when the bot cannot perform a merge.                          (default "bot/need-human-merge")
     --marker.need-merge          Label use when you want the bot perform a merge.                        (default "status/3-needs-merge")
     --marker.no-merge            Label use when a PR must not be merge.                                  (default "bot/no-merge")
@@ -31,9 +36,14 @@ Flags:
 -o, --owner                      Repository owner. [required]
     --port                       Server port.                                                            (default "80")
 -r, --repo-name                  Repository name. [required]
+    --retry                      Merge retry configuration.                                              (default "false")
+    --retry.interval             Time between retry.                                                     (default "1m0s")
+    --retry.number               Number of retry before failed.                                          (default "0")
+    --retry.on-mergeable         Retry on PR mergeable state (GitHub information).                       (default "false")
+    --retry.on-statuses          Retry on GitHub checks (aka statuses).                                  (default "false")
     --server                     Server mode.                                                            (default "false")
     --ssh                        Use SSH instead HTTPS.                                                  (default "false")
--t, --token                      GitHub Token. [required]                                                
+-t, --token                      GitHub Token. [required]
 -h, --help                       Print Help (this message) and exit
 ```
 

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/containous/lobicornis/types"
 	"github.com/google/go-github/github"
@@ -57,7 +58,7 @@ func (g *GHub) RemoveLabels(issue *github.Issue, repoID types.RepoID, labelsToRe
 		return err
 	}
 
-	newLabels := []string{}
+	var newLabels []string
 	for _, lbl := range freshIssue.Labels {
 		if !contains(labelsToRemove, lbl.GetName()) {
 			newLabels = append(newLabels, lbl.GetName())
@@ -65,6 +66,10 @@ func (g *GHub) RemoveLabels(issue *github.Issue, repoID types.RepoID, labelsToRe
 	}
 
 	if len(freshIssue.Labels) != len(newLabels) {
+		if newLabels == nil {
+			// Due to go-github/GitHub API constraint
+			newLabels = []string{}
+		}
 		_, _, errLabels := g.client.Issues.ReplaceLabelsForIssue(g.ctx, repoID.Owner, repoID.RepositoryName, issue.GetNumber(), newLabels)
 		return errLabels
 	}
@@ -139,6 +144,16 @@ func HasLabel(issue *github.Issue, label string) bool {
 		}
 	}
 	return false
+}
+
+// FindLabelPrefix Find an issue with a specific label prefix
+func FindLabelPrefix(issue *github.Issue, prefix string) string {
+	for _, lbl := range issue.Labels {
+		if strings.HasPrefix(lbl.GetName(), prefix) {
+			return lbl.GetName()
+		}
+	}
+	return ""
 }
 
 // IsOnMainRepository checks if the branch of the Pull Request in on the main repository.
