@@ -33,6 +33,7 @@ func Execute(config types.Configuration) error {
 		NeedMilestone:     config.NeedMilestone,
 		ForceNeedUpToDate: config.ForceNeedUpToDate,
 		CheckNeedUpToDate: config.CheckNeedUpToDate,
+		StopOnFailedTests: config.StopOnFailedTests,
 		Review: types.Review{
 			Min:      config.MinReview,
 			MinLight: config.MinLightReview,
@@ -145,19 +146,20 @@ func process(ctx context.Context, client *github.Client, issuePR *github.Issue,
 	status, err := ghub.GetStatus(pr)
 	if err != nil {
 		log.Printf("PR #%d: Checks status: %v", prNumber, err)
-
-		errLabel := ghub.AddLabels(issuePR, repoID, markers.NeedHumanMerge)
-		if errLabel != nil {
-			log.Println(errLabel)
+		if checks.StopOnFailedTests {
+			errLabel := ghub.AddLabels(issuePR, repoID, markers.NeedHumanMerge)
+			if errLabel != nil {
+				log.Println(errLabel)
+			}
+			errLabel = ghub.RemoveLabel(issuePR, repoID, markers.MergeInProgress)
+			if errLabel != nil {
+				log.Println(errLabel)
+			}
+		} else {
+			log.Println("Tests failed but StopOnFailedTests is false. waiting for tests to pass.")
 		}
-		errLabel = ghub.RemoveLabel(issuePR, repoID, markers.MergeInProgress)
-		if errLabel != nil {
-			log.Println(errLabel)
-		}
-
 		return nil
 	}
-
 	if status == gh.Pending {
 		// skip
 		log.Println("State: pending. Waiting for the CI.")

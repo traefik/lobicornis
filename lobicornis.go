@@ -29,6 +29,7 @@ func main() {
 		ForceNeedUpToDate: true,
 		ServerPort:        80,
 		NeedMilestone:     true,
+		StopOnFailedTests: true,
 	}
 
 	defaultPointersConfig := &types.Configuration{LabelMarkers: &types.LabelMarkers{}}

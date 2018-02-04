@@ -31,6 +31,7 @@ type Configuration struct {
 	NeedMilestone      bool          `long:"need-milestone" description:"Forcing PR to have a milestone."`
 	GitUserEmail       string        `long:"git-email" description:"Git user email."`
 	GitUserName        string        `long:"git-name" description:"Git user name."`
+	StopOnFailedTests  bool			 `long:"stop-on-failed-tests" description:"Put NeedHumanMerge tag if test failed"`
 }
 
 // LabelMarkers Labels use to control actions.
@@ -62,6 +63,7 @@ type Checks struct {
 	CheckNeedUpToDate bool
 	ForceNeedUpToDate bool
 	NeedMilestone     bool
+	StopOnFailedTests bool
 	Review            Review
 }
 
