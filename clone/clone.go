@@ -49,12 +49,18 @@ func PullRequestForMerge(pr *github.PullRequest, gitConfig types.GitConfig, debu
 
 // PullRequestForUpdate Clone a pull request for an update (rebase)
 func PullRequestForUpdate(pr *github.PullRequest, gitConfig types.GitConfig, debug bool) (string, error) {
+	var unchangedURL string
+	if pr.Base.Repo.GetPrivate() {
+		unchangedURL = makeRepositoryURL(pr.Base.Repo.GetGitURL(), gitConfig.SSH, gitConfig.GitHubToken)
+	} else {
+		unchangedURL = makeRepositoryURL(pr.Base.Repo.GetGitURL(), gitConfig.SSH, "")
+	}
 
 	model := prModel{
 		number: pr.GetNumber(),
 		// base
 		unchanged: remoteModel{
-			url: makeRepositoryURL(pr.Base.Repo.GetGitURL(), gitConfig.SSH, ""),
+			url: unchangedURL,
 			ref: pr.Base.GetRef(),
 		},
 		// fork
