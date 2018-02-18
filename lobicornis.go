@@ -13,6 +13,7 @@ import (
 	"github.com/containous/lobicornis/gh"
 	"github.com/containous/lobicornis/meta"
 	"github.com/containous/lobicornis/types"
+	"github.com/ogier/pflag"
 )
 
 func main() {
@@ -66,8 +67,8 @@ func main() {
 	flag.AddCommand(versionCmd)
 
 	err := flag.Run()
-	if err != nil {
-		log.Printf("Error: %v\n", err)
+	if err != nil && err != pflag.ErrHelp {
+		log.Fatalf("Error: %v\n", err)
 	}
 }
 
@@ -87,14 +88,10 @@ func runCommand(config *types.Configuration) func() error {
 
 		err := validateConfig(config)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 
-		err = launch(config)
-		if err != nil {
-			log.Fatal(err)
-		}
-		return nil
+		return launch(config)
 	}
 }
 
