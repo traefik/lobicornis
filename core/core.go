@@ -17,7 +17,7 @@ import (
 // Execute core process
 func Execute(config types.Configuration) error {
 	ctx := context.Background()
-	client := gh.NewGitHubClient(ctx, config.GitHubToken)
+	client := gh.NewGitHubClient(ctx, config.GitHubToken, config.GitHubURL)
 
 	repoID := types.RepoID{
 		Owner:          config.Owner,

@@ -11,7 +11,7 @@ dependencies:
 	dep ensure -v
 
 clean:
-	rm -f cover.out
+	rm -rf dist/ cover.out
 
 build:
 	go build
