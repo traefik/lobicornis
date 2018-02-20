@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"time"
@@ -91,6 +92,11 @@ func runCommand(config *types.Configuration) func() error {
 			return err
 		}
 
+		err = setGitHubURL(config)
+		if err != nil {
+			return err
+		}
+
 		return launch(config)
 	}
 }
@@ -101,6 +107,17 @@ func launch(config *types.Configuration) error {
 		return server.ListenAndServe()
 	}
 	return core.Execute(*config)
+}
+
+func setGitHubURL(config *types.Configuration) error {
+	if len(config.APIURL) > 0 {
+		baseURL, err := url.Parse(config.APIURL)
+		if err != nil {
+			return err
+		}
+		config.GitHubURL = baseURL
+	}
+	return nil
 }
 
 func validateConfig(config *types.Configuration) error {

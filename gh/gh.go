@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/containous/lobicornis/types"
@@ -162,7 +163,7 @@ func IsOnMainRepository(pr *github.PullRequest) bool {
 }
 
 // NewGitHubClient create a new GitHub client
-func NewGitHubClient(ctx context.Context, token string) *github.Client {
+func NewGitHubClient(ctx context.Context, token string, gitHubURL *url.URL) *github.Client {
 	var client *github.Client
 	if len(token) == 0 {
 		client = github.NewClient(nil)
@@ -173,6 +174,11 @@ func NewGitHubClient(ctx context.Context, token string) *github.Client {
 		tc := oauth2.NewClient(ctx, ts)
 		client = github.NewClient(tc)
 	}
+
+	if gitHubURL != nil {
+		client.BaseURL = gitHubURL
+	}
+
 	return client
 }
 

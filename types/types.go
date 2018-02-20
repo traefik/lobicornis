@@ -1,6 +1,8 @@
 package types
 
 import (
+	"net/url"
+
 	"github.com/containous/flaeg"
 )
 
@@ -39,6 +41,8 @@ type Configuration struct {
 	NeedMilestone      bool          `long:"need-milestone" description:"Forcing PR to have a milestone."`
 	GitUserEmail       string        `long:"git-email" description:"Git user email."`
 	GitUserName        string        `long:"git-name" description:"Git user name."`
+	APIURL             string        `long:"github-url" description:"GitHub API URL (GitHub Enterprise) [optional]"`
+	GitHubURL          *url.URL      // related to "github-url"
 }
 
 // LabelMarkers Labels use to control actions.

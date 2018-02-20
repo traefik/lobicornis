@@ -11,7 +11,7 @@ Usage: lobicornis [--flag=flag_argument] [-f[flag_argument]] ...     set flag_ar
    or: lobicornis [--flag[=true|false| ]] [-f[true|false| ]] ...     set true/false to boolean flag(s)
 
 Available Commands:
-	version                                            Display the version.
+        version                                            Display the version.
 Use "lobicornis [command] --help" for more information about a command.
 
 Flags:
@@ -21,6 +21,7 @@ Flags:
     --force-up-to-date           Forcing need up-to-date. (check-up-to-date must be false)               (default "true")
     --git-email                  Git user email.
     --git-name                   Git user name.
+    --github-url                 GitHub API URL (GitHub Enterprise) [optional]
     --marker                     GitHub Labels.                                                          (default "true")
     --marker.light-review        Label use when a pull request need a lower minimal review as default.   (default "bot/light-review")
     --marker.merge-in-progress   Label use when the bot update the PR (merge/rebase).                    (default "status/4-merge-in-progress")
@@ -44,7 +45,7 @@ Flags:
     --server                     Server mode.                                                            (default "false")
     --ssh                        Use SSH instead HTTPS.                                                  (default "false")
 -t, --token                      GitHub Token. [required]
--h, --help                       Print Help (this message) and exit
+-h, --help                       Print Help (this message) and exit 
 ```
 
 ## Description
