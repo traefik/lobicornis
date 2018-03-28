@@ -167,7 +167,14 @@ func process(ctx context.Context, client *github.Client, issuePR *github.Issue,
 	status, err := ghub.GetStatus(pr)
 	if err != nil {
 		log.Printf("PR #%d: Checks status: %v", prNumber, err)
-		manageRetryLabel(ghub, repoID, issuePR, retry.OnStatuses, retry.Number, markers)
+
+		rt := retry != nil && retry.OnStatuses
+		var rtNumber int
+		if retry != nil {
+			rtNumber = retry.Number
+		}
+		manageRetryLabel(ghub, repoID, issuePR, rt, rtNumber, markers)
+
 		return nil
 	}
 
@@ -198,7 +205,14 @@ func process(ctx context.Context, client *github.Client, issuePR *github.Issue,
 
 	if !pr.GetMergeable() {
 		log.Printf("PR #%d: Conflicts must be resolve in the PR.", prNumber)
-		manageRetryLabel(ghub, repoID, issuePR, retry.OnMergeable, retry.Number, markers)
+
+		rt := retry != nil && retry.OnMergeable
+		var rtNumber int
+		if retry != nil {
+			rtNumber = retry.Number
+		}
+		manageRetryLabel(ghub, repoID, issuePR, rt, rtNumber, markers)
+
 		return nil
 	}
 
