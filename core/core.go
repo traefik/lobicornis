@@ -52,7 +52,9 @@ func Execute(config types.Configuration) error {
 	}
 
 	if issue == nil {
-		log.Println("Nothing to merge.")
+		if extra.Debug {
+			log.Println("Nothing to merge.")
+		}
 	} else {
 		err = process(ctx, client, issue, repoID, config.LabelMarkers, gitConfig, checks, config.Retry, config.DefaultMergeMethod, extra)
 		if err != nil {
