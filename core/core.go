@@ -218,6 +218,9 @@ func process(ctx context.Context, client *github.Client, issuePR *github.Issue,
 		return nil
 	}
 
+	rtry := retry != nil && (retry.OnMergeable || retry.OnStatuses)
+	cleanRetryLabel(ghub, repoID, issuePR, rtry, markers)
+
 	// Get status checks
 	var needUpdate bool
 	if checks.CheckNeedUpToDate {
@@ -288,7 +291,6 @@ func process(ctx context.Context, client *github.Client, issuePR *github.Issue,
 }
 
 func getMergeMethod(issuePR *github.Issue, markers *types.LabelMarkers, defaultMergeMethod string) (string, error) {
-
 	if len(markers.MergeMethodPrefix) != 0 {
 		var labels []string
 		for _, lbl := range issuePR.Labels {
@@ -338,6 +340,18 @@ func extractRetryNumber(label, prefix string) int {
 		return 0
 	}
 	return number
+}
+
+func cleanRetryLabel(ghub *gh.GHub, repoID types.RepoID, issuePR *github.Issue, retry bool, markers *types.LabelMarkers) {
+	if retry {
+		currentRetryLabel := gh.FindLabelPrefix(issuePR, markers.MergeRetryPrefix)
+		if len(currentRetryLabel) > 0 {
+			err := ghub.RemoveLabel(issuePR, repoID, currentRetryLabel)
+			if err != nil {
+				log.Println(err)
+			}
+		}
+	}
 }
 
 func manageRetryLabel(ghub *gh.GHub, repoID types.RepoID, issuePR *github.Issue, retry bool, retryNumber int, markers *types.LabelMarkers) {
