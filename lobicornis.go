@@ -155,7 +155,7 @@ func validateConfig(config *types.Configuration) error {
 
 func required(field string, fieldName string) error {
 	if len(field) == 0 {
-		log.Fatalf("%s is mandatory.", fieldName)
+		return fmt.Errorf("%s is mandatory", fieldName)
 	}
 	return nil
 }
@@ -171,7 +171,7 @@ func (s *server) ListenAndServe() error {
 func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		log.Printf("Invalid http method: %s", r.Method)
-		http.Error(w, "405 Method not allowed", http.StatusMethodNotAllowed)
+		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 		return
 	}
 
