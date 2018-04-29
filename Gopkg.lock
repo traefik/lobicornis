@@ -27,7 +27,18 @@
 
 [[projects]]
   name = "github.com/ldez/go-git-cmd-wrapper"
-  packages = ["checkout","clone","config","fetch","git","merge","push","rebase","remote","types"]
+  packages = [
+    "checkout",
+    "clone",
+    "config",
+    "fetch",
+    "git",
+    "merge",
+    "push",
+    "rebase",
+    "remote",
+    "types"
+  ]
   revision = "3a6a6763670595a30e13ff56624f341ad87a46a2"
   version = "v0.19.0"
 
@@ -40,24 +51,38 @@
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
-  packages = ["context","context/ctxhttp"]
+  packages = [
+    "context",
+    "context/ctxhttp"
+  ]
   revision = "0a9397675ba34b2845f758fe3cd68828369c6517"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/oauth2"
-  packages = [".","internal"]
+  packages = [
+    ".",
+    "internal"
+  ]
   revision = "13449ad91cb26cb47661c1b080790392170385fd"
 
 [[projects]]
   branch = "master"
   name = "google.golang.org/appengine"
-  packages = ["internal","internal/base","internal/datastore","internal/log","internal/remote_api","internal/urlfetch","urlfetch"]
+  packages = [
+    "internal",
+    "internal/base",
+    "internal/datastore",
+    "internal/log",
+    "internal/remote_api",
+    "internal/urlfetch",
+    "urlfetch"
+  ]
   revision = "24e4144ec923c2374f6b06610c0df16a9222c3d9"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "5ee69caa8600976e4f8f091e077e39de6819c4cc64d868639f368ecc5490891f"
+  inputs-digest = "cfc7a16c973059047a775915de2ef7b9d4aca6864457d5cf4a143885d04c2ba2"
   solver-name = "gps-cdcl"
   solver-version = 1
