@@ -43,7 +43,7 @@ func TestPullRequestForUpdate(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			defer os.RemoveAll(dir)
+			defer func() { _ = os.RemoveAll(dir) }()
 
 			err = os.Chdir(dir)
 			if err != nil {
@@ -123,7 +123,7 @@ func TestPullRequestForMerge(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			defer os.RemoveAll(dir)
+			defer func() { _ = os.RemoveAll(dir) }()
 
 			err = os.Chdir(dir)
 			if err != nil {
