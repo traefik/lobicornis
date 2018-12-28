@@ -42,7 +42,9 @@ func (g *GHub) HasReviewsApprove(pr *github.PullRequest, minReview int) error {
 			}
 
 			for _, review := range reviews {
-				if review.GetState() != Commented && review.GetState() != Dismissed {
+				if review.GetState() == Dismissed {
+					delete(reviewsState, review.User.GetLogin())
+				} else if review.GetState() != Commented {
 					reviewsState[review.User.GetLogin()] = review.GetState()
 				}
 			}
