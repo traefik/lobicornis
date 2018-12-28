@@ -1,6 +1,7 @@
 package update
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"strings"
@@ -16,9 +17,8 @@ import (
 )
 
 // PullRequest Update a pull request.
-func PullRequest(ghub *gh.GHub, pr *github.PullRequest, mainRemote string, dryRun bool, debug bool) (string, error) {
-
-	action, err := getUpdateAction(ghub, pr)
+func PullRequest(ctx context.Context, ghub *gh.GHub, pr *github.PullRequest, mainRemote string, dryRun bool, debug bool) (string, error) {
+	action, err := getUpdateAction(ctx, ghub, pr)
 	if err != nil {
 		return "", err
 	}
@@ -26,7 +26,7 @@ func PullRequest(ghub *gh.GHub, pr *github.PullRequest, mainRemote string, dryRu
 	if action == types.ActionRebase {
 		log.Printf("Rebase PR #%d", pr.GetNumber())
 
-		//rebase
+		// rebase
 		output, errRebase := rebasePR(pr, mainRemote, debug)
 		if errRebase != nil {
 			log.Print(errRebase)
@@ -58,9 +58,9 @@ func PullRequest(ghub *gh.GHub, pr *github.PullRequest, mainRemote string, dryRu
 	return output, nil
 }
 
-func getUpdateAction(ghub *gh.GHub, pr *github.PullRequest) (string, error) {
+func getUpdateAction(ctx context.Context, ghub *gh.GHub, pr *github.PullRequest) (string, error) {
 	// find the first commit of the PR
-	firstCommit, err := ghub.FindFirstCommit(pr)
+	firstCommit, err := ghub.FindFirstCommit(ctx, pr)
 	if err != nil {
 		return "", fmt.Errorf("PR #%d: unable to find the first commit: %v", pr.GetNumber(), err)
 	}
@@ -80,7 +80,7 @@ func getUpdateAction(ghub *gh.GHub, pr *github.PullRequest) (string, error) {
 		// action merge
 		return types.ActionMerge, nil
 	}
-	//action rebase
+	// action rebase
 	return types.ActionRebase, nil
 }
 

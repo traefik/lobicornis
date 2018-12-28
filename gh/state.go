@@ -1,6 +1,7 @@
 package gh
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -23,7 +24,7 @@ const (
 )
 
 // HasReviewsApprove check if a PR have the required number of review
-func (g *GHub) HasReviewsApprove(pr *github.PullRequest, minReview int) error {
+func (g *GHub) HasReviewsApprove(ctx context.Context, pr *github.PullRequest, minReview int) error {
 	if minReview != 0 {
 
 		owner := pr.Base.Repo.Owner.GetLogin()
@@ -36,7 +37,7 @@ func (g *GHub) HasReviewsApprove(pr *github.PullRequest, minReview int) error {
 
 		reviewsState := make(map[string]string)
 		for {
-			reviews, resp, err := g.client.PullRequests.ListReviews(g.ctx, owner, repositoryName, prNumber, opt)
+			reviews, resp, err := g.client.PullRequests.ListReviews(ctx, owner, repositoryName, prNumber, opt)
 			if err != nil {
 				return err
 			}
@@ -68,9 +69,8 @@ func (g *GHub) HasReviewsApprove(pr *github.PullRequest, minReview int) error {
 }
 
 // IsUpToDateBranch check if a PR is up to date
-func (g *GHub) IsUpToDateBranch(pr *github.PullRequest) (bool, error) {
-
-	cc, _, err := g.client.Repositories.CompareCommits(g.ctx,
+func (g *GHub) IsUpToDateBranch(ctx context.Context, pr *github.PullRequest) (bool, error) {
+	cc, _, err := g.client.Repositories.CompareCommits(ctx,
 		pr.Base.Repo.Owner.GetLogin(), pr.Base.Repo.GetName(),
 		pr.Base.GetRef(), fmt.Sprintf("%s:%s", pr.Head.User.GetLogin(), pr.Head.GetRef()))
 	if err != nil {
@@ -86,13 +86,13 @@ func (g *GHub) IsUpToDateBranch(pr *github.PullRequest) (bool, error) {
 }
 
 // GetStatus provide checks status (CI)
-func (g *GHub) GetStatus(pr *github.PullRequest) (string, error) {
+func (g *GHub) GetStatus(ctx context.Context, pr *github.PullRequest) (string, error) {
 
 	owner := pr.Base.Repo.Owner.GetLogin()
 	repositoryName := pr.Base.Repo.GetName()
 	prRef := pr.Head.GetSHA()
 
-	sts, _, err := g.client.Repositories.GetCombinedStatus(g.ctx, owner, repositoryName, prRef, nil)
+	sts, _, err := g.client.Repositories.GetCombinedStatus(ctx, owner, repositoryName, prRef, nil)
 	if err != nil {
 		return "", err
 	}
@@ -110,7 +110,7 @@ func (g *GHub) GetStatus(pr *github.PullRequest) (string, error) {
 		return sts.GetState(), nil
 	}
 
-	statuses, _, err := g.client.Repositories.ListStatuses(g.ctx, owner, repositoryName, prRef, nil)
+	statuses, _, err := g.client.Repositories.ListStatuses(ctx, owner, repositoryName, prRef, nil)
 	if err != nil {
 		return "", err
 	}

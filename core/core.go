@@ -131,18 +131,18 @@ func process(ctx context.Context, client *github.Client, issuePR *github.Issue,
 		return err
 	}
 
-	ghub := gh.NewGHub(ctx, client, extra.DryRun, extra.Debug)
+	ghub := gh.NewGHub(client, extra.DryRun, extra.Debug)
 
 	prNumber := pr.GetNumber()
 
 	if checks.NeedMilestone && pr.Milestone == nil {
 		log.Printf("PR #%d: Must have a milestone.", prNumber)
 
-		errLabel := ghub.AddLabels(issuePR, repoID, markers.NeedHumanMerge)
+		errLabel := ghub.AddLabels(ctx, issuePR, repoID, markers.NeedHumanMerge)
 		if errLabel != nil {
 			log.Println(errLabel)
 		}
-		errLabel = ghub.RemoveLabel(issuePR, repoID, markers.MergeInProgress)
+		errLabel = ghub.RemoveLabel(ctx, issuePR, repoID, markers.MergeInProgress)
 		if errLabel != nil {
 			log.Println(errLabel)
 		}
@@ -150,15 +150,15 @@ func process(ctx context.Context, client *github.Client, issuePR *github.Issue,
 		return nil
 	}
 
-	err = ghub.HasReviewsApprove(pr, getMinReview(issuePR, checks.Review, markers))
+	err = ghub.HasReviewsApprove(ctx, pr, getMinReview(issuePR, checks.Review, markers))
 	if err != nil {
 		log.Printf("PR #%d: Needs more reviews: %v", prNumber, err)
 
-		errLabel := ghub.AddLabels(issuePR, repoID, markers.NeedHumanMerge)
+		errLabel := ghub.AddLabels(ctx, issuePR, repoID, markers.NeedHumanMerge)
 		if errLabel != nil {
 			log.Println(errLabel)
 		}
-		errLabel = ghub.RemoveLabel(issuePR, repoID, markers.MergeInProgress)
+		errLabel = ghub.RemoveLabel(ctx, issuePR, repoID, markers.MergeInProgress)
 		if errLabel != nil {
 			log.Println(errLabel)
 		}
@@ -166,7 +166,7 @@ func process(ctx context.Context, client *github.Client, issuePR *github.Issue,
 		return nil
 	}
 
-	status, err := ghub.GetStatus(pr)
+	status, err := ghub.GetStatus(ctx, pr)
 	if err != nil {
 		log.Printf("PR #%d: Checks status: %v", prNumber, err)
 
@@ -175,7 +175,7 @@ func process(ctx context.Context, client *github.Client, issuePR *github.Issue,
 		if retry != nil {
 			rtNumber = retry.Number
 		}
-		manageRetryLabel(ghub, repoID, issuePR, rt, rtNumber, markers)
+		manageRetryLabel(ctx, ghub, repoID, issuePR, rt, rtNumber, markers)
 
 		return nil
 	}
@@ -196,7 +196,7 @@ func process(ctx context.Context, client *github.Client, issuePR *github.Issue,
 			markers.MergeMethodPrefix + gh.MergeMethodRebase,
 			markers.MergeMethodPrefix + gh.MergeMethodFastForward,
 		}
-		errLabel := ghub.RemoveLabels(issuePR, repoID, labelsToRemove)
+		errLabel := ghub.RemoveLabels(ctx, issuePR, repoID, labelsToRemove)
 		if errLabel != nil {
 			log.Println(errLabel)
 		}
@@ -213,13 +213,13 @@ func process(ctx context.Context, client *github.Client, issuePR *github.Issue,
 		if retry != nil {
 			rtNumber = retry.Number
 		}
-		manageRetryLabel(ghub, repoID, issuePR, rt, rtNumber, markers)
+		manageRetryLabel(ctx, ghub, repoID, issuePR, rt, rtNumber, markers)
 
 		return nil
 	}
 
 	rtry := retry != nil && (retry.OnMergeable || retry.OnStatuses)
-	cleanRetryLabel(ghub, repoID, issuePR, rtry, markers)
+	cleanRetryLabel(ctx, ghub, repoID, issuePR, rtry, markers)
 
 	// Get status checks
 	var needUpdate bool
@@ -238,7 +238,7 @@ func process(ctx context.Context, client *github.Client, issuePR *github.Issue,
 		return err
 	}
 
-	upToDateBranch, err := ghub.IsUpToDateBranch(pr)
+	upToDateBranch, err := ghub.IsUpToDateBranch(ctx, pr)
 	if err != nil {
 		return err
 	}
@@ -257,11 +257,11 @@ func process(ctx context.Context, client *github.Client, issuePR *github.Issue,
 			}
 
 			if !repo.GetFork() {
-				errLabel := ghub.AddLabels(issuePR, repoID, markers.NeedHumanMerge)
+				errLabel := ghub.AddLabels(ctx, issuePR, repoID, markers.NeedHumanMerge)
 				if errLabel != nil {
 					log.Println(errLabel)
 				}
-				errLabel = ghub.RemoveLabel(issuePR, repoID, markers.MergeInProgress)
+				errLabel = ghub.RemoveLabel(ctx, issuePR, repoID, markers.MergeInProgress)
 				if errLabel != nil {
 					log.Println(errLabel)
 				}
@@ -275,7 +275,7 @@ func process(ctx context.Context, client *github.Client, issuePR *github.Issue,
 				return err
 			}
 		} else {
-			err := updatePR(ghub, issuePR, pr, repoID, markers, gitConfig, extra)
+			err := updatePR(ctx, ghub, issuePR, pr, repoID, markers, gitConfig, extra)
 			if err != nil {
 				return err
 			}
@@ -342,11 +342,11 @@ func extractRetryNumber(label, prefix string) int {
 	return number
 }
 
-func cleanRetryLabel(ghub *gh.GHub, repoID types.RepoID, issuePR *github.Issue, retry bool, markers *types.LabelMarkers) {
+func cleanRetryLabel(ctx context.Context, ghub *gh.GHub, repoID types.RepoID, issuePR *github.Issue, retry bool, markers *types.LabelMarkers) {
 	if retry {
 		currentRetryLabel := gh.FindLabelPrefix(issuePR, markers.MergeRetryPrefix)
 		if len(currentRetryLabel) > 0 {
-			err := ghub.RemoveLabel(issuePR, repoID, currentRetryLabel)
+			err := ghub.RemoveLabel(ctx, issuePR, repoID, currentRetryLabel)
 			if err != nil {
 				log.Println(err)
 			}
@@ -354,11 +354,11 @@ func cleanRetryLabel(ghub *gh.GHub, repoID types.RepoID, issuePR *github.Issue, 
 	}
 }
 
-func manageRetryLabel(ghub *gh.GHub, repoID types.RepoID, issuePR *github.Issue, retry bool, retryNumber int, markers *types.LabelMarkers) {
+func manageRetryLabel(ctx context.Context, ghub *gh.GHub, repoID types.RepoID, issuePR *github.Issue, retry bool, retryNumber int, markers *types.LabelMarkers) {
 	if retry && retryNumber > 0 {
 		currentRetryLabel := gh.FindLabelPrefix(issuePR, markers.MergeRetryPrefix)
 		if len(currentRetryLabel) > 0 {
-			err := ghub.RemoveLabel(issuePR, repoID, currentRetryLabel)
+			err := ghub.RemoveLabel(ctx, issuePR, repoID, currentRetryLabel)
 			if err != nil {
 				log.Println(err)
 			}
@@ -367,18 +367,18 @@ func manageRetryLabel(ghub *gh.GHub, repoID types.RepoID, issuePR *github.Issue,
 
 			if number >= retryNumber {
 				// Need Human
-				errLabel := ghub.AddLabels(issuePR, repoID, markers.NeedHumanMerge)
+				errLabel := ghub.AddLabels(ctx, issuePR, repoID, markers.NeedHumanMerge)
 				if errLabel != nil {
 					log.Println(errLabel)
 				}
-				errLabel = ghub.RemoveLabel(issuePR, repoID, markers.MergeInProgress)
+				errLabel = ghub.RemoveLabel(ctx, issuePR, repoID, markers.MergeInProgress)
 				if errLabel != nil {
 					log.Println(errLabel)
 				}
 			} else {
 				// retry
 				newRetryLabel := markers.MergeRetryPrefix + strconv.Itoa(number+1)
-				errLabel := ghub.AddLabels(issuePR, repoID, newRetryLabel)
+				errLabel := ghub.AddLabels(ctx, issuePR, repoID, newRetryLabel)
 				if errLabel != nil {
 					log.Println(errLabel)
 				}
@@ -386,22 +386,22 @@ func manageRetryLabel(ghub *gh.GHub, repoID types.RepoID, issuePR *github.Issue,
 		} else {
 			// first retry
 			newRetryLabel := markers.MergeRetryPrefix + strconv.Itoa(1)
-			errLabel := ghub.AddLabels(issuePR, repoID, newRetryLabel)
+			errLabel := ghub.AddLabels(ctx, issuePR, repoID, newRetryLabel)
 			if errLabel != nil {
 				log.Println(errLabel)
 			}
-			errLabel = ghub.AddLabels(issuePR, repoID, markers.MergeInProgress)
+			errLabel = ghub.AddLabels(ctx, issuePR, repoID, markers.MergeInProgress)
 			if errLabel != nil {
 				log.Println(errLabel)
 			}
 		}
 	} else {
 		// Need Human
-		errLabel := ghub.AddLabels(issuePR, repoID, markers.NeedHumanMerge)
+		errLabel := ghub.AddLabels(ctx, issuePR, repoID, markers.NeedHumanMerge)
 		if errLabel != nil {
 			log.Println(errLabel)
 		}
-		errLabel = ghub.RemoveLabel(issuePR, repoID, markers.MergeInProgress)
+		errLabel = ghub.RemoveLabel(ctx, issuePR, repoID, markers.MergeInProgress)
 		if errLabel != nil {
 			log.Println(errLabel)
 		}

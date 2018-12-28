@@ -1,6 +1,7 @@
 package core
 
 import (
+	"context"
 	"errors"
 	"io/ioutil"
 	"log"
@@ -13,21 +14,21 @@ import (
 	"github.com/google/go-github/github"
 )
 
-func updatePR(ghub *gh.GHub, issuePR *github.Issue, pr *github.PullRequest, repoID types.RepoID, markers *types.LabelMarkers, gitConfig types.GitConfig, extra types.Extra) error {
+func updatePR(ctx context.Context, ghub *gh.GHub, issuePR *github.Issue, pr *github.PullRequest, repoID types.RepoID, markers *types.LabelMarkers, gitConfig types.GitConfig, extra types.Extra) error {
 	log.Printf("PR #%d: UPDATE", issuePR.GetNumber())
 
-	err := ghub.AddLabels(issuePR, repoID, markers.MergeInProgress)
+	err := ghub.AddLabels(ctx, issuePR, repoID, markers.MergeInProgress)
 	if err != nil {
 		log.Println(err)
 	}
 
-	err = cloneAndUpdate(ghub, pr, gitConfig, extra.DryRun, extra.Debug)
+	err = cloneAndUpdate(ctx, ghub, pr, gitConfig, extra.DryRun, extra.Debug)
 	if err != nil {
-		err = ghub.AddLabels(issuePR, repoID, markers.NeedHumanMerge)
+		err = ghub.AddLabels(ctx, issuePR, repoID, markers.NeedHumanMerge)
 		if err != nil {
 			log.Println(err)
 		}
-		err = ghub.RemoveLabel(issuePR, repoID, markers.MergeInProgress)
+		err = ghub.RemoveLabel(ctx, issuePR, repoID, markers.MergeInProgress)
 		if err != nil {
 			log.Println(err)
 		}
@@ -37,7 +38,7 @@ func updatePR(ghub *gh.GHub, issuePR *github.Issue, pr *github.PullRequest, repo
 }
 
 // Process clone a PR and update if needed.
-func cloneAndUpdate(ghub *gh.GHub, pr *github.PullRequest, gitConfig types.GitConfig, dryRun bool, debug bool) error {
+func cloneAndUpdate(ctx context.Context, ghub *gh.GHub, pr *github.PullRequest, gitConfig types.GitConfig, dryRun bool, debug bool) error {
 	log.Println("Base branch: ", pr.Base.GetRef(), "- Fork branch: ", pr.Head.GetRef())
 
 	dir, err := ioutil.TempDir("", "myrmica-lobicornis")
@@ -68,7 +69,7 @@ func cloneAndUpdate(ghub *gh.GHub, pr *github.PullRequest, gitConfig types.GitCo
 		return err
 	}
 
-	output, err := update.PullRequest(ghub, pr, mainRemote, dryRun, debug)
+	output, err := update.PullRequest(ctx, ghub, pr, mainRemote, dryRun, debug)
 	log.Println(output)
 
 	return err

@@ -182,5 +182,9 @@ func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprint(w, "Myrmica Lobicornis: Scheluded.\n")
+	_, err = fmt.Fprint(w, "Myrmica Lobicornis: Scheluded.\n")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }

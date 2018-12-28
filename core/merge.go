@@ -19,7 +19,7 @@ func mergePR(ctx context.Context, client *github.Client, ghub *gh.GHub, issuePR 
 
 	log.Printf("PR #%d: MERGE(%s)\n", prNumber, mergeMethod)
 
-	err := ghub.RemoveLabel(issuePR, repoID, markers.MergeInProgress)
+	err := ghub.RemoveLabel(ctx, issuePR, repoID, markers.MergeInProgress)
 	if err != nil {
 		log.Println(err)
 	}
@@ -33,11 +33,11 @@ func mergePR(ctx context.Context, client *github.Client, ghub *gh.GHub, issuePR 
 		log.Println(result.Message)
 
 		if !result.Merged {
-			errLabel := ghub.AddLabels(issuePR, repoID, markers.NeedHumanMerge)
+			errLabel := ghub.AddLabels(ctx, issuePR, repoID, markers.NeedHumanMerge)
 			if errLabel != nil {
 				log.Println(errLabel)
 			}
-			errLabel = ghub.RemoveLabel(issuePR, repoID, markers.MergeInProgress)
+			errLabel = ghub.RemoveLabel(ctx, issuePR, repoID, markers.MergeInProgress)
 			if errLabel != nil {
 				log.Println(errLabel)
 			}
@@ -52,7 +52,7 @@ func mergePR(ctx context.Context, client *github.Client, ghub *gh.GHub, issuePR 
 			markers.MergeMethodPrefix + gh.MergeMethodRebase,
 			markers.MergeMethodPrefix + gh.MergeMethodFastForward,
 		}
-		err = ghub.RemoveLabels(issuePR, repoID, labelsToRemove)
+		err = ghub.RemoveLabels(ctx, issuePR, repoID, labelsToRemove)
 		if err != nil {
 			log.Println(err)
 		}

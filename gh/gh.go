@@ -23,25 +23,24 @@ const (
 
 // GHub GitHub helper
 type GHub struct {
-	ctx    context.Context
 	client *github.Client
 	dryRun bool
 	debug  bool
 }
 
 // NewGHub create a new GHub
-func NewGHub(ctx context.Context, client *github.Client, dryRun bool, debug bool) *GHub {
-	return &GHub{ctx: ctx, client: client, dryRun: dryRun, debug: debug}
+func NewGHub(client *github.Client, dryRun bool, debug bool) *GHub {
+	return &GHub{client: client, dryRun: dryRun, debug: debug}
 }
 
 // FindFirstCommit find the first commit of a PR
-func (g *GHub) FindFirstCommit(pr *github.PullRequest) (*github.RepositoryCommit, error) {
+func (g *GHub) FindFirstCommit(ctx context.Context, pr *github.PullRequest) (*github.RepositoryCommit, error) {
 	options := &github.ListOptions{
 		PerPage: 1,
 	}
 
 	commits, _, err := g.client.PullRequests.ListCommits(
-		g.ctx,
+		ctx,
 		pr.Base.Repo.Owner.GetLogin(), pr.Base.Repo.GetName(),
 		pr.GetNumber(),
 		options)
@@ -53,8 +52,8 @@ func (g *GHub) FindFirstCommit(pr *github.PullRequest) (*github.RepositoryCommit
 }
 
 // RemoveLabels remove some labels on an issue (PR)
-func (g *GHub) RemoveLabels(issue *github.Issue, repoID types.RepoID, labelsToRemove []string) error {
-	freshIssue, _, err := g.client.Issues.Get(g.ctx, repoID.Owner, repoID.RepositoryName, issue.GetNumber())
+func (g *GHub) RemoveLabels(ctx context.Context, issue *github.Issue, repoID types.RepoID, labelsToRemove []string) error {
+	freshIssue, _, err := g.client.Issues.Get(ctx, repoID.Owner, repoID.RepositoryName, issue.GetNumber())
 	if err != nil {
 		return err
 	}
@@ -71,14 +70,14 @@ func (g *GHub) RemoveLabels(issue *github.Issue, repoID types.RepoID, labelsToRe
 			// Due to go-github/GitHub API constraint
 			newLabels = []string{}
 		}
-		_, _, errLabels := g.client.Issues.ReplaceLabelsForIssue(g.ctx, repoID.Owner, repoID.RepositoryName, issue.GetNumber(), newLabels)
+		_, _, errLabels := g.client.Issues.ReplaceLabelsForIssue(ctx, repoID.Owner, repoID.RepositoryName, issue.GetNumber(), newLabels)
 		return errLabels
 	}
 	return nil
 }
 
 // RemoveLabel remove a label on an issue (PR)
-func (g *GHub) RemoveLabel(issue *github.Issue, repoID types.RepoID, label string) error {
+func (g *GHub) RemoveLabel(ctx context.Context, issue *github.Issue, repoID types.RepoID, label string) error {
 	if HasLabel(issue, label) {
 		log.Printf("Remove label: %s. Dry run: %v", label, g.dryRun)
 
@@ -86,7 +85,7 @@ func (g *GHub) RemoveLabel(issue *github.Issue, repoID types.RepoID, label strin
 			return nil
 		}
 
-		resp, err := g.client.Issues.RemoveLabelForIssue(g.ctx, repoID.Owner, repoID.RepositoryName, issue.GetNumber(), label)
+		resp, err := g.client.Issues.RemoveLabelForIssue(ctx, repoID.Owner, repoID.RepositoryName, issue.GetNumber(), label)
 
 		if err != nil {
 			return err
@@ -100,14 +99,14 @@ func (g *GHub) RemoveLabel(issue *github.Issue, repoID types.RepoID, label strin
 }
 
 // AddLabels add some labels on an issue (PR)
-func (g *GHub) AddLabels(issue *github.Issue, repoID types.RepoID, labels ...string) error {
+func (g *GHub) AddLabels(ctx context.Context, issue *github.Issue, repoID types.RepoID, labels ...string) error {
 	log.Printf("Add labels: %s. Dry run: %v", labels, g.dryRun)
 
 	if g.dryRun {
 		return nil
 	}
 
-	_, resp, err := g.client.Issues.AddLabelsToIssue(g.ctx, repoID.Owner, repoID.RepositoryName, issue.GetNumber(), labels)
+	_, resp, err := g.client.Issues.AddLabelsToIssue(ctx, repoID.Owner, repoID.RepositoryName, issue.GetNumber(), labels)
 
 	if err != nil {
 		return err
@@ -121,10 +120,10 @@ func (g *GHub) AddLabels(issue *github.Issue, repoID types.RepoID, labels ...str
 }
 
 // AddComment add a comment on a PR
-func (g *GHub) AddComment(pr *github.PullRequest, msg string) error {
+func (g *GHub) AddComment(ctx context.Context, pr *github.PullRequest, msg string) error {
 	comment := &github.IssueComment{Body: github.String(msg)}
 
-	_, resp, err := g.client.Issues.CreateComment(g.ctx, pr.Base.Repo.Owner.GetLogin(), pr.Base.Repo.GetName(), pr.GetNumber(), comment)
+	_, resp, err := g.client.Issues.CreateComment(ctx, pr.Base.Repo.Owner.GetLogin(), pr.Base.Repo.GetName(), pr.GetNumber(), comment)
 
 	if err != nil {
 		return err

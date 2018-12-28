@@ -29,7 +29,6 @@ type prModel struct {
 
 // PullRequestForMerge Clone a pull request for a merge
 func PullRequestForMerge(pr *github.PullRequest, gitConfig types.GitConfig, debug bool) (string, error) {
-
 	model := prModel{
 		number: pr.GetNumber(),
 		// fork
@@ -74,7 +73,6 @@ func PullRequestForUpdate(pr *github.PullRequest, gitConfig types.GitConfig, deb
 }
 
 func pullRequest(pr *github.PullRequest, prModel prModel, gitConfig types.GitConfig, debug bool) (string, error) {
-
 	if gh.IsOnMainRepository(pr) {
 		log.Print("It's not a fork, it's a branch on the main repository.")
 

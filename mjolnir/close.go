@@ -27,7 +27,7 @@ func CloseRelatedIssues(ctx context.Context, client *github.Client, owner string
 		if !dryRun {
 			err := closeIssue(ctx, client, owner, repositoryName, pr, issueNumber)
 			if err != nil {
-				return fmt.Errorf("Unable to close issue #%d: %v", issueNumber, err)
+				return fmt.Errorf("unable to close issue #%d: %v", issueNumber, err)
 			}
 		}
 
