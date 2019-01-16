@@ -2,28 +2,31 @@
 
 
 [[projects]]
-  branch = "master"
   name = "github.com/containous/flaeg"
-  packages = ["."]
-  revision = "b5d2dc5878df07c2d74413348186982e7b865871"
+  packages = [
+    ".",
+    "parse"
+  ]
+  revision = "c93d194b807ef171c43344d60adad8b58217390a"
+  version = "v1.4.1"
 
 [[projects]]
-  branch = "master"
   name = "github.com/golang/protobuf"
   packages = ["proto"]
-  revision = "130e6b02ab059e7b717a096f397c5b60111cae74"
+  revision = "aa810b61a9c79d51363740d207bb46cf8e620ed5"
+  version = "v1.2.0"
 
 [[projects]]
-  branch = "master"
   name = "github.com/google/go-github"
   packages = ["github"]
-  revision = "511f540f1887d30b88cee4a2fcd1f2922754acf4"
+  revision = "a5cb647b1fac8ba77e1cf25af2f9526658ab63e3"
+  version = "v21.0.0"
 
 [[projects]]
-  branch = "master"
   name = "github.com/google/go-querystring"
   packages = ["query"]
-  revision = "53e6ce116135b80d037921a7fdd5138cf32d7a8a"
+  revision = "44c6ddd0a2342c386950e880b658017258da92fc"
+  version = "v1.0.0"
 
 [[projects]]
   name = "github.com/ldez/go-git-cmd-wrapper"
@@ -39,8 +42,8 @@
     "remote",
     "types"
   ]
-  revision = "3a6a6763670595a30e13ff56624f341ad87a46a2"
-  version = "v0.19.0"
+  revision = "de13bdcd31bd9d5a48485b32d44f94ac9c74d7eb"
+  version = "v1.1.0"
 
 [[projects]]
   branch = "master"
@@ -55,7 +58,7 @@
     "context",
     "context/ctxhttp"
   ]
-  revision = "0a9397675ba34b2845f758fe3cd68828369c6517"
+  revision = "915654e7eabcea33ae277abbecf52f0d8b7a9fdc"
 
 [[projects]]
   branch = "master"
@@ -64,10 +67,9 @@
     ".",
     "internal"
   ]
-  revision = "13449ad91cb26cb47661c1b080790392170385fd"
+  revision = "5dab4167f31cbd76b407f1486c86b40748bc5073"
 
 [[projects]]
-  branch = "master"
   name = "google.golang.org/appengine"
   packages = [
     "internal",
@@ -78,7 +80,8 @@
     "internal/urlfetch",
     "urlfetch"
   ]
-  revision = "24e4144ec923c2374f6b06610c0df16a9222c3d9"
+  revision = "e9657d882bb81064595ca3b56cbe2546bbabf7b1"
+  version = "v1.4.0"
 
 [solve-meta]
   analyzer-name = "dep"
