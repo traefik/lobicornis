@@ -1,11 +1,15 @@
 package merge
 
 import (
+	"bufio"
+	"bytes"
 	"context"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
+	"regexp"
+	"strings"
 
 	"github.com/containous/lobicornis/clone"
 	"github.com/containous/lobicornis/gh"
@@ -36,7 +40,12 @@ func githubMerge(ctx context.Context, client *github.Client, pr *github.PullRequ
 		CommitTitle: pr.GetTitle(),
 	}
 
-	result, _, err := client.PullRequests.Merge(ctx, pr.Base.Repo.Owner.GetLogin(), pr.Base.Repo.GetName(), pr.GetNumber(), "", options)
+	var message string
+	if mergeMethod == gh.MergeMethodSquash {
+		message = strings.Join(getCoAuthors(pr), "\n")
+	}
+
+	result, _, err := client.PullRequests.Merge(ctx, pr.Base.Repo.Owner.GetLogin(), pr.Base.Repo.GetName(), pr.GetNumber(), message, options)
 	if err != nil {
 		log.Println(err)
 		return types.Result{Message: err.Error(), Merged: false}, err
@@ -97,4 +106,21 @@ func fastForward(pr *github.PullRequest, gitConfig types.GitConfig, debug, dryRu
 	}
 
 	return types.Result{Merged: true, Message: "Merged"}, nil
+}
+
+// getCoAuthors Extracts co-author from PR description.
+// Co-authored-by: login <email@email.com>
+func getCoAuthors(pr *github.PullRequest) []string {
+	exp := regexp.MustCompile(`Co-authored-by: .+>`)
+
+	var coAuthors []string
+	scanner := bufio.NewScanner(bytes.NewBufferString(pr.GetBody()))
+	for scanner.Scan() {
+		line := scanner.Text()
+		if exp.MatchString(line) {
+			coAuthors = append(coAuthors, line)
+		}
+	}
+
+	return coAuthors
 }
