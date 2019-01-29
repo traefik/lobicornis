@@ -29,11 +29,18 @@ type prModel struct {
 
 // PullRequestForMerge Clone a pull request for a merge
 func PullRequestForMerge(pr *github.PullRequest, gitConfig types.GitConfig, debug bool) (string, error) {
+	var forkURL string
+	if pr.Base.Repo.GetPrivate() {
+		forkURL = makeRepositoryURL(pr.Head.Repo.GetGitURL(), gitConfig.SSH, gitConfig.GitHubToken)
+	} else {
+		forkURL = makeRepositoryURL(pr.Head.Repo.GetGitURL(), gitConfig.SSH, "")
+	}
+
 	model := prModel{
 		number: pr.GetNumber(),
 		// fork
 		unchanged: remoteModel{
-			url: makeRepositoryURL(pr.Head.Repo.GetGitURL(), gitConfig.SSH, ""),
+			url: forkURL,
 			ref: pr.Head.GetRef(),
 		},
 		// base
