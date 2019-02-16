@@ -1,8 +1,8 @@
-.PHONY: all
+.PHONY: clean fmt check test build build-crossbinary
 
 GOFILES := $(shell go list -f '{{range $$index, $$element := .GoFiles}}{{$$.Dir}}/{{$$element}}{{"\n"}}{{end}}' ./... | grep -v '/vendor/')
 
-default: clean checks test build-crossbinary
+default: clean check test build-crossbinary
 
 test: clean
 	go test -v -cover ./...
@@ -16,12 +16,11 @@ clean:
 build:
 	go build
 
-checks: check-fmt
+check:
 	golangci-lint run
 
-check-fmt: SHELL := /bin/bash
-check-fmt:
-	diff -u <(echo -n) <(gofmt -d $(GOFILES))
+fmt:
+	@gofmt -s -l -w $(GOFILES)
 
 build-crossbinary:
 	./_script/crossbinary

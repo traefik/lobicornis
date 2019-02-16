@@ -1,6 +1,8 @@
 [run]
   deadline = "2m"
-  skip-files = []
+  skip-files = [
+    "^unsecured/"
+  ]
 
 [linters-settings]
 
