@@ -1,6 +1,6 @@
 .PHONY: clean fmt check test build build-crossbinary
 
-GOFILES := $(shell go list -f '{{range $$index, $$element := .GoFiles}}{{$$.Dir}}/{{$$element}}{{"\n"}}{{end}}' ./... | grep -v '/vendor/')
+GOFILES := $(shell git ls-files '*.go' | grep -v '^vendor/')
 
 default: clean check test build-crossbinary
 
