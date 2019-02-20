@@ -111,14 +111,15 @@ func fastForward(pr *github.PullRequest, gitConfig types.GitConfig, debug, dryRu
 // getCoAuthors Extracts co-author from PR description.
 // Co-authored-by: login <email@email.com>
 func getCoAuthors(pr *github.PullRequest) []string {
-	exp := regexp.MustCompile(`Co-authored-by: .+>`)
+	exp := regexp.MustCompile(`^(?i)Co-authored-by:\s+(.+)\s+<(.+)>$`)
 
 	var coAuthors []string
 	scanner := bufio.NewScanner(bytes.NewBufferString(pr.GetBody()))
 	for scanner.Scan() {
 		line := scanner.Text()
 		if exp.MatchString(line) {
-			coAuthors = append(coAuthors, line)
+			s := exp.FindStringSubmatch(line)
+			coAuthors = append(coAuthors, fmt.Sprintf("Co-authored-by: %s <%s>", s[1], s[2]))
 		}
 	}
 
