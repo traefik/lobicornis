@@ -12,7 +12,6 @@ import (
 	"github.com/containous/flaeg"
 	"github.com/containous/lobicornis/core"
 	"github.com/containous/lobicornis/gh"
-	"github.com/containous/lobicornis/meta"
 	"github.com/containous/lobicornis/types"
 	"github.com/ogier/pflag"
 )
@@ -60,7 +59,7 @@ func main() {
 		Config:                &types.NoOption{},
 		DefaultPointersConfig: &types.NoOption{},
 		Run: func() error {
-			meta.DisplayVersion()
+			displayVersion()
 			return nil
 		},
 	}
