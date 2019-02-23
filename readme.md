@@ -1,10 +1,29 @@
 # Myrmica Lobicornis - Update and Merge Pull Request
 
+[![GitHub release](https://img.shields.io/github/release/containous/lobicornis.svg)](https://github.com/containous/lobicornis/releases/latest)
 [![Build Status](https://travis-ci.org/containous/lobicornis.svg?branch=master)](https://travis-ci.org/containous/lobicornis)
 [![Docker Build Status](https://img.shields.io/docker/build/containous/lobicornis.svg)](https://hub.docker.com/r/containous/lobicornis/builds/)
 
+## Description
 
-```bash
+The bot:
+
+- find all open PRs with a specific label (`--marker.need-merge`)
+- take one PR
+    - with a specific label (`--marker.merge-in-progress`) if exists
+    - or the least recently updated PR
+- verify:
+    - GitHub checks (CI, ...)
+    - "Mergeability"
+    - Reviews (`--min-review`)
+- check if the PR need to be updated
+    - if yes: rebase or merge with the base PR branch (ex: `master`)
+- merge the PR with the chosen merge method. (`--merge-method`, `--marker.merge-method-prefix`)
+- closes related issues and add the same milestone as the PR
+- if errors occurs add a specific label (`--marker.need-human-merge`)
+- if the description of the PR contains a co-author (`Co-authored-by: login <email@email.com>`) the co-author is set on the merge commit.
+
+```yaml
 Myrmica Lobicornis: Update and Merge Pull Request from GitHub.
 
 Usage: lobicornis [--flag=flag_argument] [-f[flag_argument]] ...     set flag_argument to flag(s)
@@ -48,23 +67,6 @@ Flags:
 -h, --help                       Print Help (this message) and exit 
 ```
 
-## Description
-
-The bot:
-- find all open PRs with a specific label (`--marker.need-merge`)
-- take one PR
-    - with a specific label (`--marker.merge-in-progress`) if exists
-    - or the least recently updated PR
-- verify:
-    - GitHub checks (CI, ...)
-    - "Mergeability"
-    - Reviews (`--min-review`)
-- check if the PR need to be updated
-    - if yes: rebase or merge with the base PR branch (ex: `master`)
-- merge the PR with the chosen merge method. (`--merge-method`, `--marker.merge-method-prefix`)
-- closes related issues and add the same milestone as the PR
-- if errors occurs add a specific label (`--marker.need-human-merge`)
-
 ## Examples
  
 ```bash
@@ -83,5 +85,7 @@ lobicornis --debug --ssh -t xxxxxxxxxxxxx -o containous -r traefik --min-review=
     --marker.merge-method-prefix="merge-method-" \
     --merge-method="rebase" 
 ```
+
+## What's Myrmica Lobicornis mean?
 
 ![Myrmica Lobicornis](http://www.antwiki.org/wiki/images/5/51/Myrmica_lobicornis_casent0172718_head_1.jpg)
