@@ -86,6 +86,6 @@ lobicornis --debug --ssh -t xxxxxxxxxxxxx -o containous -r traefik --min-review=
     --merge-method="rebase" 
 ```
 
-## What's Myrmica Lobicornis mean?
+## What does Myrmica Lobicornis mean?
 
 ![Myrmica Lobicornis](http://www.antwiki.org/wiki/images/5/51/Myrmica_lobicornis_casent0172718_head_1.jpg)
