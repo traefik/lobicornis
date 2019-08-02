@@ -9,7 +9,7 @@ import (
 	"github.com/containous/lobicornis/merge"
 	"github.com/containous/lobicornis/mjolnir"
 	"github.com/containous/lobicornis/types"
-	"github.com/google/go-github/github"
+	"github.com/google/go-github/v27/github"
 )
 
 func mergePR(ctx context.Context, client *github.Client, ghub *gh.GHub, issuePR *github.Issue, pr *github.PullRequest,

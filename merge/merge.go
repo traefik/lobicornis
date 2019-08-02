@@ -14,7 +14,7 @@ import (
 	"github.com/containous/lobicornis/clone"
 	"github.com/containous/lobicornis/gh"
 	"github.com/containous/lobicornis/types"
-	"github.com/google/go-github/github"
+	"github.com/google/go-github/v27/github"
 	"github.com/ldez/go-git-cmd-wrapper/git"
 	"github.com/ldez/go-git-cmd-wrapper/merge"
 	"github.com/ldez/go-git-cmd-wrapper/push"

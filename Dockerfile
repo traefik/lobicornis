@@ -7,8 +7,7 @@ RUN apk --update upgrade \
 WORKDIR /go/src/github.com/containous/lobicornis
 COPY . .
 
-RUN go get -u github.com/golang/dep/cmd/dep
-RUN make dependencies
+RUN go mod download
 RUN make build
 
 FROM alpine:3.6

@@ -1,5 +1,7 @@
 .PHONY: clean fmt check test build
 
+export GO111MODULE=on
+
 GOFILES := $(shell git ls-files '*.go' | grep -v '^vendor/')
 
 TAG_NAME := $(shell git tag -l --contains HEAD)
@@ -11,9 +13,6 @@ default: clean check test build
 
 test: clean
 	go test -v -cover ./...
-
-dependencies:
-	dep ensure -v
 
 clean:
 	rm -rf dist/ cover.out

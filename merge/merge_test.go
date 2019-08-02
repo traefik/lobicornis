@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/google/go-github/github"
+	"github.com/google/go-github/v27/github"
 )
 
 func Test_getCoAuthors(t *testing.T) {
