@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/google/go-github/v27/github"
+	"github.com/google/go-github/v28/github"
 )
 
 const (
@@ -87,7 +87,6 @@ func (g *GHub) IsUpToDateBranch(ctx context.Context, pr *github.PullRequest) (bo
 
 // GetStatus provide checks status (CI)
 func (g *GHub) GetStatus(ctx context.Context, pr *github.PullRequest) (string, error) {
-
 	owner := pr.Base.Repo.Owner.GetLogin()
 	repositoryName := pr.Base.Repo.GetName()
 	prRef := pr.Head.GetSHA()
@@ -114,6 +113,7 @@ func (g *GHub) GetStatus(ctx context.Context, pr *github.PullRequest) (string, e
 	if err != nil {
 		return "", err
 	}
+
 	var summary string
 	for _, stat := range statuses {
 		if stat.GetState() != Success {

@@ -6,7 +6,7 @@ import (
 	"log"
 	"sort"
 
-	"github.com/google/go-github/v27/github"
+	"github.com/google/go-github/v28/github"
 )
 
 type byUpdated []github.Issue

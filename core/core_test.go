@@ -5,7 +5,7 @@ import (
 
 	"github.com/containous/lobicornis/gh"
 	"github.com/containous/lobicornis/types"
-	"github.com/google/go-github/v27/github"
+	"github.com/google/go-github/v28/github"
 )
 
 func Test_getMergeMethod(t *testing.T) {

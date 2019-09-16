@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/containous/lobicornis/types"
-	"github.com/google/go-github/v27/github"
+	"github.com/google/go-github/v28/github"
 	"github.com/ldez/go-git-cmd-wrapper/git"
 	"github.com/ldez/go-git-cmd-wrapper/remote"
 )

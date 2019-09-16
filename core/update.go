@@ -11,7 +11,7 @@ import (
 	"github.com/containous/lobicornis/gh"
 	"github.com/containous/lobicornis/types"
 	"github.com/containous/lobicornis/update"
-	"github.com/google/go-github/v27/github"
+	"github.com/google/go-github/v28/github"
 )
 
 func updatePR(ctx context.Context, ghub *gh.GHub, issuePR *github.Issue, pr *github.PullRequest, repoID types.RepoID, markers *types.LabelMarkers, gitConfig types.GitConfig, extra types.Extra) error {
