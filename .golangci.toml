@@ -49,4 +49,4 @@
     text = "`(.+)RE` is a global variable"
   [[issues.exclude-rules]]
     path = "core/core.go"
-    text = "Function 'process' has too many statements (85 > 40)" # FIXME must be changed
+    text = "Function 'process' has too many statements" # FIXME must be changed
