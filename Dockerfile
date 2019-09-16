@@ -10,7 +10,7 @@ COPY . .
 RUN go mod download
 RUN make build
 
-FROM alpine:3.6
+FROM alpine:3.10
 RUN apk --update upgrade \
     && apk --no-cache --no-progress add ca-certificates git \
     && rm -rf /var/cache/apk/*
