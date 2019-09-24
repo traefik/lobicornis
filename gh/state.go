@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/google/go-github/v28/github"
 )
@@ -85,7 +86,7 @@ func (g *GHub) IsUpToDateBranch(ctx context.Context, pr *github.PullRequest) (bo
 	return cc.GetBehindBy() == 0, nil
 }
 
-// GetStatus provide checks status (CI)
+// GetStatus provide checks status (status)
 func (g *GHub) GetStatus(ctx context.Context, pr *github.PullRequest) (string, error) {
 	owner := pr.Base.Repo.Owner.GetLogin()
 	repositoryName := pr.Base.Repo.GetName()
@@ -121,4 +122,51 @@ func (g *GHub) GetStatus(ctx context.Context, pr *github.PullRequest) (string, e
 		}
 	}
 	return "", errors.New(summary)
+}
+
+// GetCheckRunsState provide checks status (checksRun)
+func (g *GHub) GetCheckRunsState(ctx context.Context, pr *github.PullRequest) (string, error) {
+	owner := pr.Base.Repo.Owner.GetLogin()
+	repositoryName := pr.Base.Repo.GetName()
+	prRef := pr.Head.GetSHA()
+
+	checkSuites, _, err := g.client.Checks.ListCheckSuitesForRef(ctx, owner, repositoryName, prRef, nil)
+	if err != nil {
+		return "", err
+	}
+
+	if checkSuites.GetTotal() == 0 {
+		return Success, nil
+	}
+
+	var msg []string
+	for _, v := range checkSuites.CheckSuites {
+		if v.GetStatus() != "completed" {
+			return Pending, nil
+		}
+
+		if v.GetConclusion() == "success" || v.GetConclusion() == "neutral" {
+			msg = append(msg, fmt.Sprintf("%s %s %s", v.GetApp().GetName(), v.GetStatus(), v.GetConclusion()))
+		}
+	}
+
+	if len(msg) > 0 {
+		return Success, nil
+	}
+
+	return "", errors.New(strings.Join(msg, ", "))
+}
+
+// GetAggregatedState provide checks status (status + checksSuite)
+func (g *GHub) GetAggregatedState(ctx context.Context, pr *github.PullRequest) (string, error) {
+	status, err := g.GetStatus(ctx, pr)
+	if err != nil {
+		return "", err
+	}
+
+	if status == Pending {
+		return status, nil
+	}
+
+	return g.GetCheckRunsState(ctx, pr)
 }

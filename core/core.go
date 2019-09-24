@@ -166,7 +166,7 @@ func process(ctx context.Context, client *github.Client, issuePR *github.Issue,
 		return nil
 	}
 
-	status, err := ghub.GetStatus(ctx, pr)
+	status, err := ghub.GetAggregatedState(ctx, pr)
 	if err != nil {
 		log.Printf("PR #%d: Checks status: %v", prNumber, err)
 
