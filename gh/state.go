@@ -27,7 +27,6 @@ const (
 // HasReviewsApprove check if a PR have the required number of review
 func (g *GHub) HasReviewsApprove(ctx context.Context, pr *github.PullRequest, minReview int) error {
 	if minReview != 0 {
-
 		owner := pr.Base.Repo.Owner.GetLogin()
 		repositoryName := pr.Base.Repo.GetName()
 		prNumber := pr.GetNumber()

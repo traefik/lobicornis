@@ -9,7 +9,6 @@ import (
 )
 
 func Test_getMergeMethod(t *testing.T) {
-
 	testCases := []struct {
 		name                string
 		labels              []string
@@ -95,7 +94,6 @@ func Test_getMergeMethod(t *testing.T) {
 }
 
 func Test_getMinReview(t *testing.T) {
-
 	testCases := []struct {
 		name              string
 		review            types.Review

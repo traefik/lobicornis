@@ -104,7 +104,6 @@ func pullRequest(pr *github.PullRequest, prModel prModel, gitConfig types.GitCon
 }
 
 func fromMainRepository(remoteModel remoteModel, prNumber int, gitConfig types.GitConfig, debug bool) (string, error) {
-
 	output, err := git.Clone(clone.Repository(remoteModel.url), clone.Directory("."), git.Debugger(debug))
 	if err != nil {
 		return output, err
@@ -124,7 +123,6 @@ func fromMainRepository(remoteModel remoteModel, prNumber int, gitConfig types.G
 }
 
 func fromFork(origin, upstream remoteModel, prNumber int, gitConfig types.GitConfig, remoteName string, debug bool) (string, error) {
-
 	output, err := git.Clone(
 		clone.Repository(origin.url),
 		clone.Branch(origin.ref),

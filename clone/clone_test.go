@@ -38,7 +38,6 @@ func TestPullRequestForUpdate(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
-
 			dir, err := ioutil.TempDir("", "myrmica-lobicornis")
 			if err != nil {
 				t.Fatal(err)
@@ -118,7 +117,6 @@ func TestPullRequestForMerge(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
-
 			dir, err := ioutil.TempDir("", "myrmica-lobicornis")
 			if err != nil {
 				t.Fatal(err)

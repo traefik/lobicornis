@@ -66,7 +66,6 @@ func Execute(config types.Configuration) error {
 
 func searchIssuePR(ctx context.Context, client *github.Client, repoID types.RepoID,
 	markers *types.LabelMarkers, review types.Review, retry *types.Retry, debug bool) (*github.Issue, error) {
-
 	// Find Merge In Progress
 	issues, err := search.FindOpenPR(ctx, client, repoID.Owner, repoID.RepositoryName, debug,
 		search.WithLabels(markers.NeedMerge, markers.MergeInProgress),
@@ -125,7 +124,6 @@ func searchIssuePR(ctx context.Context, client *github.Client, repoID types.Repo
 func process(ctx context.Context, client *github.Client, issuePR *github.Issue,
 	repoID types.RepoID, markers *types.LabelMarkers, gitConfig types.GitConfig,
 	checks types.Checks, retry *types.Retry, defaultMergeMethod string, extra types.Extra) error {
-
 	pr, _, err := client.PullRequests.Get(ctx, repoID.Owner, repoID.RepositoryName, issuePR.GetNumber())
 	if err != nil {
 		return err
@@ -249,7 +247,6 @@ func process(ctx context.Context, client *github.Client, issuePR *github.Issue,
 
 	// Need to be up to date?
 	if needUpdate {
-
 		if !pr.GetMaintainerCanModify() && !gh.IsOnMainRepository(pr) {
 			repo, _, err := client.Repositories.Get(ctx, repoID.Owner, repoID.RepositoryName)
 			if err != nil {

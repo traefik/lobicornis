@@ -19,7 +19,6 @@ var (
 
 // CloseRelatedIssues Closes issues listed in the PR description.
 func CloseRelatedIssues(ctx context.Context, client *github.Client, owner string, repositoryName string, pr *github.PullRequest, dryRun bool) error {
-
 	issueNumbers := parseIssueFixes(pr.GetBody())
 
 	for _, issueNumber := range issueNumbers {
@@ -50,7 +49,6 @@ func CloseRelatedIssues(ctx context.Context, client *github.Client, owner string
 }
 
 func closeIssue(ctx context.Context, client *github.Client, owner string, repositoryName string, pr *github.PullRequest, issueNumber int) error {
-
 	var milestone *int
 	if pr.Milestone != nil {
 		milestone = pr.Milestone.Number

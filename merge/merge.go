@@ -22,7 +22,6 @@ import (
 
 // PullRequest Merge a Pull Request.
 func PullRequest(ctx context.Context, client *github.Client, pr *github.PullRequest, mergeMethod string, gitConfig types.GitConfig, debug, dryRun bool) (types.Result, error) {
-
 	if mergeMethod == gh.MergeMethodFastForward {
 		return fastForward(pr, gitConfig, debug, dryRun)
 	}

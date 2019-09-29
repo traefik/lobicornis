@@ -14,7 +14,6 @@ import (
 
 func mergePR(ctx context.Context, client *github.Client, ghub *gh.GHub, issuePR *github.Issue, pr *github.PullRequest,
 	repoID types.RepoID, markers *types.LabelMarkers, gitConfig types.GitConfig, mergeMethod string, extra types.Extra) error {
-
 	prNumber := issuePR.GetNumber()
 
 	log.Printf("PR #%d: MERGE(%s)\n", prNumber, mergeMethod)

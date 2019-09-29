@@ -95,5 +95,4 @@ func mergeBaseHeadIntoPR(pr *github.PullRequest, remoteName string, debug bool) 
 	return git.Merge(
 		merge.Commits(fmt.Sprintf("%s/%s", remoteName, pr.Base.GetRef())),
 		git.Debugger(debug))
-
 }

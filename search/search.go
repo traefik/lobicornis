@@ -19,7 +19,6 @@ func (a byUpdated) Less(i, j int) bool {
 
 // FindOpenPR find open PR
 func FindOpenPR(ctx context.Context, client *github.Client, owner string, repositoryName string, debug bool, parameters ...Parameter) ([]github.Issue, error) {
-
 	var filter string
 	for _, param := range parameters {
 		if param != nil {
