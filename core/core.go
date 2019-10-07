@@ -180,7 +180,7 @@ func process(ctx context.Context, client *github.Client, issuePR *github.Issue,
 
 	if status == gh.Pending {
 		// skip
-		log.Println("State: pending. Waiting for the CI.")
+		log.Printf("PR #%d: State: pending. Waiting for the CI.\n", prNumber)
 		return nil
 	}
 
@@ -224,7 +224,7 @@ func process(ctx context.Context, client *github.Client, issuePR *github.Issue,
 	if checks.CheckNeedUpToDate {
 		rcs, _, errCheck := client.Repositories.GetRequiredStatusChecks(ctx, repoID.Owner, repoID.RepositoryName, pr.Base.GetRef())
 		if errCheck != nil {
-			return fmt.Errorf("unable to get status checks: %v", errCheck)
+			return fmt.Errorf("PR #%d: unable to get status checks: %v", prNumber, errCheck)
 		}
 		needUpdate = rcs.Strict
 	} else if checks.ForceNeedUpToDate {
@@ -242,7 +242,7 @@ func process(ctx context.Context, client *github.Client, issuePR *github.Issue,
 	}
 
 	if !upToDateBranch && mergeMethod == gh.MergeMethodFastForward {
-		return fmt.Errorf("merge method [%s] is impossible when a branch is not up-to-date", mergeMethod)
+		return fmt.Errorf("PR #%d: merge method [%s] is impossible when a branch is not up-to-date", prNumber, mergeMethod)
 	}
 
 	// Need to be up to date?
