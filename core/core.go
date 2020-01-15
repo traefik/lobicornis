@@ -253,7 +253,7 @@ func process(ctx context.Context, client *github.Client, issuePR *github.Issue,
 				return err
 			}
 
-			if !repo.GetFork() {
+			if !repo.GetPrivate() && !repo.GetFork() {
 				errLabel := ghub.AddLabels(ctx, issuePR, repoID, markers.NeedHumanMerge)
 				if errLabel != nil {
 					log.Println(errLabel)
