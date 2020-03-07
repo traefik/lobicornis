@@ -11,7 +11,7 @@ import (
 	"github.com/containous/lobicornis/gh"
 	"github.com/containous/lobicornis/types"
 	"github.com/containous/lobicornis/update"
-	"github.com/google/go-github/v28/github"
+	"github.com/google/go-github/v29/github"
 )
 
 func updatePR(ctx context.Context, ghub *gh.GHub, issuePR *github.Issue, pr *github.PullRequest, repoID types.RepoID, markers *types.LabelMarkers, gitConfig types.GitConfig, extra types.Extra) error {
@@ -24,16 +24,19 @@ func updatePR(ctx context.Context, ghub *gh.GHub, issuePR *github.Issue, pr *git
 
 	err = cloneAndUpdate(ctx, ghub, pr, gitConfig, extra.DryRun, extra.Debug)
 	if err != nil {
-		err = ghub.AddLabels(ctx, issuePR, repoID, markers.NeedHumanMerge)
-		if err != nil {
-			log.Println(err)
+		errL := ghub.AddLabels(ctx, issuePR, repoID, markers.NeedHumanMerge)
+		if errL != nil {
+			log.Println(errL)
 		}
-		err = ghub.RemoveLabel(ctx, issuePR, repoID, markers.MergeInProgress)
-		if err != nil {
-			log.Println(err)
+
+		errL = ghub.RemoveLabel(ctx, issuePR, repoID, markers.MergeInProgress)
+		if errL != nil {
+			log.Println(errL)
 		}
+
 		return err
 	}
+
 	return nil
 }
 

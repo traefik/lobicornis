@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/containous/lobicornis/types"
-	"github.com/google/go-github/v28/github"
+	"github.com/google/go-github/v29/github"
 	"github.com/ldez/go-git-cmd-wrapper/git"
 	"github.com/ldez/go-git-cmd-wrapper/remote"
 )
@@ -42,7 +42,7 @@ func TestPullRequestForUpdate(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			defer func() { _ = os.RemoveAll(dir) }()
+			t.Cleanup(func() { _ = os.RemoveAll(dir) })
 
 			err = os.Chdir(dir)
 			if err != nil {
@@ -121,7 +121,7 @@ func TestPullRequestForMerge(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			defer func() { _ = os.RemoveAll(dir) }()
+			t.Cleanup(func() { _ = os.RemoveAll(dir) })
 
 			err = os.Chdir(dir)
 			if err != nil {
@@ -244,5 +244,6 @@ func createFakePR(sameRepo bool) *github.PullRequest {
 			Ref: github.String("v1.3"),
 		}
 	}
+
 	return pr
 }

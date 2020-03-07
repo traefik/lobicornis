@@ -9,7 +9,7 @@ import (
 	"github.com/containous/lobicornis/merge"
 	"github.com/containous/lobicornis/mjolnir"
 	"github.com/containous/lobicornis/types"
-	"github.com/google/go-github/v28/github"
+	"github.com/google/go-github/v29/github"
 )
 
 func mergePR(ctx context.Context, client *github.Client, ghub *gh.GHub, issuePR *github.Issue, pr *github.PullRequest,
@@ -36,10 +36,12 @@ func mergePR(ctx context.Context, client *github.Client, ghub *gh.GHub, issuePR 
 			if errLabel != nil {
 				log.Println(errLabel)
 			}
+
 			errLabel = ghub.RemoveLabel(ctx, issuePR, repoID, markers.MergeInProgress)
 			if errLabel != nil {
 				log.Println(errLabel)
 			}
+
 			return fmt.Errorf("failed to merge PR #%d", prNumber)
 		}
 

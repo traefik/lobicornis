@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/containous/lobicornis/types"
-	"github.com/google/go-github/v28/github"
+	"github.com/google/go-github/v29/github"
 	"golang.org/x/oauth2"
 )
 
@@ -70,9 +70,11 @@ func (g *GHub) RemoveLabels(ctx context.Context, issue *github.Issue, repoID typ
 			// Due to go-github/GitHub API constraint
 			newLabels = []string{}
 		}
+
 		_, _, errLabels := g.client.Issues.ReplaceLabelsForIssue(ctx, repoID.Owner, repoID.RepositoryName, issue.GetNumber(), newLabels)
 		return errLabels
 	}
+
 	return nil
 }
 
@@ -95,6 +97,7 @@ func (g *GHub) RemoveLabel(ctx context.Context, issue *github.Issue, repoID type
 			return fmt.Errorf("failed to remove label %s. Status code: %d", label, resp.StatusCode)
 		}
 	}
+
 	return nil
 }
 
@@ -143,6 +146,7 @@ func HasLabel(issue *github.Issue, label string) bool {
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -153,6 +157,7 @@ func FindLabelPrefix(issue *github.Issue, prefix string) string {
 			return lbl.GetName()
 		}
 	}
+
 	return ""
 }
 

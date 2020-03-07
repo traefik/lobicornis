@@ -11,7 +11,7 @@ import (
 	"github.com/containous/lobicornis/gh"
 	"github.com/containous/lobicornis/search"
 	"github.com/containous/lobicornis/types"
-	"github.com/google/go-github/v28/github"
+	"github.com/google/go-github/v29/github"
 )
 
 // Execute core process
@@ -61,6 +61,7 @@ func Execute(config types.Configuration) error {
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -140,6 +141,7 @@ func process(ctx context.Context, client *github.Client, issuePR *github.Issue,
 		if errLabel != nil {
 			log.Println(errLabel)
 		}
+
 		errLabel = ghub.RemoveLabel(ctx, issuePR, repoID, markers.MergeInProgress)
 		if errLabel != nil {
 			log.Println(errLabel)
@@ -156,6 +158,7 @@ func process(ctx context.Context, client *github.Client, issuePR *github.Issue,
 		if errLabel != nil {
 			log.Println(errLabel)
 		}
+
 		errLabel = ghub.RemoveLabel(ctx, issuePR, repoID, markers.MergeInProgress)
 		if errLabel != nil {
 			log.Println(errLabel)
@@ -169,10 +172,12 @@ func process(ctx context.Context, client *github.Client, issuePR *github.Issue,
 		log.Printf("PR #%d: Checks status: %v", prNumber, err)
 
 		rt := retry != nil && retry.OnStatuses
+
 		var rtNumber int
 		if retry != nil {
 			rtNumber = retry.Number
 		}
+
 		manageRetryLabel(ctx, ghub, repoID, issuePR, rt, rtNumber, markers)
 
 		return nil
@@ -207,10 +212,12 @@ func process(ctx context.Context, client *github.Client, issuePR *github.Issue,
 		log.Printf("PR #%d: Conflicts must be resolve in the PR.", prNumber)
 
 		rt := retry != nil && retry.OnMergeable
+
 		var rtNumber int
 		if retry != nil {
 			rtNumber = retry.Number
 		}
+
 		manageRetryLabel(ctx, ghub, repoID, issuePR, rt, rtNumber, markers)
 
 		return nil
@@ -226,6 +233,7 @@ func process(ctx context.Context, client *github.Client, issuePR *github.Issue,
 		if errCheck != nil {
 			return fmt.Errorf("PR #%d: unable to get status checks: %v", prNumber, errCheck)
 		}
+
 		needUpdate = rcs.Strict
 	} else if checks.ForceNeedUpToDate {
 		needUpdate = true
@@ -258,10 +266,12 @@ func process(ctx context.Context, client *github.Client, issuePR *github.Issue,
 				if errLabel != nil {
 					log.Println(errLabel)
 				}
+
 				errLabel = ghub.RemoveLabel(ctx, issuePR, repoID, markers.MergeInProgress)
 				if errLabel != nil {
 					log.Println(errLabel)
 				}
+
 				return fmt.Errorf("PR #%d: the contributor doesn't allow maintainer modification (GitHub option)", prNumber)
 			}
 		}
@@ -336,6 +346,7 @@ func extractRetryNumber(label, prefix string) int {
 		log.Println(err)
 		return 0
 	}
+
 	return number
 }
 

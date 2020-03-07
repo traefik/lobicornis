@@ -7,7 +7,7 @@ import (
 
 	"github.com/containous/lobicornis/gh"
 	"github.com/containous/lobicornis/types"
-	"github.com/google/go-github/v28/github"
+	"github.com/google/go-github/v29/github"
 	"github.com/ldez/go-git-cmd-wrapper/checkout"
 	"github.com/ldez/go-git-cmd-wrapper/clone"
 	"github.com/ldez/go-git-cmd-wrapper/config"
@@ -90,6 +90,7 @@ func pullRequest(pr *github.PullRequest, prModel prModel, gitConfig types.GitCon
 			log.Print(output)
 			return "", err
 		}
+
 		return remoteName, nil
 	}
 
@@ -100,6 +101,7 @@ func pullRequest(pr *github.PullRequest, prModel prModel, gitConfig types.GitCon
 		log.Print(output)
 		return "", err
 	}
+
 	return remoteName, nil
 }
 
@@ -159,6 +161,7 @@ func makeRepositoryURL(url string, ssh bool, token string) string {
 	if len(token) > 0 {
 		prefix += token + "@"
 	}
+
 	return strings.Replace(url, "git://", prefix, -1)
 }
 
@@ -167,6 +170,7 @@ func configureGit(gitConfig types.GitConfig) (string, error) {
 	if err != nil {
 		return output, err
 	}
+
 	output, err = git.Config(config.Entry("push.default", "current"))
 	if err != nil {
 		return output, err

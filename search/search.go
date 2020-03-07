@@ -6,7 +6,7 @@ import (
 	"log"
 	"sort"
 
-	"github.com/google/go-github/v28/github"
+	"github.com/google/go-github/v29/github"
 )
 
 type byUpdated []github.Issue
@@ -41,6 +41,7 @@ func FindOpenPR(ctx context.Context, client *github.Client, owner string, reposi
 	if err != nil {
 		return nil, err
 	}
+
 	sort.Sort(byUpdated(issues))
 
 	return issues, nil
@@ -53,10 +54,12 @@ func findIssues(ctx context.Context, client *github.Client, query string, search
 		if err != nil {
 			return nil, err
 		}
+
 		allIssues = append(allIssues, issuesSearchResult.Issues...)
 		if resp.NextPage == 0 {
 			break
 		}
+
 		searchOptions.Page = resp.NextPage
 	}
 	return allIssues, nil

@@ -23,6 +23,7 @@ func Cond(apply bool, parameters ...Parameter) Parameter {
 			return filter
 		}
 	}
+
 	return NoOp
 }
 
@@ -37,6 +38,7 @@ func WithLabels(labels ...string) Parameter {
 	for _, lbl := range labels {
 		labelsFilter += fmt.Sprintf("label:%s ", lbl)
 	}
+
 	return func() string {
 		return " " + labelsFilter
 	}
@@ -48,6 +50,7 @@ func WithExcludedLabels(labels ...string) Parameter {
 	for _, lbl := range labels {
 		labelsFilter += fmt.Sprintf("-label:%s ", lbl)
 	}
+
 	return func() string {
 		return " " + labelsFilter
 	}

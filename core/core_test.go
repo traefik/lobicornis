@@ -5,7 +5,7 @@ import (
 
 	"github.com/containous/lobicornis/gh"
 	"github.com/containous/lobicornis/types"
-	"github.com/google/go-github/v28/github"
+	"github.com/google/go-github/v29/github"
 )
 
 func Test_getMergeMethod(t *testing.T) {
@@ -149,5 +149,6 @@ func makeIssueWithLabels(labelNames []string, issueNumber int) *github.Issue {
 			Name: github.String(labelName),
 		})
 	}
+
 	return &github.Issue{Labels: labels, Number: github.Int(issueNumber)}
 }

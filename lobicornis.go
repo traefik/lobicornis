@@ -105,6 +105,7 @@ func launch(config *types.Configuration) error {
 		server := &server{config: config}
 		return server.ListenAndServe()
 	}
+
 	return core.Execute(*config)
 }
 
@@ -116,6 +117,7 @@ func setGitHubURL(config *types.Configuration) error {
 		}
 		config.GitHubURL = baseURL
 	}
+
 	return nil
 }
 

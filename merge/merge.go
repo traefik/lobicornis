@@ -14,7 +14,7 @@ import (
 	"github.com/containous/lobicornis/clone"
 	"github.com/containous/lobicornis/gh"
 	"github.com/containous/lobicornis/types"
-	"github.com/google/go-github/v28/github"
+	"github.com/google/go-github/v29/github"
 	"github.com/ldez/go-git-cmd-wrapper/git"
 	"github.com/ldez/go-git-cmd-wrapper/merge"
 	"github.com/ldez/go-git-cmd-wrapper/push"
@@ -49,6 +49,7 @@ func githubMerge(ctx context.Context, client *github.Client, pr *github.PullRequ
 		log.Println(err)
 		return types.Result{Message: err.Error(), Merged: false}, err
 	}
+
 	return types.Result{
 		Message: result.GetMessage(),
 		Merged:  result.GetMerged(),

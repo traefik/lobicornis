@@ -7,7 +7,7 @@ import (
 	"log"
 	"strings"
 
-	"github.com/google/go-github/v28/github"
+	"github.com/google/go-github/v29/github"
 )
 
 const (
@@ -49,9 +49,11 @@ func (g *GHub) HasReviewsApprove(ctx context.Context, pr *github.PullRequest, mi
 					reviewsState[review.User.GetLogin()] = review.GetState()
 				}
 			}
+
 			if resp.NextPage == 0 {
 				break
 			}
+
 			opt.Page = resp.NextPage
 		}
 
@@ -65,6 +67,7 @@ func (g *GHub) HasReviewsApprove(ctx context.Context, pr *github.PullRequest, mi
 			}
 		}
 	}
+
 	return nil
 }
 
@@ -120,6 +123,7 @@ func (g *GHub) GetStatus(ctx context.Context, pr *github.PullRequest) (string, e
 			summary += stat.GetDescription() + "\n"
 		}
 	}
+
 	return "", errors.New(summary)
 }
 
