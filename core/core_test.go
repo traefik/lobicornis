@@ -143,9 +143,9 @@ func Test_getMinReview(t *testing.T) {
 }
 
 func makeIssueWithLabels(labelNames []string, issueNumber int) *github.Issue {
-	var labels []github.Label
+	var labels []*github.Label
 	for _, labelName := range labelNames {
-		labels = append(labels, github.Label{
+		labels = append(labels, &github.Label{
 			Name: github.String(labelName),
 		})
 	}

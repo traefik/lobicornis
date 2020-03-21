@@ -80,9 +80,9 @@ func searchIssuePR(ctx context.Context, client *github.Client, repoID types.Repo
 	case 1, 2:
 		if retry != nil && retry.Number > 0 {
 			// find retry
-			var issuesRetry []github.Issue
+			var issuesRetry []*github.Issue
 			for _, issue := range issues {
-				if len(gh.FindLabelPrefix(&issue, markers.MergeRetryPrefix)) > 0 {
+				if len(gh.FindLabelPrefix(issue, markers.MergeRetryPrefix)) > 0 {
 					issuesRetry = append(issuesRetry, issue)
 				}
 			}
@@ -91,7 +91,7 @@ func searchIssuePR(ctx context.Context, client *github.Client, repoID types.Repo
 				for _, issue := range issuesRetry {
 					if time.Since(issue.GetUpdatedAt()) > time.Duration(retry.Interval) {
 						log.Printf("Find PR #%d, updated at %v", issue.GetNumber(), issue.GetUpdatedAt())
-						return &issue, nil
+						return issue, nil
 					}
 				}
 				return nil, nil
@@ -114,7 +114,7 @@ func searchIssuePR(ctx context.Context, client *github.Client, repoID types.Repo
 		for _, issue := range issues {
 			log.Printf("Find PR #%d, updated at %v", issue.GetNumber(), issue.GetUpdatedAt())
 		}
-		return &issues[0], nil
+		return issues[0], nil
 	}
 
 	return nil, nil

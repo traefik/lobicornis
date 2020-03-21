@@ -9,7 +9,7 @@ import (
 	"github.com/google/go-github/v30/github"
 )
 
-type byUpdated []github.Issue
+type byUpdated []*github.Issue
 
 func (a byUpdated) Len() int      { return len(a) }
 func (a byUpdated) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
@@ -18,7 +18,7 @@ func (a byUpdated) Less(i, j int) bool {
 }
 
 // FindOpenPR find open PR
-func FindOpenPR(ctx context.Context, client *github.Client, owner string, repositoryName string, debug bool, parameters ...Parameter) ([]github.Issue, error) {
+func FindOpenPR(ctx context.Context, client *github.Client, owner string, repositoryName string, debug bool, parameters ...Parameter) ([]*github.Issue, error) {
 	var filter string
 	for _, param := range parameters {
 		if param != nil {
@@ -47,8 +47,8 @@ func FindOpenPR(ctx context.Context, client *github.Client, owner string, reposi
 	return issues, nil
 }
 
-func findIssues(ctx context.Context, client *github.Client, query string, searchOptions *github.SearchOptions) ([]github.Issue, error) {
-	var allIssues []github.Issue
+func findIssues(ctx context.Context, client *github.Client, query string, searchOptions *github.SearchOptions) ([]*github.Issue, error) {
+	var allIssues []*github.Issue
 	for {
 		issuesSearchResult, resp, err := client.Search.Issues(ctx, query, searchOptions)
 		if err != nil {
