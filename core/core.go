@@ -11,7 +11,7 @@ import (
 	"github.com/containous/lobicornis/gh"
 	"github.com/containous/lobicornis/search"
 	"github.com/containous/lobicornis/types"
-	"github.com/google/go-github/v29/github"
+	"github.com/google/go-github/v30/github"
 )
 
 // Execute core process
