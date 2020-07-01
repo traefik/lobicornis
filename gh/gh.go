@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/containous/lobicornis/types"
-	"github.com/google/go-github/v30/github"
+	"github.com/google/go-github/v32/github"
 	"golang.org/x/oauth2"
 )
 
