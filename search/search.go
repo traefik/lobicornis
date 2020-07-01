@@ -34,7 +34,7 @@ func FindOpenPR(ctx context.Context, client *github.Client, owner string, reposi
 	options := &github.SearchOptions{
 		Sort:        "updated",
 		Order:       "desc",
-		ListOptions: github.ListOptions{PerPage: 25},
+		ListOptions: github.ListOptions{PerPage: 100},
 	}
 
 	issues, err := findIssues(ctx, client, query, options)
