@@ -41,7 +41,7 @@ func updatePR(ctx context.Context, ghub *gh.GHub, issuePR *github.Issue, pr *git
 }
 
 // Process clone a PR and update if needed.
-func cloneAndUpdate(ctx context.Context, ghub *gh.GHub, pr *github.PullRequest, gitConfig types.GitConfig, dryRun bool, debug bool) error {
+func cloneAndUpdate(ctx context.Context, ghub *gh.GHub, pr *github.PullRequest, gitConfig types.GitConfig, dryRun, debug bool) error {
 	log.Println("Base branch: ", pr.Base.GetRef(), "- Fork branch: ", pr.Head.GetRef())
 
 	dir, err := ioutil.TempDir("", "myrmica-lobicornis")

@@ -14,7 +14,7 @@ import (
 	"github.com/google/go-github/v32/github"
 )
 
-// Execute core process
+// Execute core process.
 func Execute(config types.Configuration) error {
 	ctx := context.Background()
 	client := gh.NewGitHubClient(ctx, config.GitHubToken, config.GitHubURL)
@@ -231,7 +231,7 @@ func process(ctx context.Context, client *github.Client, issuePR *github.Issue,
 	if checks.CheckNeedUpToDate {
 		rcs, _, errCheck := client.Repositories.GetRequiredStatusChecks(ctx, repoID.Owner, repoID.RepositoryName, pr.Base.GetRef())
 		if errCheck != nil {
-			return fmt.Errorf("PR #%d: unable to get status checks: %v", prNumber, errCheck)
+			return fmt.Errorf("PR #%d: unable to get status checks: %w", prNumber, errCheck)
 		}
 
 		needUpdate = rcs.Strict

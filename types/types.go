@@ -56,7 +56,7 @@ type LabelMarkers struct {
 	NoMerge           string `long:"no-merge" description:"Label use when a PR must not be merge."`
 }
 
-// Retry configuration
+// Retry configuration.
 type Retry struct {
 	Number      int            `long:"number" description:"Number of retry before failed."`
 	Interval    flaeg.Duration `long:"interval" description:"Time between retry."`

@@ -24,7 +24,7 @@ const (
 	Dismissed = "DISMISSED"
 )
 
-// HasReviewsApprove check if a PR have the required number of review
+// HasReviewsApprove check if a PR have the required number of review.
 func (g *GHub) HasReviewsApprove(ctx context.Context, pr *github.PullRequest, minReview int) error {
 	if minReview != 0 {
 		owner := pr.Base.Repo.Owner.GetLogin()
@@ -71,7 +71,7 @@ func (g *GHub) HasReviewsApprove(ctx context.Context, pr *github.PullRequest, mi
 	return nil
 }
 
-// IsUpToDateBranch check if a PR is up to date
+// IsUpToDateBranch check if a PR is up to date.
 func (g *GHub) IsUpToDateBranch(ctx context.Context, pr *github.PullRequest) (bool, error) {
 	cc, _, err := g.client.Repositories.CompareCommits(ctx,
 		pr.Base.Repo.Owner.GetLogin(), pr.Base.Repo.GetName(),
@@ -88,7 +88,7 @@ func (g *GHub) IsUpToDateBranch(ctx context.Context, pr *github.PullRequest) (bo
 	return cc.GetBehindBy() == 0, nil
 }
 
-// GetStatus provide checks status (status)
+// GetStatus provide checks status (status).
 func (g *GHub) GetStatus(ctx context.Context, pr *github.PullRequest) (string, error) {
 	owner := pr.Base.Repo.Owner.GetLogin()
 	repositoryName := pr.Base.Repo.GetName()
@@ -127,7 +127,7 @@ func (g *GHub) GetStatus(ctx context.Context, pr *github.PullRequest) (string, e
 	return "", errors.New(summary)
 }
 
-// GetCheckRunsState provide checks status (checksRun)
+// GetCheckRunsState provide checks status (checksRun).
 func (g *GHub) GetCheckRunsState(ctx context.Context, pr *github.PullRequest) (string, error) {
 	owner := pr.Base.Repo.Owner.GetLogin()
 	repositoryName := pr.Base.Repo.GetName()
@@ -160,7 +160,7 @@ func (g *GHub) GetCheckRunsState(ctx context.Context, pr *github.PullRequest) (s
 	return "", errors.New(strings.Join(msg, ", "))
 }
 
-// GetAggregatedState provide checks status (status + checksSuite)
+// GetAggregatedState provide checks status (status + checksSuite).
 func (g *GHub) GetAggregatedState(ctx context.Context, pr *github.PullRequest) (string, error) {
 	status, err := g.GetStatus(ctx, pr)
 	if err != nil {

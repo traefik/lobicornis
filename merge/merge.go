@@ -109,7 +109,7 @@ func fastForward(pr *github.PullRequest, gitConfig types.GitConfig, debug, dryRu
 }
 
 // getCoAuthors Extracts co-author from PR description.
-// Co-authored-by: login <email@email.com>
+//     Co-authored-by: login <email@email.com>
 func getCoAuthors(pr *github.PullRequest) []string {
 	exp := regexp.MustCompile(`^(?i)Co-authored-by:\s+(.+)\s+<(.+)>$`)
 

@@ -2,15 +2,15 @@ package search
 
 import "fmt"
 
-// Parameter search parameter
+// Parameter search parameter.
 type Parameter func() string
 
-// NoOp No operation parameter
+// NoOp No operation parameter.
 func NoOp() string {
 	return ""
 }
 
-// Cond apply conditionally some parameters
+// Cond apply conditionally some parameters.
 func Cond(apply bool, parameters ...Parameter) Parameter {
 	if apply {
 		return func() string {

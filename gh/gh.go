@@ -13,7 +13,7 @@ import (
 	"golang.org/x/oauth2"
 )
 
-// Merge Methods
+// Merge Methods.
 const (
 	MergeMethodSquash      = "squash"
 	MergeMethodRebase      = "rebase"
@@ -21,19 +21,19 @@ const (
 	MergeMethodFastForward = "ff"
 )
 
-// GHub GitHub helper
+// GHub GitHub helper.
 type GHub struct {
 	client *github.Client
 	dryRun bool
 	debug  bool
 }
 
-// NewGHub create a new GHub
-func NewGHub(client *github.Client, dryRun bool, debug bool) *GHub {
+// NewGHub create a new GHub.
+func NewGHub(client *github.Client, dryRun, debug bool) *GHub {
 	return &GHub{client: client, dryRun: dryRun, debug: debug}
 }
 
-// FindFirstCommit find the first commit of a PR
+// FindFirstCommit find the first commit of a PR.
 func (g *GHub) FindFirstCommit(ctx context.Context, pr *github.PullRequest) (*github.RepositoryCommit, error) {
 	options := &github.ListOptions{
 		PerPage: 1,
@@ -51,7 +51,7 @@ func (g *GHub) FindFirstCommit(ctx context.Context, pr *github.PullRequest) (*gi
 	return commits[0], nil
 }
 
-// RemoveLabels remove some labels on an issue (PR)
+// RemoveLabels remove some labels on an issue (PR).
 func (g *GHub) RemoveLabels(ctx context.Context, issue *github.Issue, repoID types.RepoID, labelsToRemove []string) error {
 	freshIssue, _, err := g.client.Issues.Get(ctx, repoID.Owner, repoID.RepositoryName, issue.GetNumber())
 	if err != nil {
@@ -78,7 +78,7 @@ func (g *GHub) RemoveLabels(ctx context.Context, issue *github.Issue, repoID typ
 	return nil
 }
 
-// RemoveLabel remove a label on an issue (PR)
+// RemoveLabel remove a label on an issue (PR).
 func (g *GHub) RemoveLabel(ctx context.Context, issue *github.Issue, repoID types.RepoID, label string) error {
 	if HasLabel(issue, label) {
 		log.Printf("Remove label: %s. Dry run: %v", label, g.dryRun)
@@ -88,7 +88,6 @@ func (g *GHub) RemoveLabel(ctx context.Context, issue *github.Issue, repoID type
 		}
 
 		resp, err := g.client.Issues.RemoveLabelForIssue(ctx, repoID.Owner, repoID.RepositoryName, issue.GetNumber(), label)
-
 		if err != nil {
 			return err
 		}
@@ -101,7 +100,7 @@ func (g *GHub) RemoveLabel(ctx context.Context, issue *github.Issue, repoID type
 	return nil
 }
 
-// AddLabels add some labels on an issue (PR)
+// AddLabels add some labels on an issue (PR).
 func (g *GHub) AddLabels(ctx context.Context, issue *github.Issue, repoID types.RepoID, labels ...string) error {
 	log.Printf("Add labels: %s. Dry run: %v", labels, g.dryRun)
 
@@ -110,7 +109,6 @@ func (g *GHub) AddLabels(ctx context.Context, issue *github.Issue, repoID types.
 	}
 
 	_, resp, err := g.client.Issues.AddLabelsToIssue(ctx, repoID.Owner, repoID.RepositoryName, issue.GetNumber(), labels)
-
 	if err != nil {
 		return err
 	}
@@ -122,12 +120,11 @@ func (g *GHub) AddLabels(ctx context.Context, issue *github.Issue, repoID types.
 	return nil
 }
 
-// AddComment add a comment on a PR
+// AddComment add a comment on a PR.
 func (g *GHub) AddComment(ctx context.Context, pr *github.PullRequest, msg string) error {
 	comment := &github.IssueComment{Body: github.String(msg)}
 
 	_, resp, err := g.client.Issues.CreateComment(ctx, pr.Base.Repo.Owner.GetLogin(), pr.Base.Repo.GetName(), pr.GetNumber(), comment)
-
 	if err != nil {
 		return err
 	}
@@ -139,7 +136,7 @@ func (g *GHub) AddComment(ctx context.Context, pr *github.PullRequest, msg strin
 	return nil
 }
 
-// HasLabel checks if an issue has a specific label
+// HasLabel checks if an issue has a specific label.
 func HasLabel(issue *github.Issue, label string) bool {
 	for _, lbl := range issue.Labels {
 		if lbl.GetName() == label {
@@ -150,7 +147,7 @@ func HasLabel(issue *github.Issue, label string) bool {
 	return false
 }
 
-// FindLabelPrefix Find an issue with a specific label prefix
+// FindLabelPrefix Find an issue with a specific label prefix.
 func FindLabelPrefix(issue *github.Issue, prefix string) string {
 	for _, lbl := range issue.Labels {
 		if strings.HasPrefix(lbl.GetName(), prefix) {
@@ -166,7 +163,7 @@ func IsOnMainRepository(pr *github.PullRequest) bool {
 	return pr.Base.Repo.GetGitURL() == pr.Head.Repo.GetGitURL()
 }
 
-// NewGitHubClient create a new GitHub client
+// NewGitHubClient create a new GitHub client.
 func NewGitHubClient(ctx context.Context, token string, gitHubURL *url.URL) *github.Client {
 	var client *github.Client
 	if len(token) == 0 {

@@ -17,7 +17,7 @@ import (
 )
 
 // PullRequest Update a pull request.
-func PullRequest(ctx context.Context, ghub *gh.GHub, pr *github.PullRequest, mainRemote string, dryRun bool, debug bool) (string, error) {
+func PullRequest(ctx context.Context, ghub *gh.GHub, pr *github.PullRequest, mainRemote string, dryRun, debug bool) (string, error) {
 	action, err := getUpdateAction(ctx, ghub, pr)
 	if err != nil {
 		return "", err
@@ -62,7 +62,7 @@ func getUpdateAction(ctx context.Context, ghub *gh.GHub, pr *github.PullRequest)
 	// find the first commit of the PR
 	firstCommit, err := ghub.FindFirstCommit(ctx, pr)
 	if err != nil {
-		return "", fmt.Errorf("PR #%d: unable to find the first commit: %v", pr.GetNumber(), err)
+		return "", fmt.Errorf("PR #%d: unable to find the first commit: %w", pr.GetNumber(), err)
 	}
 
 	// check if PR contains merges
@@ -73,7 +73,7 @@ func getUpdateAction(ctx context.Context, ghub *gh.GHub, pr *github.PullRequest)
 	})
 	if err != nil {
 		log.Println(output)
-		return "", fmt.Errorf("PR #%d: failed to display git log: %v", pr.GetNumber(), err)
+		return "", fmt.Errorf("PR #%d: failed to display git log: %w", pr.GetNumber(), err)
 	}
 
 	if len(strings.TrimSpace(output)) > 0 {

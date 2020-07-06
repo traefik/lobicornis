@@ -18,7 +18,7 @@ var (
 )
 
 // CloseRelatedIssues Closes issues listed in the PR description.
-func CloseRelatedIssues(ctx context.Context, client *github.Client, owner string, repositoryName string, pr *github.PullRequest, dryRun bool) error {
+func CloseRelatedIssues(ctx context.Context, client *github.Client, owner, repositoryName string, pr *github.PullRequest, dryRun bool) error {
 	issueNumbers := parseIssueFixes(pr.GetBody())
 
 	for _, issueNumber := range issueNumbers {
@@ -27,7 +27,7 @@ func CloseRelatedIssues(ctx context.Context, client *github.Client, owner string
 		if !dryRun {
 			err := closeIssue(ctx, client, owner, repositoryName, pr, issueNumber)
 			if err != nil {
-				return fmt.Errorf("unable to close issue #%d: %v", issueNumber, err)
+				return fmt.Errorf("unable to close issue #%d: %w", issueNumber, err)
 			}
 		}
 
@@ -40,7 +40,7 @@ func CloseRelatedIssues(ctx context.Context, client *github.Client, owner string
 			if !dryRun {
 				err := addComment(ctx, client, owner, repositoryName, issueNumber, message)
 				if err != nil {
-					return fmt.Errorf("unable to add comment on issue #%d: %v", issueNumber, err)
+					return fmt.Errorf("unable to add comment on issue #%d: %w", issueNumber, err)
 				}
 			}
 		}
@@ -49,7 +49,7 @@ func CloseRelatedIssues(ctx context.Context, client *github.Client, owner string
 	return nil
 }
 
-func closeIssue(ctx context.Context, client *github.Client, owner string, repositoryName string, pr *github.PullRequest, issueNumber int) error {
+func closeIssue(ctx context.Context, client *github.Client, owner, repositoryName string, pr *github.PullRequest, issueNumber int) error {
 	var milestone *int
 	if pr.Milestone != nil {
 		milestone = pr.Milestone.Number
@@ -64,7 +64,7 @@ func closeIssue(ctx context.Context, client *github.Client, owner string, reposi
 	return err
 }
 
-func addComment(ctx context.Context, client *github.Client, owner string, repositoryName string, issueNumber int, message string) error {
+func addComment(ctx context.Context, client *github.Client, owner, repositoryName string, issueNumber int, message string) error {
 	issueComment := &github.IssueComment{
 		Body: github.String(message),
 	}

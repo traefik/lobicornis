@@ -27,7 +27,7 @@ type prModel struct {
 	changed   remoteModel
 }
 
-// PullRequestForMerge Clone a pull request for a merge
+// PullRequestForMerge Clone a pull request for a merge.
 func PullRequestForMerge(pr *github.PullRequest, gitConfig types.GitConfig, debug bool) (string, error) {
 	var forkURL string
 	if pr.Base.Repo.GetPrivate() {
@@ -53,7 +53,7 @@ func PullRequestForMerge(pr *github.PullRequest, gitConfig types.GitConfig, debu
 	return pullRequest(pr, model, gitConfig, debug)
 }
 
-// PullRequestForUpdate Clone a pull request for an update (rebase)
+// PullRequestForUpdate Clone a pull request for an update (rebase).
 func PullRequestForUpdate(pr *github.PullRequest, gitConfig types.GitConfig, debug bool) (string, error) {
 	var unchangedURL string
 	if pr.Base.Repo.GetPrivate() {
@@ -96,7 +96,6 @@ func pullRequest(pr *github.PullRequest, prModel prModel, gitConfig types.GitCon
 
 	remoteName := types.RemoteUpstream
 	output, err := fromFork(prModel.changed, prModel.unchanged, prModel.number, gitConfig, remoteName, debug)
-
 	if err != nil {
 		log.Print(output)
 		return "", err
@@ -118,7 +117,7 @@ func fromMainRepository(remoteModel remoteModel, prNumber int, gitConfig types.G
 
 	output, err = git.Checkout(checkout.Branch(remoteModel.ref), git.Debugger(debug))
 	if err != nil {
-		return output, fmt.Errorf("PR #%d: Failed to checkout branch %s: %v", prNumber, remoteModel.ref, err)
+		return output, fmt.Errorf("PR #%d: Failed to checkout branch %s: %w", prNumber, remoteModel.ref, err)
 	}
 
 	return "", nil
@@ -141,12 +140,12 @@ func fromFork(origin, upstream remoteModel, prNumber int, gitConfig types.GitCon
 
 	output, err = git.Remote(remote.Add(remoteName, upstream.url), git.Debugger(debug))
 	if err != nil {
-		return output, fmt.Errorf("PR #%d: failed to add remote: %v", prNumber, err)
+		return output, fmt.Errorf("PR #%d: failed to add remote: %w", prNumber, err)
 	}
 
 	output, err = git.Fetch(fetch.NoTags, fetch.Remote(remoteName), fetch.RefSpec(upstream.ref), git.Debugger(debug))
 	if err != nil {
-		return output, fmt.Errorf("PR #%d: failed to fetch %s/%s : %v", prNumber, remoteName, upstream.ref, err)
+		return output, fmt.Errorf("PR #%d: failed to fetch %s/%s : %w", prNumber, remoteName, upstream.ref, err)
 	}
 
 	return "", nil
@@ -179,7 +178,7 @@ func configureGit(gitConfig types.GitConfig) (string, error) {
 	return configureGitUserInfo(gitConfig.UserName, gitConfig.Email)
 }
 
-func configureGitUserInfo(gitUserName string, gitUserEmail string) (string, error) {
+func configureGitUserInfo(gitUserName, gitUserEmail string) (string, error) {
 	if len(gitUserEmail) != 0 {
 		output, err := git.Config(config.Entry("user.email", gitUserEmail))
 		if err != nil {

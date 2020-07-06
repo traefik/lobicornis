@@ -35,6 +35,9 @@
     "gomnd",
     "wsl",
     "gocognit",
+    "testpackage",
+    "goerr113",
+    "nestif",
   ]
 
 [issues]

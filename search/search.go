@@ -17,8 +17,8 @@ func (a byUpdated) Less(i, j int) bool {
 	return a[i].GetUpdatedAt().Before(a[j].GetUpdatedAt())
 }
 
-// FindOpenPR find open PR
-func FindOpenPR(ctx context.Context, client *github.Client, owner string, repositoryName string, debug bool, parameters ...Parameter) ([]*github.Issue, error) {
+// FindOpenPR find open PR.
+func FindOpenPR(ctx context.Context, client *github.Client, owner, repositoryName string, debug bool, parameters ...Parameter) ([]*github.Issue, error) {
 	var filter string
 	for _, param := range parameters {
 		if param != nil {
