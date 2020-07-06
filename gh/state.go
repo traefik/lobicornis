@@ -144,6 +144,10 @@ func (g *GHub) GetCheckRunsState(ctx context.Context, pr *github.PullRequest) (s
 
 	var msg []string
 	for _, v := range checkSuites.CheckSuites {
+		if v.App != nil && strings.EqualFold(v.GetApp().GetName(), "Dependabot") {
+			continue
+		}
+
 		if v.GetStatus() != "completed" {
 			return Pending, nil
 		}
