@@ -1,7 +1,7 @@
 # Myrmica Lobicornis - Update and Merge Pull Request
 
 [![GitHub release](https://img.shields.io/github/release/containous/lobicornis.svg)](https://github.com/containous/lobicornis/releases/latest)
-[![Build Status](https://travis-ci.org/containous/lobicornis.svg?branch=master)](https://travis-ci.org/containous/lobicornis)
+[![Build Status](https://travis-ci.com/containous/lobicornis.svg?branch=master)](https://travis-ci.com/containous/lobicornis)
 [![Docker Build Status](https://img.shields.io/docker/build/containous/lobicornis.svg)](https://hub.docker.com/r/containous/lobicornis/builds/)
 
 ## Description
