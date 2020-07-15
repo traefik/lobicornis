@@ -42,6 +42,10 @@ func githubMerge(ctx context.Context, client *github.Client, pr *github.PullRequ
 	var message string
 	if mergeMethod == gh.MergeMethodSquash {
 		message = strings.Join(getCoAuthors(pr), "\n")
+		if message == "" {
+			// force the description in the commit message to be empty.
+			message = "\n"
+		}
 	}
 
 	result, _, err := client.PullRequests.Merge(ctx, pr.Base.Repo.Owner.GetLogin(), pr.Base.Repo.GetName(), pr.GetNumber(), message, options)
