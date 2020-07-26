@@ -31,14 +31,14 @@ func New(client *github.Client, debug bool, markers conf.Markers, retry conf.Ret
 
 // Search searches all PR in all repositories of the user.
 func (f Finder) Search(ctx context.Context, user string, parameters ...Parameter) (map[string][]*github.Issue, error) {
-	var filter string
+	query := fmt.Sprintf("user:%s type:pr state:open ", user)
+
 	for _, param := range parameters {
 		if param != nil {
-			filter += param()
+			query += param()
 		}
 	}
 
-	query := fmt.Sprintf("user:%s type:pr state:open %s", user, filter)
 	if f.debug {
 		log.Println(query)
 	}
@@ -82,15 +82,16 @@ func (f Finder) Search(ctx context.Context, user string, parameters ...Parameter
 
 // GetCurrentPull gets the current pull request.
 func (f Finder) GetCurrentPull(issues []*github.Issue) (*github.Issue, error) {
-	inProgress := findMergeInProgress(issues, f.markers.MergeInProgress)
+	inProgress := findIssuesWithLabel(issues, f.markers.MergeInProgress)
 
 	switch len(inProgress) {
 	case 1, 2:
 		if f.retry.Number > 0 {
 			// find retry
 			var issuesRetry []*github.Issue
+
 			for _, issue := range issues {
-				if len(findLabelPrefix(issue.Labels, f.markers.MergeRetryPrefix)) > 0 {
+				if findLabelPrefix(issue.Labels, f.markers.MergeRetryPrefix) != "" {
 					issuesRetry = append(issuesRetry, issue)
 				}
 			}
@@ -105,6 +106,7 @@ func (f Finder) GetCurrentPull(issues []*github.Issue) (*github.Issue, error) {
 						return issue, nil
 					}
 				}
+
 				return nil, nil
 			}
 		}
@@ -135,12 +137,12 @@ func (f Finder) GetCurrentPull(issues []*github.Issue) (*github.Issue, error) {
 	}
 }
 
-func findMergeInProgress(issues []*github.Issue, mipLabel string) []*github.Issue {
+func findIssuesWithLabel(issues []*github.Issue, lbl string) []*github.Issue {
 	var result []*github.Issue
 
 	for _, issue := range issues {
 		for _, label := range issue.Labels {
-			if label.GetName() == mipLabel {
+			if strings.EqualFold(label.GetName(), lbl) {
 				result = append(result, issue)
 			}
 		}

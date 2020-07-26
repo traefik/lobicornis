@@ -39,35 +39,37 @@ type Result struct {
 }
 
 func (r Repository) getMergeMethod(pr *github.PullRequest) (string, error) {
-	if len(r.markers.MergeMethodPrefix) != 0 {
-		var labels []string
-		for _, lbl := range pr.Labels {
-			if strings.HasPrefix(lbl.GetName(), r.markers.MergeMethodPrefix) {
-				labels = append(labels, lbl.GetName())
-			}
-		}
+	if r.markers.MergeMethodPrefix == "" {
+		return r.config.GetMergeMethod(), nil
+	}
 
-		if len(labels) == 0 {
-			return r.config.GetMergeMethod(), nil
-		}
-
-		if len(labels) > 1 {
-			return "", fmt.Errorf("too many custom merge method labels: %v", labels)
-		}
-
-		switch labels[0] {
-		case r.markers.MergeMethodPrefix + MergeMethodSquash:
-			return MergeMethodSquash, nil
-		case r.markers.MergeMethodPrefix + MergeMethodMerge:
-			return MergeMethodMerge, nil
-		case r.markers.MergeMethodPrefix + MergeMethodRebase:
-			return MergeMethodRebase, nil
-		case r.markers.MergeMethodPrefix + MergeMethodFastForward:
-			return MergeMethodFastForward, nil
+	var labels []string
+	for _, lbl := range pr.Labels {
+		if strings.HasPrefix(lbl.GetName(), r.markers.MergeMethodPrefix) {
+			labels = append(labels, lbl.GetName())
 		}
 	}
 
-	return r.config.GetMergeMethod(), nil
+	if len(labels) == 0 {
+		return r.config.GetMergeMethod(), nil
+	}
+
+	if len(labels) > 1 {
+		return "", fmt.Errorf("too many custom merge method labels: %v", labels)
+	}
+
+	switch labels[0] {
+	case r.markers.MergeMethodPrefix + MergeMethodSquash:
+		return MergeMethodSquash, nil
+	case r.markers.MergeMethodPrefix + MergeMethodMerge:
+		return MergeMethodMerge, nil
+	case r.markers.MergeMethodPrefix + MergeMethodRebase:
+		return MergeMethodRebase, nil
+	case r.markers.MergeMethodPrefix + MergeMethodFastForward:
+		return MergeMethodFastForward, nil
+	default:
+		return r.config.GetMergeMethod(), nil
+	}
 }
 
 func (r Repository) merge(ctx context.Context, pr *github.PullRequest, mergeMethod string) error {
@@ -159,10 +161,10 @@ func (r Repository) fastForward(pr *github.PullRequest) (Result, error) {
 	if err != nil {
 		return Result{Message: err.Error(), Merged: false}, err
 	}
+
 	defer func() {
-		errRemove := os.RemoveAll(dir)
-		if errRemove != nil {
-			log.Println(errRemove)
+		if errR := os.RemoveAll(dir); errR != nil {
+			log.Println(errR)
 		}
 	}()
 

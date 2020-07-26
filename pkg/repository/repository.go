@@ -24,6 +24,8 @@ const (
 	Dismissed = "DISMISSED"
 )
 
+const mainBranch = "master"
+
 type numbered interface {
 	GetNumber() int
 }

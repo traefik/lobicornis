@@ -92,8 +92,8 @@ func hasLabel(pr *github.PullRequest, label string) bool {
 	return false
 }
 
-// findLabelPrefix Find an issue with a specific label prefix.
-func findLabelPrefix(labels []*github.Label, prefix string) string {
+// findLabelNameWithPrefix Find an issue with a specific label prefix.
+func findLabelNameWithPrefix(labels []*github.Label, prefix string) string {
 	for _, lbl := range labels {
 		if strings.HasPrefix(lbl.GetName(), prefix) {
 			return lbl.GetName()

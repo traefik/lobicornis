@@ -65,7 +65,7 @@ func (r *Repository) cloneAndUpdate(ctx context.Context, pr *github.PullRequest)
 	tempDir, _ := os.Getwd()
 	log.Println(tempDir)
 
-	if isOnMainRepository(pr) && pr.Head.GetRef() == "master" {
+	if isOnMainRepository(pr) && pr.Head.GetRef() == mainBranch {
 		return errors.New("the branch master on a main repository cannot be rebased")
 	}
 

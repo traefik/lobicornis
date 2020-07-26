@@ -57,16 +57,19 @@ func (m Mjolnir) CloseRelatedIssues(ctx context.Context, pr *github.PullRequest)
 		}
 
 		// Add comment if needed
-		if pr.Base.GetRef() != "master" {
-			message := fmt.Sprintf("Closed by #%d.", pr.GetNumber())
 
-			log.Printf("issue #%d, add comment: %s", issueNumber, message)
+		if pr.Base.GetRef() == mainBranch {
+			return nil
+		}
 
-			if !m.dryRun {
-				err := m.addComment(ctx, issueNumber, message)
-				if err != nil {
-					return fmt.Errorf("unable to add comment on issue #%d: %w", issueNumber, err)
-				}
+		message := fmt.Sprintf("Closed by #%d.", pr.GetNumber())
+
+		log.Printf("issue #%d, add comment: %s", issueNumber, message)
+
+		if !m.dryRun {
+			err := m.addComment(ctx, issueNumber, message)
+			if err != nil {
+				return fmt.Errorf("unable to add comment on issue #%d: %w", issueNumber, err)
 			}
 		}
 	}
@@ -99,25 +102,25 @@ func (m Mjolnir) addComment(ctx context.Context, issueNumber int, message string
 }
 
 func (m Mjolnir) parseIssueFixes(text string) []int {
-	var issueNumbers []int
-
 	submatch := m.globalFixesIssueRE.FindStringSubmatch(strings.Replace(text, ":", "", -1))
 
-	if len(submatch) != 0 {
-		issuesRaw := m.fixesIssueRE.Split(submatch[1], -1)
-
-		for _, issueRaw := range issuesRaw {
-			cleanIssueRaw := m.cleanNumberRE.ReplaceAllString(issueRaw, "")
-			if len(cleanIssueRaw) != 0 {
-				numb, err := strconv.ParseInt(cleanIssueRaw, 10, 16)
-				if err != nil {
-					log.Println(err)
-				}
-
-				issueNumbers = append(issueNumbers, int(numb))
-			}
-		}
+	if len(submatch) == 0 {
+		return nil
 	}
 
+	issuesRaw := m.fixesIssueRE.Split(submatch[1], -1)
+
+	var issueNumbers []int
+	for _, issueRaw := range issuesRaw {
+		cleanIssueRaw := m.cleanNumberRE.ReplaceAllString(issueRaw, "")
+		if len(cleanIssueRaw) != 0 {
+			numb, err := strconv.ParseInt(cleanIssueRaw, 10, 16)
+			if err != nil {
+				log.Println(err)
+			}
+
+			issueNumbers = append(issueNumbers, int(numb))
+		}
+	}
 	return issueNumbers
 }

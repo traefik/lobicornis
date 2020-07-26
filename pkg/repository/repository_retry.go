@@ -15,7 +15,7 @@ func (r Repository) cleanRetryLabel(ctx context.Context, pr *github.PullRequest,
 		return
 	}
 
-	currentRetryLabel := findLabelPrefix(pr.Labels, r.markers.MergeRetryPrefix)
+	currentRetryLabel := findLabelNameWithPrefix(pr.Labels, r.markers.MergeRetryPrefix)
 	if len(currentRetryLabel) > 0 {
 		err := r.removeLabel(ctx, pr, currentRetryLabel)
 		if err != nil {
@@ -27,32 +27,32 @@ func (r Repository) cleanRetryLabel(ctx context.Context, pr *github.PullRequest,
 func (r Repository) manageRetryLabel(ctx context.Context, pr *github.PullRequest, retry bool) {
 	if !retry || r.retry.Number <= 0 {
 		// Need Human
-		errLabel := r.addLabels(ctx, pr, r.markers.NeedHumanMerge)
-		if errLabel != nil {
-			log.Println(errLabel)
+		errLbl := r.addLabels(ctx, pr, r.markers.NeedHumanMerge)
+		if errLbl != nil {
+			log.Println(errLbl)
 		}
 
-		errLabel = r.removeLabel(ctx, pr, r.markers.MergeInProgress)
-		if errLabel != nil {
-			log.Println(errLabel)
+		errLbl = r.removeLabel(ctx, pr, r.markers.MergeInProgress)
+		if errLbl != nil {
+			log.Println(errLbl)
 		}
 
 		return
 	}
 
-	currentRetryLabel := findLabelPrefix(pr.Labels, r.markers.MergeRetryPrefix)
+	currentRetryLabel := findLabelNameWithPrefix(pr.Labels, r.markers.MergeRetryPrefix)
 	if len(currentRetryLabel) == 0 {
 		// first retry
 		newRetryLabel := r.markers.MergeRetryPrefix + strconv.Itoa(1)
 
-		errLabel := r.addLabels(ctx, pr, newRetryLabel)
-		if errLabel != nil {
-			log.Println(errLabel)
+		errLbl := r.addLabels(ctx, pr, newRetryLabel)
+		if errLbl != nil {
+			log.Println(errLbl)
 		}
 
-		errLabel = r.addLabels(ctx, pr, r.markers.MergeInProgress)
-		if errLabel != nil {
-			log.Println(errLabel)
+		errLbl = r.addLabels(ctx, pr, r.markers.MergeInProgress)
+		if errLbl != nil {
+			log.Println(errLbl)
 		}
 
 		return
