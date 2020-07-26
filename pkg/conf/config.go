@@ -1,6 +1,8 @@
 package conf
 
 import (
+	"errors"
+	"fmt"
 	"os"
 	"time"
 
@@ -83,7 +85,7 @@ func (r *RepoConfig) GetMinLightReview() int {
 		return *r.MinLightReview
 	}
 
-	return 0
+	return -1
 }
 
 // GetMinReview gets MinReview.
@@ -92,7 +94,7 @@ func (r *RepoConfig) GetMinReview() int {
 		return *r.MinReview
 	}
 
-	return 0
+	return -1
 }
 
 // GetNeedMilestone gets NeedMilestone.
@@ -191,6 +193,11 @@ func Load(filename string) (Configuration, error) {
 		applyDefault(config, cfg)
 	}
 
+	err = validate(cfg)
+	if err != nil {
+		return Configuration{}, err
+	}
+
 	return cfg, nil
 }
 
@@ -222,6 +229,40 @@ func applyDefault(config *RepoConfig, cfg Configuration) {
 	if config.AddErrorInComment == nil {
 		config.AddErrorInComment = cfg.Default.AddErrorInComment
 	}
+}
+
+func validate(cfg Configuration) error {
+	fields := map[string]string{
+		"github.user":               cfg.Github.User,
+		"git.email":                 cfg.Git.Email,
+		"git.userName":              cfg.Git.UserName,
+		"markers.needMerge":         cfg.Markers.NeedMerge,
+		"markers.mergeInProgress":   cfg.Markers.MergeInProgress,
+		"markers.lightReview":       cfg.Markers.LightReview,
+		"markers.mergeMethodPrefix": cfg.Markers.MergeMethodPrefix,
+		"markers.needHumanMerge":    cfg.Markers.NeedHumanMerge,
+		"markers.noMerge":           cfg.Markers.NoMerge,
+	}
+
+	for field, value := range fields {
+		if value == "" {
+			return fmt.Errorf("%s is required", field)
+		}
+	}
+
+	if cfg.Default.GetMinReview() < 0 {
+		return errors.New("default.minReview is invalid")
+	}
+
+	if cfg.Default.GetMinLightReview() < 0 {
+		return errors.New("default.minLightReview is invalid")
+	}
+
+	if cfg.Default.GetMergeMethod() == "" {
+		return errors.New("default.mergeMethod is required")
+	}
+
+	return nil
 }
 
 // String convert a string to a string pointer.
