@@ -1,8 +1,9 @@
-package mjolnir
+package repository
 
 import (
-	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_parseIssueFixes(t *testing.T) {
@@ -16,7 +17,7 @@ func Test_parseIssueFixes(t *testing.T) {
 			text: `
 	Fixes dlsqj
 `,
-			expectedNumbers: []int{},
+			expectedNumbers: nil,
 		},
 		{
 			name: "valid issue numbers coma",
@@ -37,7 +38,7 @@ func Test_parseIssueFixes(t *testing.T) {
 			text: `
 	Fixes #13#14,#15,#16,
 `,
-			expectedNumbers: []int{},
+			expectedNumbers: nil,
 		},
 		{
 			name: "french style",
@@ -55,16 +56,16 @@ func Test_parseIssueFixes(t *testing.T) {
 		},
 	}
 
+	mjolnir := newMjolnir(nil, "", "", true, true)
+
 	for _, test := range testCases {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 
-			issueNumbers := parseIssueFixes(test.text)
+			issueNumbers := mjolnir.parseIssueFixes(test.text)
 
-			if (len(issueNumbers) != 0 || len(test.expectedNumbers) != 0) && !reflect.DeepEqual(issueNumbers, test.expectedNumbers) {
-				t.Errorf("Got %v, expected %v", issueNumbers, test.expectedNumbers)
-			}
+			assert.Equal(t, test.expectedNumbers, issueNumbers)
 		})
 	}
 }

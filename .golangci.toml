@@ -31,7 +31,7 @@
     "dupl",
     "prealloc",
     "scopelint",
-    "godox",
+#    "godox",
     "gomnd",
     "wsl",
     "gocognit",
@@ -49,11 +49,11 @@
     path = "(.+)_test.go"
     linters = ["funlen"]
   [[issues.exclude-rules]]
-    path = "version.go"
+    path = "cmd/version.go"
     text = "`(version|date|commit)` is a global variable"
   [[issues.exclude-rules]]
-    path = "mjolnir/close.go"
-    text = "`(.+)RE` is a global variable"
+    path = "pkg/repository/repository.go"
+    text = "Function 'Process' has too many statements \\(\\d+ > 40\\)" # FIXME must be changed
   [[issues.exclude-rules]]
-    path = "core/core.go"
-    text = "Function 'process' has too many statements" # FIXME must be changed
+    path = "pkg/repository/repository.go"
+    text = "cyclomatic complexity \\d+ of func `\\(Repository\\)\\.Process` is high \\(> 16\\)" # FIXME must be changed

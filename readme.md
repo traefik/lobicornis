@@ -8,82 +8,136 @@
 
 The bot:
 
-- find all open PRs with a specific label (`--marker.need-merge`)
+- find all open PRs with a specific label (`marker.needMerge`)
+- manage all the repositories of a user or an organization
 - take one PR
-    - with a specific label (`--marker.merge-in-progress`) if exists
+    - with a specific label (`marker.mergeInProgress`) if exists
     - or the least recently updated PR
 - verify:
     - GitHub checks (CI, ...)
     - "Mergeability"
-    - Reviews (`--min-review`)
+    - Reviews (`minReview`)
 - check if the PR need to be updated
     - if yes: rebase or merge with the base PR branch (ex: `master`)
-- merge the PR with the chosen merge method. (`--merge-method`, `--marker.merge-method-prefix`)
+- merge the PR with the chosen merge method. (`mergeMethod`, `marker.mergeMethodPrefix`)
 - closes related issues and add the same milestone as the PR
-- if errors occurs add a specific label (`--marker.need-human-merge`)
+- if errors occurs add a specific label (`marker.needHumanMerge`)
 - if the description of the PR contains a co-author (`Co-authored-by: login <email@email.com>`) the co-author is set on the merge commit.
 
 ```yaml
-Myrmica Lobicornis: Update and Merge Pull Request from GitHub.
+Myrmica Lobicornis:
+  -config string
+        Path to the configuration file. (default "./lobicornis.yml")
+  -h    Show this help.
+  -server
+        Run as a web server.
+  -version
+        Display version information.
+```
 
-Usage: lobicornis [--flag=flag_argument] [-f[flag_argument]] ...     set flag_argument to flag(s)
-   or: lobicornis [--flag[=true|false| ]] [-f[true|false| ]] ...     set true/false to boolean flag(s)
+`GITHUB_TOKEN`: GitHub token
 
-Available Commands:
-        version                                            Display the version.
-Use "lobicornis [command] --help" for more information about a command.
+Configuration file overview:
 
-Flags:
-    --check-up-to-date           Use GitHub repository configuration to check the need to be up-to-date. (default "false")
-    --debug                      Debug mode.                                                             (default "false")
-    --dry-run                    Dry run mode.                                                           (default "true")
-    --force-up-to-date           Forcing need up-to-date. (check-up-to-date must be false)               (default "true")
-    --git-email                  Git user email.
-    --git-name                   Git user name.
-    --github-url                 GitHub API URL (GitHub Enterprise) [optional]
-    --marker                     GitHub Labels.                                                          (default "true")
-    --marker.light-review        Label use when a pull request need a lower minimal review as default.   (default "bot/light-review")
-    --marker.merge-in-progress   Label use when the bot update the PR (merge/rebase).                    (default "status/4-merge-in-progress")
-    --marker.merge-method-prefix Use to override default merge method for a PR.                          (default "bot/merge-method-")
-    --marker.merge-retry-prefix  Use to manage merge retry.                                              (default "bot/merge-retry-")
-    --marker.need-human-merge    Label use when the bot cannot perform a merge.                          (default "bot/need-human-merge")
-    --marker.need-merge          Label use when you want the bot perform a merge.                        (default "status/3-needs-merge")
-    --marker.no-merge            Label use when a PR must not be merge.                                  (default "bot/no-merge")
-    --merge-method               Default merge method. (merge|squash|rebase|ff)                          (default "squash")
-    --min-light-review           Minimal number of review (light review).                                (default "0")
-    --min-review                 Minimal number of review.                                               (default "1")
-    --need-milestone             Forcing PR to have a milestone.                                         (default "true")
--o, --owner                      Repository owner. [required]
-    --port                       Server port.                                                            (default "80")
--r, --repo-name                  Repository name. [required]
-    --retry                      Merge retry configuration.                                              (default "false")
-    --retry.interval             Time between retry.                                                     (default "1m0s")
-    --retry.number               Number of retry before failed.                                          (default "0")
-    --retry.on-mergeable         Retry on PR mergeable state (GitHub information).                       (default "false")
-    --retry.on-statuses          Retry on GitHub checks (aka statuses).                                  (default "false")
-    --server                     Server mode.                                                            (default "false")
-    --ssh                        Use SSH instead HTTPS.                                                  (default "false")
--t, --token                      GitHub Token. [required]
--h, --help                       Print Help (this message) and exit 
+```yaml
+github:
+  # can be organization name or user name.
+  user: foo
+  # GitHub token.
+  token: XXXX
+  # optional only for GitHub Enterprise. 
+  url: http://my-private-github.com
+
+git:
+  # Git user email.
+  email: bot@example.com
+  # Git user name.
+  userName: botname
+  # if true, use SSH instead HTTPS.
+  ssh: false
+
+server:
+  # server port. (only used in server mode)
+  port: 80
+
+extra:
+  # Debug mode.
+  debug: false
+  # Dry run mode.
+  dryRun: true
+
+# GitHub Labels.
+markers:
+  # Label use when a pull request need a lower minimal review as default.
+  lightReview: bot/light-review
+  # Label use when the bot update the PR (merge/rebase).
+  mergeInProgress: status/4-merge-in-progress
+  # Use to override default merge method for a PR.
+  mergeMethodPrefix: bot/merge-method-
+  # Use to manage merge retry.
+  mergeRetryPrefix: bot/merge-retry-
+  # Label use when the bot cannot perform a merge.
+  needHumanMerge: bot/need-human-merge
+  # Label use when you want the bot perform a merge.
+  needMerge: status/3-needs-merge
+  # Label use when a PR must not be merge.
+  noMerge: bot/no-merge
+
+# Merge retry configuration.
+retry:
+  # Time between retry.
+  interval: 1m0s
+  # Number of retry before failed.
+  number: 1
+  # Retry on PR mergeable state (GitHub information).
+  onMergeable: false
+  # Retry on GitHub checks (aka statuses).
+  onStatuses: false
+
+# default configuration used by all repositories of the user.
+default:
+  # Use GitHub repository configuration to check the need to be up-to-date.
+  checkNeedUpToDate: false
+  # Forcing need up-to-date. (checkNeedUpToDate must be false)
+  forceNeedUpToDate: true
+  # Default merge method. (merge|squash|rebase|ff)
+  mergeMethod: squash
+  # Minimal number of review (light review).
+  minLightReview: 0
+  # Minimal number of review.
+  minReview: 1
+  # Forcing PR to have a milestone.
+  needMilestone: true
+  # Add a comment in the pull request when an error occurs.
+  addErrorInComment: false
+
+# defines override of the default configuration by repository.
+repositories:
+  'foo/myrepo1':
+    minLightReview: 1
+    minReview: 3
+    needMilestone: true
+  'foo/myrepo2':
+    minLightReview: 1
+    minReview: 1
+    needMilestone: false
 ```
 
 ## Examples
  
 ```bash
-lobicornis --debug --ssh -t xxxxxxxxxxxxx -o containous -r traefik --min-review=3
+export GITHUB_TOKEN=xxx
+lobicornis
 ```
 
 ```bash
-lobicornis --debug --ssh -t xxxxxxxxxxxxx -o containous -r traefik --min-review=3 \
-    --marker.merge-in-progress="merge-pending" \
-    --marker.need-human-merge="merge-fail" \
-    --marker.need-merge="merge-now"
+export GITHUB_TOKEN=xxx
+lobicornis -server
 ```
 
 ```bash
-lobicornis --debug --ssh -t xxxxxxxxxxxxx -o containous -r traefik --min-review=3 \
-    --marker.merge-method-prefix="merge-method-" \
-    --merge-method="rebase" 
+export GITHUB_TOKEN=xxx
+lobicornis -config="./my-config.yml"
 ```
 
 ## What does Myrmica Lobicornis mean?

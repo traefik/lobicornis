@@ -1,0 +1,51 @@
+github:
+  # organization name or user name
+  user: ldez
+  token: XXXX
+  url: http://my-private-github.com
+
+git:
+  email: bot@example.com
+  userName: botname
+  ssh: true
+
+server:
+  port: 80
+
+extra:
+  debug: false
+  dryRun: true
+
+markers:
+  lightReview: bot/light-review
+  mergeInProgress: status/4-merge-in-progress
+  mergeMethodPrefix: bot/merge-method-
+  mergeRetryPrefix: bot/merge-retry-
+  needHumanMerge: bot/need-human-merge
+  needMerge: status/3-needs-merge
+  noMerge: bot/no-merge
+
+retry:
+  interval: 1m0s
+  number: 0
+  onMergeable: false
+  onStatuses: false
+
+default:
+  checkNeedUpToDate: false
+  forceNeedUpToDate: true
+  mergeMethod: squash
+  minLightReview: 0
+  minReview: 1
+  needMilestone: true
+  addErrorInComment: false
+
+repositories:
+  'ldez/myrepo1':
+    minLightReview: 1
+    minReview: 0
+    needMilestone: true
+  'ldez/myrepo2':
+    minLightReview: 1
+    minReview: 1
+    needMilestone: false

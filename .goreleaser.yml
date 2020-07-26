@@ -2,6 +2,15 @@ project_name: lobicornis
 
 builds:
   - binary: lobicornis
+    main: ./cmd/
+
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w -X main.version={{.Version}}
+
     goos:
       - windows
       - darwin

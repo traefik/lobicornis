@@ -1,12 +1,11 @@
-package clone
+package repository
 
 import (
 	"fmt"
 	"log"
 	"strings"
 
-	"github.com/containous/lobicornis/gh"
-	"github.com/containous/lobicornis/types"
+	"github.com/containous/lobicornis/v2/pkg/conf"
 	"github.com/google/go-github/v32/github"
 	"github.com/ldez/go-git-cmd-wrapper/checkout"
 	"github.com/ldez/go-git-cmd-wrapper/clone"
@@ -27,13 +26,28 @@ type prModel struct {
 	changed   remoteModel
 }
 
+// Clone a clone manager.
+type Clone struct {
+	git   conf.Git
+	token string
+	debug bool
+}
+
+func newClone(gitConfig conf.Git, token string, debug bool) Clone {
+	return Clone{
+		git:   gitConfig,
+		token: token,
+		debug: debug,
+	}
+}
+
 // PullRequestForMerge Clone a pull request for a merge.
-func PullRequestForMerge(pr *github.PullRequest, gitConfig types.GitConfig, debug bool) (string, error) {
+func (c Clone) PullRequestForMerge(pr *github.PullRequest) (string, error) {
 	var forkURL string
 	if pr.Base.Repo.GetPrivate() {
-		forkURL = makeRepositoryURL(pr.Head.Repo.GetGitURL(), gitConfig.SSH, gitConfig.GitHubToken)
+		forkURL = makeRepositoryURL(pr.Head.Repo.GetGitURL(), c.git.SSH, c.token)
 	} else {
-		forkURL = makeRepositoryURL(pr.Head.Repo.GetGitURL(), gitConfig.SSH, "")
+		forkURL = makeRepositoryURL(pr.Head.Repo.GetGitURL(), c.git.SSH, "")
 	}
 
 	model := prModel{
@@ -45,21 +59,21 @@ func PullRequestForMerge(pr *github.PullRequest, gitConfig types.GitConfig, debu
 		},
 		// base
 		changed: remoteModel{
-			url: makeRepositoryURL(pr.Base.Repo.GetGitURL(), gitConfig.SSH, gitConfig.GitHubToken),
+			url: makeRepositoryURL(pr.Base.Repo.GetGitURL(), c.git.SSH, c.token),
 			ref: pr.Base.GetRef(),
 		},
 	}
 
-	return pullRequest(pr, model, gitConfig, debug)
+	return c.pullRequest(pr, model)
 }
 
 // PullRequestForUpdate Clone a pull request for an update (rebase).
-func PullRequestForUpdate(pr *github.PullRequest, gitConfig types.GitConfig, debug bool) (string, error) {
+func (c Clone) PullRequestForUpdate(pr *github.PullRequest) (string, error) {
 	var unchangedURL string
 	if pr.Base.Repo.GetPrivate() {
-		unchangedURL = makeRepositoryURL(pr.Base.Repo.GetGitURL(), gitConfig.SSH, gitConfig.GitHubToken)
+		unchangedURL = makeRepositoryURL(pr.Base.Repo.GetGitURL(), c.git.SSH, c.token)
 	} else {
-		unchangedURL = makeRepositoryURL(pr.Base.Repo.GetGitURL(), gitConfig.SSH, "")
+		unchangedURL = makeRepositoryURL(pr.Base.Repo.GetGitURL(), c.git.SSH, "")
 	}
 
 	model := prModel{
@@ -71,21 +85,21 @@ func PullRequestForUpdate(pr *github.PullRequest, gitConfig types.GitConfig, deb
 		},
 		// fork
 		changed: remoteModel{
-			url: makeRepositoryURL(pr.Head.Repo.GetGitURL(), gitConfig.SSH, gitConfig.GitHubToken),
+			url: makeRepositoryURL(pr.Head.Repo.GetGitURL(), c.git.SSH, c.token),
 			ref: pr.Head.GetRef(),
 		},
 	}
 
-	return pullRequest(pr, model, gitConfig, debug)
+	return c.pullRequest(pr, model)
 }
 
-func pullRequest(pr *github.PullRequest, prModel prModel, gitConfig types.GitConfig, debug bool) (string, error) {
-	if gh.IsOnMainRepository(pr) {
+func (c Clone) pullRequest(pr *github.PullRequest, prModel prModel) (string, error) {
+	if isOnMainRepository(pr) {
 		log.Print("It's not a fork, it's a branch on the main repository.")
 
-		remoteName := types.RemoteOrigin
+		remoteName := RemoteOrigin
 
-		output, err := fromMainRepository(prModel.changed, prModel.number, gitConfig, debug)
+		output, err := c.fromMainRepository(prModel.changed)
 		if err != nil {
 			log.Print(output)
 			return "", err
@@ -94,8 +108,8 @@ func pullRequest(pr *github.PullRequest, prModel prModel, gitConfig types.GitCon
 		return remoteName, nil
 	}
 
-	remoteName := types.RemoteUpstream
-	output, err := fromFork(prModel.changed, prModel.unchanged, prModel.number, gitConfig, remoteName, debug)
+	remoteName := RemoteUpstream
+	output, err := c.fromFork(prModel.changed, prModel.unchanged, remoteName)
 	if err != nil {
 		log.Print(output)
 		return "", err
@@ -104,48 +118,48 @@ func pullRequest(pr *github.PullRequest, prModel prModel, gitConfig types.GitCon
 	return remoteName, nil
 }
 
-func fromMainRepository(remoteModel remoteModel, prNumber int, gitConfig types.GitConfig, debug bool) (string, error) {
-	output, err := git.Clone(clone.Repository(remoteModel.url), clone.Directory("."), git.Debugger(debug))
+func (c Clone) fromMainRepository(remoteModel remoteModel) (string, error) {
+	output, err := git.Clone(clone.Repository(remoteModel.url), clone.Directory("."), git.Debugger(c.debug))
 	if err != nil {
 		return output, err
 	}
 
-	output, err = configureGit(gitConfig)
+	output, err = configureGit(c.git)
 	if err != nil {
 		return output, err
 	}
 
-	output, err = git.Checkout(checkout.Branch(remoteModel.ref), git.Debugger(debug))
+	output, err = git.Checkout(checkout.Branch(remoteModel.ref), git.Debugger(c.debug))
 	if err != nil {
-		return output, fmt.Errorf("PR #%d: Failed to checkout branch %s: %w", prNumber, remoteModel.ref, err)
+		return output, fmt.Errorf("failed to checkout branch %s: %w", remoteModel.ref, err)
 	}
 
 	return "", nil
 }
 
-func fromFork(origin, upstream remoteModel, prNumber int, gitConfig types.GitConfig, remoteName string, debug bool) (string, error) {
+func (c Clone) fromFork(origin, upstream remoteModel, remoteName string) (string, error) {
 	output, err := git.Clone(
 		clone.Repository(origin.url),
 		clone.Branch(origin.ref),
 		clone.Directory("."),
-		git.Debugger(debug))
+		git.Debugger(c.debug))
 	if err != nil {
 		return output, err
 	}
 
-	output, err = configureGit(gitConfig)
+	output, err = configureGit(c.git)
 	if err != nil {
 		return output, err
 	}
 
-	output, err = git.Remote(remote.Add(remoteName, upstream.url), git.Debugger(debug))
+	output, err = git.Remote(remote.Add(remoteName, upstream.url), git.Debugger(c.debug))
 	if err != nil {
-		return output, fmt.Errorf("PR #%d: failed to add remote: %w", prNumber, err)
+		return output, fmt.Errorf("failed to add remote: %w", err)
 	}
 
-	output, err = git.Fetch(fetch.NoTags, fetch.Remote(remoteName), fetch.RefSpec(upstream.ref), git.Debugger(debug))
+	output, err = git.Fetch(fetch.NoTags, fetch.Remote(remoteName), fetch.RefSpec(upstream.ref), git.Debugger(c.debug))
 	if err != nil {
-		return output, fmt.Errorf("PR #%d: failed to fetch %s/%s : %w", prNumber, remoteName, upstream.ref, err)
+		return output, fmt.Errorf("failed to fetch %s/%s : %w", remoteName, upstream.ref, err)
 	}
 
 	return "", nil
@@ -164,7 +178,7 @@ func makeRepositoryURL(url string, ssh bool, token string) string {
 	return strings.Replace(url, "git://", prefix, -1)
 }
 
-func configureGit(gitConfig types.GitConfig) (string, error) {
+func configureGit(gitConfig conf.Git) (string, error) {
 	output, err := git.Config(config.Entry("rebase.autoSquash", "true"))
 	if err != nil {
 		return output, err

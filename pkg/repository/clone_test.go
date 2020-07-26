@@ -1,19 +1,20 @@
-package clone
+package repository
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
 	"testing"
 
-	"github.com/containous/lobicornis/types"
+	"github.com/containous/lobicornis/v2/pkg/conf"
 	"github.com/google/go-github/v32/github"
 	"github.com/ldez/go-git-cmd-wrapper/git"
 	"github.com/ldez/go-git-cmd-wrapper/remote"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-func TestPullRequestForUpdate(t *testing.T) {
+func TestClone_PullRequestForUpdate(t *testing.T) {
 	testCases := []struct {
 		name                string
 		sameRepo            bool
@@ -36,63 +37,50 @@ func TestPullRequestForUpdate(t *testing.T) {
 		},
 	}
 
+	gitConfig := conf.Git{
+		UserName: "hubert",
+		Email:    "hubert@foo.com",
+		SSH:      false,
+	}
+
+	clone := newClone(gitConfig, "", true)
+
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
 			dir, err := ioutil.TempDir("", "myrmica-lobicornis")
-			if err != nil {
-				t.Fatal(err)
-			}
+			require.NoError(t, err)
+
 			t.Cleanup(func() { _ = os.RemoveAll(dir) })
 
 			err = os.Chdir(dir)
-			if err != nil {
-				t.Fatal(err)
-			}
+			require.NoError(t, err)
 
 			tempDir, err := os.Getwd()
-			if err != nil {
-				t.Fatal(err)
-			}
-			fmt.Println(tempDir)
+			require.NoError(t, err)
+
+			t.Log(tempDir)
 
 			pr := createFakePR(test.sameRepo)
 
-			gitConfig := types.GitConfig{
-				GitHubToken: "",
-				SSH:         false,
-				UserName:    "hubert",
-				Email:       "hubert@foo.com",
-			}
+			remoteName, err := clone.PullRequestForUpdate(pr)
+			require.NoError(t, err)
 
-			remoteName, err := PullRequestForUpdate(pr, gitConfig, true)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			if remoteName != test.expectedRemoteName {
-				t.Errorf("Got %s, want %s.", remoteName, test.expectedRemoteName)
-			}
+			assert.Equal(t, test.expectedRemoteName, remoteName)
 
 			localOriginURL, err := git.Remote(remote.GetURL("origin"))
-			if err != nil {
-				t.Fatal(err)
-			}
-			if strings.TrimSpace(localOriginURL) != test.expectedOriginURL {
-				t.Errorf("Got %s, want %s.", localOriginURL, test.expectedOriginURL)
-			}
+			require.NoError(t, err)
+
+			assert.Equal(t, test.expectedOriginURL, strings.TrimSpace(localOriginURL))
 
 			localUpstreamURL, err := git.Remote(remote.GetURL(test.expectedRemoteName))
-			if err != nil {
-				t.Fatal(err)
-			}
-			if strings.TrimSpace(localUpstreamURL) != test.expectedUpstreamURL {
-				t.Errorf("Got %s, want %s.", localUpstreamURL, test.expectedUpstreamURL)
-			}
+			require.NoError(t, err)
+
+			assert.Equal(t, test.expectedUpstreamURL, strings.TrimSpace(localUpstreamURL))
 		})
 	}
 }
 
-func TestPullRequestForMerge(t *testing.T) {
+func TestClone_PullRequestForMerge(t *testing.T) {
 	testCases := []struct {
 		name                string
 		sameRepo            bool
@@ -115,58 +103,45 @@ func TestPullRequestForMerge(t *testing.T) {
 		},
 	}
 
+	gitConfig := conf.Git{
+		UserName: "hubert",
+		Email:    "hubert@foo.com",
+		SSH:      false,
+	}
+
+	clone := newClone(gitConfig, "", true)
+
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
 			dir, err := ioutil.TempDir("", "myrmica-lobicornis")
-			if err != nil {
-				t.Fatal(err)
-			}
+			require.NoError(t, err)
+
 			t.Cleanup(func() { _ = os.RemoveAll(dir) })
 
 			err = os.Chdir(dir)
-			if err != nil {
-				t.Fatal(err)
-			}
+			require.NoError(t, err)
 
 			tempDir, err := os.Getwd()
-			if err != nil {
-				t.Fatal(err)
-			}
-			fmt.Println(tempDir)
+			require.NoError(t, err)
+
+			t.Log(tempDir)
 
 			pr := createFakePR(test.sameRepo)
 
-			gitConfig := types.GitConfig{
-				GitHubToken: "",
-				SSH:         false,
-				UserName:    "hubert",
-				Email:       "hubert@foo.com",
-			}
+			remoteName, err := clone.PullRequestForMerge(pr)
+			require.NoError(t, err)
 
-			remoteName, err := PullRequestForMerge(pr, gitConfig, true)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			if remoteName != test.expectedRemoteName {
-				t.Errorf("Got %s, want %s.", remoteName, test.expectedRemoteName)
-			}
+			assert.Equal(t, test.expectedRemoteName, remoteName)
 
 			localOriginURL, err := git.Remote(remote.GetURL("origin"))
-			if err != nil {
-				t.Fatal(err)
-			}
-			if strings.TrimSpace(localOriginURL) != test.expectedOriginURL {
-				t.Errorf("Got %s, want %s.", localOriginURL, test.expectedOriginURL)
-			}
+			require.NoError(t, err)
+
+			assert.Equal(t, test.expectedOriginURL, strings.TrimSpace(localOriginURL))
 
 			localUpstreamURL, err := git.Remote(remote.GetURL(test.expectedRemoteName))
-			if err != nil {
-				t.Fatal(err)
-			}
-			if strings.TrimSpace(localUpstreamURL) != test.expectedUpstreamURL {
-				t.Errorf("Got %s, want %s.", localUpstreamURL, test.expectedUpstreamURL)
-			}
+			require.NoError(t, err)
+
+			assert.Equal(t, test.expectedUpstreamURL, strings.TrimSpace(localUpstreamURL))
 		})
 	}
 }
