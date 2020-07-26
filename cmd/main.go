@@ -121,7 +121,7 @@ func run(cfg conf.Configuration) error {
 				log.Println("Nothing to merge.")
 			}
 
-			return nil
+			continue
 		}
 
 		repo := repository.New(client, fullName, cfg.Github.Token, cfg.Markers, cfg.Retry, cfg.Git, repoConfig, cfg.Extra)
