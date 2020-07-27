@@ -89,7 +89,7 @@ func (r Repository) merge(ctx context.Context, pr *github.PullRequest, mergeMeth
 		log.Println(result.Message)
 
 		if !result.Merged {
-			r.callHuman(ctx, pr, "failed to merge PR")
+			r.callHuman(ctx, pr, fmt.Sprintf("Failed to merge PR: %s", result.Message))
 
 			return errors.New("failed to merge PR")
 		}

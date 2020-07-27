@@ -85,7 +85,7 @@ func (r Repository) Process(ctx context.Context, prNumber int) error {
 	if r.config.GetNeedMilestone() && pr.Milestone == nil {
 		log.Printf("PR #%d: Must have a milestone.", prNumber)
 
-		r.callHuman(ctx, pr, "error: The milestone is missing.")
+		r.callHuman(ctx, pr, "The milestone is missing.")
 
 		return nil
 	}
@@ -94,7 +94,7 @@ func (r Repository) Process(ctx context.Context, prNumber int) error {
 	if err != nil {
 		log.Printf("PR #%d: Needs more reviews: %v", prNumber, err)
 
-		r.callHuman(ctx, pr, fmt.Sprintf("error: %v", err))
+		r.callHuman(ctx, pr, fmt.Sprintf("Error related to reviews: %v", err))
 
 		return nil
 	}
@@ -168,7 +168,7 @@ func (r Repository) Process(ctx context.Context, prNumber int) error {
 	}
 
 	if !upToDateBranch && mergeMethod == MergeMethodFastForward {
-		r.callHuman(ctx, pr, fmt.Sprintf("merge method [%s] is impossible when a branch is not up-to-date", mergeMethod))
+		r.callHuman(ctx, pr, fmt.Sprintf("The use of the merge method [%s] is impossible when a branch is not up-to-date", mergeMethod))
 
 		return fmt.Errorf("PR #%d: merge method [%s] is impossible when a branch is not up-to-date", prNumber, mergeMethod)
 	}
@@ -182,7 +182,7 @@ func (r Repository) Process(ctx context.Context, prNumber int) error {
 			}
 
 			if !repo.GetPrivate() && !repo.GetFork() {
-				r.callHuman(ctx, pr, "the contributor doesn't allow maintainer modification (GitHub option)")
+				r.callHuman(ctx, pr, "The contributor doesn't allow maintainer modification (GitHub option)")
 
 				return fmt.Errorf("PR #%d: the contributor doesn't allow maintainer modification (GitHub option)", prNumber)
 			}
@@ -210,7 +210,7 @@ func (r Repository) Process(ctx context.Context, prNumber int) error {
 }
 
 func (r Repository) callHuman(ctx context.Context, pr *github.PullRequest, message string) {
-	err := r.addComment(ctx, pr, message)
+	err := r.addComment(ctx, pr, " :no_entry_sign: "+message)
 	if err != nil {
 		log.Println(err)
 	}
