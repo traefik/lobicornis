@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"strings"
@@ -77,31 +78,35 @@ func New(client *github.Client, fullName, token string, markers conf.Markers, re
 func (r Repository) Process(ctx context.Context, prNumber int) error {
 	pr, _, err := r.client.PullRequests.Get(ctx, r.owner, r.name, prNumber)
 	if err != nil {
+		return fmt.Errorf("failed to get pull request: %w", err)
+	}
+
+	err = r.process(ctx, pr)
+	if err != nil {
+		r.callHuman(ctx, pr, err.Error())
+
 		return err
 	}
 
+	return nil
+}
+
+// process try to merge a pull request.
+func (r Repository) process(ctx context.Context, pr *github.PullRequest) error {
 	log.Println(pr.GetHTMLURL())
 
 	if r.config.GetNeedMilestone() && pr.Milestone == nil {
-		log.Printf("PR #%d: Must have a milestone.", prNumber)
-
-		r.callHuman(ctx, pr, "The milestone is missing.")
-
-		return nil
+		return errors.New("the milestone is missing")
 	}
 
-	err = r.hasReviewsApprove(ctx, pr)
+	err := r.hasReviewsApprove(ctx, pr)
 	if err != nil {
-		log.Printf("PR #%d: Needs more reviews: %v", prNumber, err)
-
-		r.callHuman(ctx, pr, fmt.Sprintf("Error related to reviews: %v", err))
-
-		return nil
+		return fmt.Errorf("error related to reviews: %v", err)
 	}
 
 	status, err := r.getAggregatedState(ctx, pr)
 	if err != nil {
-		log.Printf("PR #%d: Checks status: %v", prNumber, err)
+		log.Printf("PR #%d: Checks status: %v", pr.GetNumber(), err)
 
 		r.manageRetryLabel(ctx, pr, r.retry.OnStatuses)
 
@@ -110,11 +115,13 @@ func (r Repository) Process(ctx context.Context, prNumber int) error {
 
 	if status == Pending {
 		// skip
-		log.Printf("PR #%d: State: pending. Waiting for the CI.", prNumber)
+		log.Printf("PR #%d: State: pending. Waiting for the CI.", pr.GetNumber())
 		return nil
 	}
 
 	if pr.GetMerged() {
+		log.Printf("the PR #%d is already merged", pr.GetNumber())
+
 		labelsToRemove := []string{
 			r.markers.MergeInProgress,
 			r.markers.NeedMerge,
@@ -124,17 +131,14 @@ func (r Repository) Process(ctx context.Context, prNumber int) error {
 			r.markers.MergeMethodPrefix + MergeMethodRebase,
 			r.markers.MergeMethodPrefix + MergeMethodFastForward,
 		}
-		errLabel := r.removeLabels(ctx, pr, labelsToRemove)
-		if errLabel != nil {
-			log.Println(errLabel)
-		}
+		err = r.removeLabels(ctx, pr, labelsToRemove)
+		ignoreError(err)
 
-		log.Printf("the PR #%d is already merged", prNumber)
 		return nil
 	}
 
 	if !pr.GetMergeable() {
-		log.Printf("PR #%d: Conflicts must be resolve in the PR.", prNumber)
+		log.Printf("PR #%d: Conflicts must be resolve in the PR.", pr.GetNumber())
 
 		r.manageRetryLabel(ctx, pr, r.retry.OnMergeable)
 
@@ -149,7 +153,7 @@ func (r Repository) Process(ctx context.Context, prNumber int) error {
 	if r.config.GetCheckNeedUpToDate() {
 		rcs, _, errCheck := r.client.Repositories.GetRequiredStatusChecks(ctx, r.owner, r.name, pr.Base.GetRef())
 		if errCheck != nil {
-			return fmt.Errorf("PR #%d: unable to get status checks: %w", prNumber, errCheck)
+			return fmt.Errorf("unable to get status checks: %w", errCheck)
 		}
 
 		needUpdate = rcs.Strict
@@ -168,9 +172,7 @@ func (r Repository) Process(ctx context.Context, prNumber int) error {
 	}
 
 	if !upToDateBranch && mergeMethod == MergeMethodFastForward {
-		r.callHuman(ctx, pr, fmt.Sprintf("The use of the merge method [%s] is impossible when a branch is not up-to-date", mergeMethod))
-
-		return fmt.Errorf("PR #%d: merge method [%s] is impossible when a branch is not up-to-date", prNumber, mergeMethod)
+		return fmt.Errorf("the use of the merge method [%s] is impossible when a branch is not up-to-date", mergeMethod)
 	}
 
 	// Need to be up to date?
@@ -178,13 +180,11 @@ func (r Repository) Process(ctx context.Context, prNumber int) error {
 		if !pr.GetMaintainerCanModify() && !isOnMainRepository(pr) {
 			repo, _, err := r.client.Repositories.Get(ctx, r.owner, r.name)
 			if err != nil {
-				return err
+				return fmt.Errorf("unable to get repository information about %s/%s: %w", r.owner, r.name, err)
 			}
 
 			if !repo.GetPrivate() && !repo.GetFork() {
-				r.callHuman(ctx, pr, "The contributor doesn't allow maintainer modification (GitHub option)")
-
-				return fmt.Errorf("PR #%d: the contributor doesn't allow maintainer modification (GitHub option)", prNumber)
+				return errors.New("the contributor doesn't allow maintainer modification (GitHub option)")
 			}
 		}
 
@@ -196,7 +196,7 @@ func (r Repository) Process(ctx context.Context, prNumber int) error {
 		} else {
 			err := r.update(ctx, pr)
 			if err != nil {
-				return fmt.Errorf("PR #%d: failed to update", pr.GetNumber())
+				return fmt.Errorf("failed to update: %w", err)
 			}
 		}
 	} else {
@@ -210,20 +210,14 @@ func (r Repository) Process(ctx context.Context, prNumber int) error {
 }
 
 func (r Repository) callHuman(ctx context.Context, pr *github.PullRequest, message string) {
-	err := r.addComment(ctx, pr, " :no_entry_sign: "+message)
-	if err != nil {
-		log.Println(err)
-	}
+	err := r.addComment(ctx, pr, ":no_entry_sign: "+message)
+	ignoreError(err)
 
 	err = r.addLabels(ctx, pr, r.markers.NeedHumanMerge)
-	if err != nil {
-		log.Println(err)
-	}
+	ignoreError(err)
 
 	err = r.removeLabel(ctx, pr, r.markers.MergeInProgress)
-	if err != nil {
-		log.Println(err)
-	}
+	ignoreError(err)
 }
 
 func (r Repository) addComment(ctx context.Context, pr *github.PullRequest, message string) error {
@@ -243,9 +237,12 @@ func (r Repository) addComment(ctx context.Context, pr *github.PullRequest, mess
 	}
 
 	_, _, err := r.client.Issues.CreateComment(ctx, r.owner, r.name, pr.GetNumber(), comment)
-	if err != nil {
-		return err
-	}
 
-	return nil
+	return err
+}
+
+func ignoreError(err error) {
+	if err != nil {
+		log.Println(err)
+	}
 }

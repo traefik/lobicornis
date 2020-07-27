@@ -16,7 +16,7 @@ func (r *Repository) isUpToDateBranch(ctx context.Context, pr *github.PullReques
 
 	cc, _, err := r.client.Repositories.CompareCommits(ctx, r.owner, r.name, pr.Base.GetRef(), head)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("failed to compare commits: %w", err)
 	}
 
 	if r.debug {

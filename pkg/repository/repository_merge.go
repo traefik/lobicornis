@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -76,22 +75,17 @@ func (r Repository) merge(ctx context.Context, pr *github.PullRequest, mergeMeth
 	log.Printf("MERGE(%s)\n", mergeMethod)
 
 	err := r.removeLabel(ctx, pr, r.markers.MergeInProgress)
-	if err != nil {
-		log.Println(err)
-	}
+	ignoreError(err)
 
 	if !r.dryRun {
-		result, errMerge := r.mergePullRequest(ctx, pr, mergeMethod)
-		if errMerge != nil {
-			log.Println(errMerge)
-		}
+		var result Result
+		result, err = r.mergePullRequest(ctx, pr, mergeMethod)
+		ignoreError(err)
 
 		log.Println(result.Message)
 
 		if !result.Merged {
-			r.callHuman(ctx, pr, fmt.Sprintf("Failed to merge PR: %s", result.Message))
-
-			return errors.New("failed to merge PR")
+			return fmt.Errorf("failed to merge PR: %s", result.Message)
 		}
 
 		labelsToRemove := []string{
@@ -103,15 +97,11 @@ func (r Repository) merge(ctx context.Context, pr *github.PullRequest, mergeMeth
 			r.markers.MergeMethodPrefix + MergeMethodFastForward,
 		}
 		err = r.removeLabels(ctx, pr, labelsToRemove)
-		if err != nil {
-			log.Println(err)
-		}
+		ignoreError(err)
 	}
 
 	err = r.mjolnir.CloseRelatedIssues(ctx, pr)
-	if err != nil {
-		log.Println(err)
-	}
+	ignoreError(err)
 
 	return nil
 }
@@ -146,7 +136,6 @@ func (r Repository) githubMerge(ctx context.Context, pr *github.PullRequest, mer
 
 	result, _, err := r.client.PullRequests.Merge(ctx, r.owner, r.name, pr.GetNumber(), message, options)
 	if err != nil {
-		log.Println(err)
 		return Result{Message: err.Error(), Merged: false}, err
 	}
 
@@ -162,11 +151,7 @@ func (r Repository) fastForward(pr *github.PullRequest) (Result, error) {
 		return Result{Message: err.Error(), Merged: false}, err
 	}
 
-	defer func() {
-		if errR := os.RemoveAll(dir); errR != nil {
-			log.Println(errR)
-		}
-	}()
+	defer func() { ignoreError(os.RemoveAll(dir)) }()
 
 	err = os.Chdir(dir)
 	if err != nil {

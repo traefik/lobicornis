@@ -118,7 +118,7 @@ func run(cfg conf.Configuration) error {
 
 		if issue == nil {
 			if cfg.Extra.Debug {
-				log.Println("Nothing to merge.")
+				log.Printf("PR #%d: Nothing to merge.", issue.GetNumber())
 			}
 
 			continue
@@ -128,7 +128,7 @@ func run(cfg conf.Configuration) error {
 
 		err = repo.Process(ctx, issue.GetNumber())
 		if err != nil {
-			log.Println(err)
+			log.Printf("PR #%d: %v", issue.GetNumber(), err)
 		}
 	}
 

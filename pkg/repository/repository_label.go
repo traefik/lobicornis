@@ -24,17 +24,17 @@ func (r *Repository) removeLabels(ctx context.Context, pr numbered, labelsToRemo
 		}
 	}
 
-	if len(freshIssue.Labels) != len(newLabels) {
-		if newLabels == nil {
-			// Due to go-github/GitHub API constraint
-			newLabels = []string{}
-		}
-
-		_, _, errLabels := r.client.Issues.ReplaceLabelsForIssue(ctx, r.owner, r.name, pr.GetNumber(), newLabels)
-		return errLabels
+	if len(freshIssue.Labels) == len(newLabels) {
+		return nil
 	}
 
-	return nil
+	if newLabels == nil {
+		// Due to go-github/GitHub API constraint
+		newLabels = []string{}
+	}
+
+	_, _, err = r.client.Issues.ReplaceLabelsForIssue(ctx, r.owner, r.name, pr.GetNumber(), newLabels)
+	return err
 }
 
 // removeLabel remove a label on an issue (PR).
@@ -43,9 +43,8 @@ func (r Repository) removeLabel(ctx context.Context, pr *github.PullRequest, lab
 		return nil
 	}
 
-	log.Printf("Remove label: %s. Dry run: %v", label, r.dryRun)
-
 	if r.dryRun {
+		log.Printf("Remove label: %s. Dry run: %v", label, r.dryRun)
 		return nil
 	}
 
@@ -63,9 +62,8 @@ func (r Repository) removeLabel(ctx context.Context, pr *github.PullRequest, lab
 
 // addLabels add some labels on an issue (PR).
 func (r *Repository) addLabels(ctx context.Context, pr numbered, labels ...string) error {
-	log.Printf("Add labels: %s. Dry run: %v", labels, r.dryRun)
-
 	if r.dryRun {
+		log.Printf("Add labels: %s. Dry run: %v", labels, r.dryRun)
 		return nil
 	}
 

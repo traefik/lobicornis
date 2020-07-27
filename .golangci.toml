@@ -31,7 +31,6 @@
     "dupl",
     "prealloc",
     "scopelint",
-#    "godox",
     "gomnd",
     "wsl",
     "gocognit",

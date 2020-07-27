@@ -31,14 +31,7 @@ func (r *Repository) update(ctx context.Context, pr *github.PullRequest) error {
 		log.Println(err)
 	}
 
-	err = r.cloneAndUpdate(ctx, pr)
-	if err != nil {
-		r.callHuman(ctx, pr, fmt.Sprintf("error: %v", err))
-
-		return err
-	}
-
-	return nil
+	return r.cloneAndUpdate(ctx, pr)
 }
 
 // Process clone a PR and update if needed.
@@ -50,12 +43,7 @@ func (r *Repository) cloneAndUpdate(ctx context.Context, pr *github.PullRequest)
 		return err
 	}
 
-	defer func() {
-		errRemove := os.RemoveAll(dir)
-		if errRemove != nil {
-			log.Println(errRemove)
-		}
-	}()
+	defer func() { ignoreError(os.RemoveAll(dir)) }()
 
 	err = os.Chdir(dir)
 	if err != nil {
@@ -119,7 +107,6 @@ func (r *Repository) updatePullRequest(ctx context.Context, pr *github.PullReque
 		push.RefSpec(pr.Head.GetRef()),
 		git.Debugger(r.debug))
 	if err != nil {
-		log.Print(err)
 		return output, fmt.Errorf("failed to push branch %s: %w\n %s", pr.Head.GetRef(), err, output)
 	}
 
