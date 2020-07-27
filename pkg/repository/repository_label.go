@@ -43,8 +43,11 @@ func (r Repository) removeLabel(ctx context.Context, pr *github.PullRequest, lab
 		return nil
 	}
 
-	if r.dryRun {
+	if r.dryRun || r.debug {
 		log.Printf("Remove label: %s. Dry run: %v", label, r.dryRun)
+	}
+
+	if r.dryRun {
 		return nil
 	}
 
@@ -62,8 +65,11 @@ func (r Repository) removeLabel(ctx context.Context, pr *github.PullRequest, lab
 
 // addLabels add some labels on an issue (PR).
 func (r *Repository) addLabels(ctx context.Context, pr numbered, labels ...string) error {
-	if r.dryRun {
+	if r.dryRun || r.debug {
 		log.Printf("Add labels: %s. Dry run: %v", labels, r.dryRun)
+	}
+
+	if r.dryRun {
 		return nil
 	}
 
