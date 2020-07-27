@@ -77,7 +77,11 @@ func (r *Repository) cloneAndUpdate(ctx context.Context, pr *github.PullRequest)
 	output, err := r.updatePullRequest(ctx, pr, mainRemote)
 	log.Println(output)
 
-	return fmt.Errorf("failed to update the pull request: %w", err)
+	if err != nil {
+		return fmt.Errorf("failed to update the pull request: %w", err)
+	}
+
+	return nil
 }
 
 // updatePullRequest Update a pull request.
