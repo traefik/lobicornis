@@ -10,8 +10,8 @@ import (
 	"github.com/google/go-github/v32/github"
 )
 
-func (r Repository) cleanRetryLabel(ctx context.Context, pr *github.PullRequest, retry bool) {
-	if !retry {
+func (r Repository) cleanRetryLabel(ctx context.Context, pr *github.PullRequest) {
+	if !r.retry.OnMergeable && !r.retry.OnStatuses {
 		return
 	}
 

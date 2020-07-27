@@ -145,8 +145,7 @@ func (r Repository) process(ctx context.Context, pr *github.PullRequest) error {
 		return nil
 	}
 
-	retry := r.retry.OnMergeable || r.retry.OnStatuses
-	r.cleanRetryLabel(ctx, pr, retry)
+	r.cleanRetryLabel(ctx, pr)
 
 	// Get status checks
 	var needUpdate bool
