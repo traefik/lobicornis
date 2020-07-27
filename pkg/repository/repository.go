@@ -108,7 +108,7 @@ func (r Repository) process(ctx context.Context, pr *github.PullRequest) error {
 	if err != nil {
 		log.Printf("PR #%d: Checks status: %v", pr.GetNumber(), err)
 
-		r.manageRetryLabel(ctx, pr, r.retry.OnStatuses)
+		r.manageRetryLabel(ctx, pr, r.retry.OnStatuses, fmt.Errorf("checks status: %w", err))
 
 		return nil
 	}
@@ -138,9 +138,9 @@ func (r Repository) process(ctx context.Context, pr *github.PullRequest) error {
 	}
 
 	if !pr.GetMergeable() {
-		log.Printf("PR #%d: Conflicts must be resolve in the PR.", pr.GetNumber())
+		log.Printf("PR #%d: Conflicts must be resolved in the PR.", pr.GetNumber())
 
-		r.manageRetryLabel(ctx, pr, r.retry.OnMergeable)
+		r.manageRetryLabel(ctx, pr, r.retry.OnMergeable, errors.New("conflicts must be resolved in the PR"))
 
 		return nil
 	}

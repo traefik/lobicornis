@@ -22,14 +22,9 @@ func (r Repository) cleanRetryLabel(ctx context.Context, pr *github.PullRequest)
 	}
 }
 
-func (r Repository) manageRetryLabel(ctx context.Context, pr *github.PullRequest, retry bool) {
+func (r Repository) manageRetryLabel(ctx context.Context, pr *github.PullRequest, retry bool, rootErr error) {
 	if !retry || r.retry.Number <= 0 {
-		// Need Human
-		err := r.addLabels(ctx, pr, r.markers.NeedHumanMerge)
-		ignoreError(err)
-
-		err = r.removeLabel(ctx, pr, r.markers.MergeInProgress)
-		ignoreError(err)
+		r.callHuman(ctx, pr, rootErr.Error())
 
 		return
 	}
@@ -54,13 +49,14 @@ func (r Repository) manageRetryLabel(ctx context.Context, pr *github.PullRequest
 	number := extractRetryNumber(currentRetryLabel, r.markers.MergeRetryPrefix)
 
 	if number >= r.retry.Number {
-		r.callHuman(ctx, pr, fmt.Sprintf("Too many retry: %d/%d", number, r.retry.Number))
+		r.callHuman(ctx, pr, fmt.Sprintf("Too many retry [%d/%d]: %v", number, r.retry.Number, rootErr))
 
 		return
 	}
 
 	// retry
 	newRetryLabel := r.markers.MergeRetryPrefix + strconv.Itoa(number+1)
+
 	err = r.addLabels(ctx, pr, newRetryLabel)
 	ignoreError(err)
 }
