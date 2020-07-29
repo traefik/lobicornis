@@ -11,18 +11,11 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/containous/lobicornis/v2/pkg/conf"
 	"github.com/google/go-github/v32/github"
 	"github.com/ldez/go-git-cmd-wrapper/git"
 	"github.com/ldez/go-git-cmd-wrapper/merge"
 	"github.com/ldez/go-git-cmd-wrapper/push"
-)
-
-// Merge Methods.
-const (
-	MergeMethodSquash      = "squash"
-	MergeMethodRebase      = "rebase"
-	MergeMethodMerge       = "merge"
-	MergeMethodFastForward = "ff"
 )
 
 // Remote name.
@@ -58,14 +51,14 @@ func (r Repository) getMergeMethod(pr *github.PullRequest) (string, error) {
 	}
 
 	switch labels[0] {
-	case r.markers.MergeMethodPrefix + MergeMethodSquash:
-		return MergeMethodSquash, nil
-	case r.markers.MergeMethodPrefix + MergeMethodMerge:
-		return MergeMethodMerge, nil
-	case r.markers.MergeMethodPrefix + MergeMethodRebase:
-		return MergeMethodRebase, nil
-	case r.markers.MergeMethodPrefix + MergeMethodFastForward:
-		return MergeMethodFastForward, nil
+	case r.markers.MergeMethodPrefix + conf.MergeMethodSquash:
+		return conf.MergeMethodSquash, nil
+	case r.markers.MergeMethodPrefix + conf.MergeMethodMerge:
+		return conf.MergeMethodMerge, nil
+	case r.markers.MergeMethodPrefix + conf.MergeMethodRebase:
+		return conf.MergeMethodRebase, nil
+	case r.markers.MergeMethodPrefix + conf.MergeMethodFastForward:
+		return conf.MergeMethodFastForward, nil
 	default:
 		return r.config.GetMergeMethod(), nil
 	}
@@ -91,10 +84,10 @@ func (r Repository) merge(ctx context.Context, pr *github.PullRequest, mergeMeth
 		labelsToRemove := []string{
 			r.markers.NeedMerge,
 			r.markers.LightReview,
-			r.markers.MergeMethodPrefix + MergeMethodSquash,
-			r.markers.MergeMethodPrefix + MergeMethodMerge,
-			r.markers.MergeMethodPrefix + MergeMethodRebase,
-			r.markers.MergeMethodPrefix + MergeMethodFastForward,
+			r.markers.MergeMethodPrefix + conf.MergeMethodSquash,
+			r.markers.MergeMethodPrefix + conf.MergeMethodMerge,
+			r.markers.MergeMethodPrefix + conf.MergeMethodRebase,
+			r.markers.MergeMethodPrefix + conf.MergeMethodFastForward,
 		}
 		err = r.removeLabels(ctx, pr, labelsToRemove)
 		ignoreError(err)
@@ -108,7 +101,7 @@ func (r Repository) merge(ctx context.Context, pr *github.PullRequest, mergeMeth
 
 // mergePullRequest Merge a Pull Request.
 func (r Repository) mergePullRequest(ctx context.Context, pr *github.PullRequest, mergeMethod string) (Result, error) {
-	if mergeMethod == MergeMethodFastForward {
+	if mergeMethod == conf.MergeMethodFastForward {
 		return r.fastForward(pr)
 	}
 
@@ -126,7 +119,7 @@ func (r Repository) githubMerge(ctx context.Context, pr *github.PullRequest, mer
 	}
 
 	var message string
-	if mergeMethod == MergeMethodSquash {
+	if mergeMethod == conf.MergeMethodSquash {
 		message = strings.Join(getCoAuthors(pr), "\n")
 		if message == "" {
 			// force the description in the commit message to be empty.

@@ -42,13 +42,13 @@ type Server struct {
 
 // Markers the markers configuration.
 type Markers struct {
+	LightReview       string `yaml:"lightReview,omitempty"`
+	NeedMerge         string `yaml:"needMerge,omitempty"`
 	MergeInProgress   string `yaml:"mergeInProgress,omitempty"`
 	MergeMethodPrefix string `yaml:"mergeMethodPrefix,omitempty"`
 	MergeRetryPrefix  string `yaml:"mergeRetryPrefix,omitempty"`
 	NeedHumanMerge    string `yaml:"needHumanMerge,omitempty"`
-	NeedMerge         string `yaml:"needMerge,omitempty"`
 	NoMerge           string `yaml:"noMerge,omitempty"`
-	LightReview       string `yaml:"lightReview,omitempty"`
 }
 
 // Retry the retry configuration.

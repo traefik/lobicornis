@@ -11,20 +11,6 @@ import (
 	"github.com/google/go-github/v32/github"
 )
 
-const (
-	// Pending Check state
-	Pending = "pending"
-	// Success Check state
-	Success = "success"
-
-	// Approved Review state
-	Approved = "APPROVED"
-	// Commented Review state
-	Commented = "COMMENTED"
-	// Dismissed Review state
-	Dismissed = "DISMISSED"
-)
-
 const mainBranch = "master"
 
 type numbered interface {
@@ -124,10 +110,10 @@ func (r Repository) process(ctx context.Context, pr *github.PullRequest) error {
 			r.markers.MergeInProgress,
 			r.markers.NeedMerge,
 			r.markers.LightReview,
-			r.markers.MergeMethodPrefix + MergeMethodSquash,
-			r.markers.MergeMethodPrefix + MergeMethodMerge,
-			r.markers.MergeMethodPrefix + MergeMethodRebase,
-			r.markers.MergeMethodPrefix + MergeMethodFastForward,
+			r.markers.MergeMethodPrefix + conf.MergeMethodSquash,
+			r.markers.MergeMethodPrefix + conf.MergeMethodMerge,
+			r.markers.MergeMethodPrefix + conf.MergeMethodRebase,
+			r.markers.MergeMethodPrefix + conf.MergeMethodFastForward,
 		}
 		err = r.removeLabels(ctx, pr, labelsToRemove)
 		ignoreError(err)
@@ -166,7 +152,7 @@ func (r Repository) process(ctx context.Context, pr *github.PullRequest) error {
 		return err
 	}
 
-	if !upToDateBranch && mergeMethod == MergeMethodFastForward {
+	if !upToDateBranch && mergeMethod == conf.MergeMethodFastForward {
 		return fmt.Errorf("the use of the merge method [%s] is impossible when a branch is not up-to-date", mergeMethod)
 	}
 

@@ -97,6 +97,14 @@ func run(cfg conf.Configuration) error {
 
 	finder := search.New(client, cfg.Extra.Debug, cfg.Markers, cfg.Retry)
 
+	// search PRs with the FF merge method.
+	ffResults, err := finder.Search(ctx, cfg.Github.User,
+		search.WithLabels(cfg.Markers.MergeMethodPrefix+conf.MergeMethodFastForward),
+		search.WithExcludedLabels(cfg.Markers.NoMerge, cfg.Markers.NeedMerge))
+	if err != nil {
+		return err
+	}
+
 	// search NeedMerge
 	results, err := finder.Search(ctx, cfg.Github.User,
 		search.WithLabels(cfg.Markers.NeedMerge),
@@ -107,6 +115,11 @@ func run(cfg conf.Configuration) error {
 
 	for fullName, issues := range results {
 		log.Println("Repository", fullName)
+
+		if _, ok := ffResults[fullName]; ok {
+			log.Printf("Waiting for the merge of pull request with the label: %s", cfg.Markers.MergeMethodPrefix+conf.MergeMethodFastForward)
+			continue
+		}
 
 		repoConfig := getRepoConfig(cfg, fullName)
 

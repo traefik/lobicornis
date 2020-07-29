@@ -7,6 +7,20 @@ import (
 	"github.com/google/go-github/v32/github"
 )
 
+const (
+	// Pending Check state
+	Pending = "pending"
+	// Success Check state
+	Success = "success"
+
+	// Approved Review state
+	Approved = "APPROVED"
+	// Commented Review state
+	Commented = "COMMENTED"
+	// Dismissed Review state
+	Dismissed = "DISMISSED"
+)
+
 // hasReviewsApprove check if a PR have the required number of review.
 func (r Repository) hasReviewsApprove(ctx context.Context, pr *github.PullRequest) error {
 	minReview := r.getMinReview(pr)

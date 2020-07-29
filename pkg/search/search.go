@@ -86,14 +86,21 @@ func (f Finder) GetCurrentPull(issues []*github.Issue) (*github.Issue, error) {
 		return nil, nil
 	}
 
+	ff := findIssuesWithLabel(issues, f.markers.MergeMethodPrefix+conf.MergeMethodFastForward)
+	if len(ff) > 1 {
+		f.displayIssues(ff)
+
+		return nil, fmt.Errorf("multiple pull requests with the label %s", f.markers.MergeMethodPrefix+conf.MergeMethodFastForward)
+	}
+
+	if len(ff) > 0 {
+		return ff[0], nil
+	}
+
 	inProgress := findIssuesWithLabel(issues, f.markers.MergeInProgress)
 
 	if len(inProgress) == 0 {
-		if f.debug {
-			for _, issue := range issues {
-				log.Printf("Find PR #%d, updated at %v", issue.GetNumber(), issue.GetUpdatedAt())
-			}
-		}
+		f.displayIssues(issues)
 
 		return issues[0], nil
 	}
@@ -127,13 +134,17 @@ func (f Finder) GetCurrentPull(issues []*github.Issue) (*github.Issue, error) {
 		}
 	}
 
+	f.displayIssues(inProgress)
+
+	return inProgress[0], nil
+}
+
+func (f Finder) displayIssues(issues []*github.Issue) {
 	if f.debug {
-		for _, issue := range inProgress {
+		for _, issue := range issues {
 			log.Printf("Find PR #%d, updated at %v", issue.GetNumber(), issue.GetUpdatedAt())
 		}
 	}
-
-	return inProgress[0], nil
 }
 
 func findIssuesWithLabel(issues []*github.Issue, lbl string) []*github.Issue {
