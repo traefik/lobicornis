@@ -82,48 +82,13 @@ func (f Finder) Search(ctx context.Context, user string, parameters ...Parameter
 
 // GetCurrentPull gets the current pull request.
 func (f Finder) GetCurrentPull(issues []*github.Issue) (*github.Issue, error) {
+	if len(issues) == 0 {
+		return nil, nil
+	}
+
 	inProgress := findIssuesWithLabel(issues, f.markers.MergeInProgress)
 
-	switch len(inProgress) {
-	case 1, 2:
-		if f.retry.Number > 0 {
-			// find retry
-			var issuesRetry []*github.Issue
-
-			for _, issue := range issues {
-				if findLabelPrefix(issue.Labels, f.markers.MergeRetryPrefix) != "" {
-					issuesRetry = append(issuesRetry, issue)
-				}
-			}
-
-			if len(issuesRetry) > 0 {
-				for _, issue := range issuesRetry {
-					if time.Since(issue.GetUpdatedAt()) > f.retry.Interval {
-						if f.debug {
-							log.Printf("Find PR #%d, updated at %v", issue.GetNumber(), issue.GetUpdatedAt())
-						}
-
-						return issue, nil
-					}
-				}
-
-				return nil, nil
-			}
-		}
-
-		if f.debug {
-			for _, issue := range inProgress {
-				log.Printf("Find PR #%d, updated at %v", issue.GetNumber(), issue.GetUpdatedAt())
-			}
-		}
-
-		return inProgress[0], nil
-
-	case 0:
-		if len(issues) == 0 {
-			return nil, nil
-		}
-
+	if len(inProgress) == 0 {
 		if f.debug {
 			for _, issue := range issues {
 				log.Printf("Find PR #%d, updated at %v", issue.GetNumber(), issue.GetUpdatedAt())
@@ -131,10 +96,44 @@ func (f Finder) GetCurrentPull(issues []*github.Issue) (*github.Issue, error) {
 		}
 
 		return issues[0], nil
+	}
 
-	default:
+	if len(inProgress) > 2 {
 		return nil, fmt.Errorf("illegal state: multiple PR with the label: %s", f.markers.MergeInProgress)
 	}
+
+	if f.retry.Number > 0 {
+		// find retries
+
+		var issuesRetry []*github.Issue
+		for _, issue := range inProgress {
+			if findLabelPrefix(issue.Labels, f.markers.MergeRetryPrefix) != "" {
+				issuesRetry = append(issuesRetry, issue)
+			}
+		}
+
+		if len(issuesRetry) > 0 {
+			for _, issue := range issuesRetry {
+				if time.Since(issue.GetUpdatedAt()) > f.retry.Interval {
+					if f.debug {
+						log.Printf("Find PR #%d, updated at %v", issue.GetNumber(), issue.GetUpdatedAt())
+					}
+
+					return issue, nil
+				}
+			}
+
+			return nil, nil
+		}
+	}
+
+	if f.debug {
+		for _, issue := range inProgress {
+			log.Printf("Find PR #%d, updated at %v", issue.GetNumber(), issue.GetUpdatedAt())
+		}
+	}
+
+	return inProgress[0], nil
 }
 
 func findIssuesWithLabel(issues []*github.Issue, lbl string) []*github.Issue {
