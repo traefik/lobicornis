@@ -81,6 +81,7 @@ func (f Finder) Search(ctx context.Context, user string, parameters ...Parameter
 }
 
 // GetCurrentPull gets the current pull request.
+// priorities: ff > retry > in progress > need merge
 func (f Finder) GetCurrentPull(issues []*github.Issue) (*github.Issue, error) {
 	if len(issues) == 0 {
 		return nil, nil
