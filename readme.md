@@ -110,6 +110,8 @@ default:
   needMilestone: true
   # Add a comment in the pull request when an error occurs.
   addErrorInComment: false
+  # When the merge method is squash, define the strategy to create the commit message. (github|empty|description)
+  commitMessage: empty
 
 # defines override of the default configuration by repository.
 repositories:

@@ -118,14 +118,7 @@ func (r Repository) githubMerge(ctx context.Context, pr *github.PullRequest, mer
 		CommitTitle: pr.GetTitle(),
 	}
 
-	var message string
-	if mergeMethod == conf.MergeMethodSquash {
-		message = strings.Join(getCoAuthors(pr), "\n")
-		if message == "" {
-			// force the description in the commit message to be empty.
-			message = "\n"
-		}
-	}
+	message := r.getCommitMessage(mergeMethod, pr)
 
 	result, _, err := r.client.PullRequests.Merge(ctx, r.owner, r.name, pr.GetNumber(), message, options)
 	if err != nil {
@@ -136,6 +129,26 @@ func (r Repository) githubMerge(ctx context.Context, pr *github.PullRequest, mer
 		Message: result.GetMessage(),
 		Merged:  result.GetMerged(),
 	}, nil
+}
+
+func (r Repository) getCommitMessage(mergeMethod string, pr *github.PullRequest) string {
+	if mergeMethod != conf.MergeMethodSquash {
+		return ""
+	}
+
+	switch r.config.GetCommitMessage() {
+	case "github":
+		return ""
+	case "description":
+		return pr.GetBody()
+	default:
+		message := strings.Join(getCoAuthors(pr), "\n")
+		if message == "" {
+			// force the description in the commit message to be empty.
+			message = "\n"
+		}
+		return message
+	}
 }
 
 func (r Repository) fastForward(pr *github.PullRequest) (Result, error) {

@@ -18,11 +18,11 @@ extra:
 
 markers:
   lightReview: bot/light-review
+  needMerge: status/3-needs-merge
   mergeInProgress: status/4-merge-in-progress
   mergeMethodPrefix: bot/merge-method-
   mergeRetryPrefix: bot/merge-retry-
   needHumanMerge: bot/need-human-merge
-  needMerge: status/3-needs-merge
   noMerge: bot/no-merge
 
 retry:
@@ -39,6 +39,7 @@ default:
   minReview: 1
   needMilestone: true
   addErrorInComment: false
+  commitMessage: empty
 
 repositories:
   'ldez/myrepo1':
@@ -49,3 +50,4 @@ repositories:
     minLightReview: 1
     minReview: 1
     needMilestone: false
+    commitMessage: description

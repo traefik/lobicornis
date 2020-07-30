@@ -59,80 +59,6 @@ type Retry struct {
 	OnStatuses  bool          `yaml:"onStatuses,omitempty"`
 }
 
-// RepoConfig the repo configuration.
-type RepoConfig struct {
-	MergeMethod       *string `yaml:"mergeMethod,omitempty"`
-	MinLightReview    *int    `yaml:"minLightReview,omitempty"`
-	MinReview         *int    `yaml:"minReview,omitempty"`
-	NeedMilestone     *bool   `yaml:"needMilestone,omitempty"`
-	CheckNeedUpToDate *bool   `yaml:"checkNeedUpToDate,omitempty"`
-	ForceNeedUpToDate *bool   `yaml:"forceNeedUpToDate,omitempty"`
-	AddErrorInComment *bool   `yaml:"addErrorInComment,omitempty"`
-}
-
-// GetMergeMethod gets merge method.
-func (r *RepoConfig) GetMergeMethod() string {
-	if r.MergeMethod != nil {
-		return *r.MergeMethod
-	}
-
-	return ""
-}
-
-// GetMinLightReview gets MinLightReview.
-func (r *RepoConfig) GetMinLightReview() int {
-	if r.MinLightReview != nil {
-		return *r.MinLightReview
-	}
-
-	return -1
-}
-
-// GetMinReview gets MinReview.
-func (r *RepoConfig) GetMinReview() int {
-	if r.MinReview != nil {
-		return *r.MinReview
-	}
-
-	return -1
-}
-
-// GetNeedMilestone gets NeedMilestone.
-func (r *RepoConfig) GetNeedMilestone() bool {
-	if r.NeedMilestone != nil {
-		return *r.NeedMilestone
-	}
-
-	return false
-}
-
-// GetCheckNeedUpToDate gets CheckNeedUpToDate.
-func (r *RepoConfig) GetCheckNeedUpToDate() bool {
-	if r.CheckNeedUpToDate != nil {
-		return *r.CheckNeedUpToDate
-	}
-
-	return false
-}
-
-// GetForceNeedUpToDate gets ForceNeedUpToDate.
-func (r *RepoConfig) GetForceNeedUpToDate() bool {
-	if r.ForceNeedUpToDate != nil {
-		return *r.ForceNeedUpToDate
-	}
-
-	return false
-}
-
-// GetAddErrorInComment gets AddErrorInComment.
-func (r *RepoConfig) GetAddErrorInComment() bool {
-	if r.AddErrorInComment != nil {
-		return *r.AddErrorInComment
-	}
-
-	return false
-}
-
 // Extra the extra configuration.
 type Extra struct {
 	Debug  bool `yaml:"debug,omitempty"`
@@ -154,12 +80,12 @@ func Load(filename string) (Configuration, error) {
 			Port: 80,
 		},
 		Markers: Markers{
-			NeedHumanMerge:    "bot/need-human-merge",
+			LightReview:       "bot/light-review",
 			NeedMerge:         "status/3-needs-merge",
 			MergeInProgress:   "status/4-merge-in-progress",
 			MergeMethodPrefix: "bot/merge-method-",
 			MergeRetryPrefix:  "bot/merge-retry-",
-			LightReview:       "bot/light-review",
+			NeedHumanMerge:    "bot/need-human-merge",
 			NoMerge:           "bot/no-merge",
 		},
 		Retry: Retry{
@@ -173,6 +99,7 @@ func Load(filename string) (Configuration, error) {
 			CheckNeedUpToDate: Bool(false),
 			ForceNeedUpToDate: Bool(true),
 			AddErrorInComment: Bool(false),
+			CommitMessage:     String("empty"),
 		},
 		Extra: Extra{
 			Debug:  false,
@@ -228,6 +155,10 @@ func applyDefault(config *RepoConfig, cfg Configuration) {
 
 	if config.AddErrorInComment == nil {
 		config.AddErrorInComment = cfg.Default.AddErrorInComment
+	}
+
+	if config.CommitMessage == nil {
+		config.CommitMessage = cfg.Default.CommitMessage
 	}
 }
 

@@ -32,13 +32,13 @@ func TestLoad(t *testing.T) {
 					Port: 80,
 				},
 				Markers: Markers{
+					LightReview:       "bot/light-review",
+					NeedMerge:         "status/3-needs-merge",
 					MergeInProgress:   "status/4-merge-in-progress",
 					MergeMethodPrefix: "bot/merge-method-",
 					MergeRetryPrefix:  "bot/merge-retry-",
 					NeedHumanMerge:    "bot/need-human-merge",
-					NeedMerge:         "status/3-needs-merge",
 					NoMerge:           "bot/no-merge",
-					LightReview:       "bot/light-review",
 				},
 				Retry: Retry{
 					Interval:    1 * time.Minute,
@@ -54,6 +54,7 @@ func TestLoad(t *testing.T) {
 					CheckNeedUpToDate: Bool(false),
 					ForceNeedUpToDate: Bool(true),
 					AddErrorInComment: Bool(false),
+					CommitMessage:     String("empty"),
 				},
 				Extra: Extra{
 					Debug:  false,
@@ -68,6 +69,7 @@ func TestLoad(t *testing.T) {
 						CheckNeedUpToDate: Bool(false),
 						ForceNeedUpToDate: Bool(true),
 						AddErrorInComment: Bool(false),
+						CommitMessage:     String("empty"),
 					},
 					"ldez/myrepo2": {
 						MergeMethod:       String("squash"),
@@ -77,6 +79,7 @@ func TestLoad(t *testing.T) {
 						CheckNeedUpToDate: Bool(false),
 						ForceNeedUpToDate: Bool(true),
 						AddErrorInComment: Bool(false),
+						CommitMessage:     String("description"),
 					},
 				},
 			},
@@ -99,13 +102,13 @@ func TestLoad(t *testing.T) {
 					Port: 80,
 				},
 				Markers: Markers{
+					LightReview:       "bot/ooo",
+					NeedMerge:         "status/3-needs-merge",
 					MergeInProgress:   "status/4-merge-in-progress",
 					MergeMethodPrefix: "bot/merge-method-",
 					MergeRetryPrefix:  "bot/merge-retry-",
 					NeedHumanMerge:    "bot/need-human-merge",
-					NeedMerge:         "status/3-needs-merge",
 					NoMerge:           "bot/no-merge",
-					LightReview:       "bot/ooo",
 				},
 				Retry: Retry{
 					Interval:    1 * time.Minute,
@@ -121,6 +124,7 @@ func TestLoad(t *testing.T) {
 					CheckNeedUpToDate: Bool(false),
 					ForceNeedUpToDate: Bool(true),
 					AddErrorInComment: Bool(false),
+					CommitMessage:     String("empty"),
 				},
 				Extra: Extra{
 					Debug:  false,
@@ -135,6 +139,7 @@ func TestLoad(t *testing.T) {
 						CheckNeedUpToDate: Bool(false),
 						ForceNeedUpToDate: Bool(true),
 						AddErrorInComment: Bool(false),
+						CommitMessage:     String("empty"),
 					},
 					"ldez/myrepo2": {
 						MergeMethod:       String("squash"),
@@ -144,6 +149,7 @@ func TestLoad(t *testing.T) {
 						CheckNeedUpToDate: Bool(false),
 						ForceNeedUpToDate: Bool(true),
 						AddErrorInComment: Bool(false),
+						CommitMessage:     String("empty"),
 					},
 				},
 			},
