@@ -202,7 +202,7 @@ func (r Repository) callHuman(ctx context.Context, pr *github.PullRequest, messa
 }
 
 func (r Repository) addComment(ctx context.Context, pr *github.PullRequest, message string) error {
-	if !r.config.GetAddErrorInComment() {
+	if !r.config.GetAddErrorInComment() && !pr.Base.Repo.GetPrivate() {
 		return nil
 	}
 
