@@ -11,11 +11,11 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/containous/lobicornis/v2/pkg/conf"
 	"github.com/google/go-github/v32/github"
 	"github.com/ldez/go-git-cmd-wrapper/git"
 	"github.com/ldez/go-git-cmd-wrapper/merge"
 	"github.com/ldez/go-git-cmd-wrapper/push"
+	"github.com/traefik/lobicornis/v2/pkg/conf"
 )
 
 // Remote name.

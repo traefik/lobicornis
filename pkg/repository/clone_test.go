@@ -6,12 +6,12 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/containous/lobicornis/v2/pkg/conf"
 	"github.com/google/go-github/v32/github"
 	"github.com/ldez/go-git-cmd-wrapper/git"
 	"github.com/ldez/go-git-cmd-wrapper/remote"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/traefik/lobicornis/v2/pkg/conf"
 )
 
 func TestClone_PullRequestForUpdate(t *testing.T) {
@@ -26,14 +26,14 @@ func TestClone_PullRequestForUpdate(t *testing.T) {
 			name:                "PR with 2 different repositories",
 			expectedRemoteName:  "upstream",
 			expectedOriginURL:   "https://github.com/ldez/traefik.git",
-			expectedUpstreamURL: "https://github.com/containous/traefik.git",
+			expectedUpstreamURL: "https://github.com/traefik/traefik.git",
 		},
 		{
 			name:                "PR from main repository",
 			sameRepo:            true,
 			expectedRemoteName:  "origin",
-			expectedOriginURL:   "https://github.com/containous/traefik.git",
-			expectedUpstreamURL: "https://github.com/containous/traefik.git",
+			expectedOriginURL:   "https://github.com/traefik/traefik.git",
+			expectedUpstreamURL: "https://github.com/traefik/traefik.git",
 		},
 	}
 
@@ -91,15 +91,15 @@ func TestClone_PullRequestForMerge(t *testing.T) {
 		{
 			name:                "PR with 2 different repositories",
 			expectedRemoteName:  "upstream",
-			expectedOriginURL:   "https://github.com/containous/traefik.git",
+			expectedOriginURL:   "https://github.com/traefik/traefik.git",
 			expectedUpstreamURL: "https://github.com/ldez/traefik.git",
 		},
 		{
 			name:                "PR from main repository",
 			sameRepo:            true,
 			expectedRemoteName:  "origin",
-			expectedOriginURL:   "https://github.com/containous/traefik.git",
-			expectedUpstreamURL: "https://github.com/containous/traefik.git",
+			expectedOriginURL:   "https://github.com/traefik/traefik.git",
+			expectedUpstreamURL: "https://github.com/traefik/traefik.git",
 		},
 	}
 
@@ -156,27 +156,27 @@ func Test_makeRepositoryURL(t *testing.T) {
 	}{
 		{
 			name:        "HTTPS",
-			url:         "git://github.com/containous/traefik.git",
-			expectedURL: "https://github.com/containous/traefik.git",
+			url:         "git://github.com/traefik/traefik.git",
+			expectedURL: "https://github.com/traefik/traefik.git",
 		},
 		{
 			name:        "HTTPS with token",
-			url:         "git://github.com/containous/traefik.git",
+			url:         "git://github.com/traefik/traefik.git",
 			token:       "token",
-			expectedURL: "https://token@github.com/containous/traefik.git",
+			expectedURL: "https://token@github.com/traefik/traefik.git",
 		},
 		{
 			name:        "SSH",
-			url:         "git://github.com/containous/traefik.git",
+			url:         "git://github.com/traefik/traefik.git",
 			ssh:         true,
-			expectedURL: "git@github.com:containous/traefik.git",
+			expectedURL: "git@github.com:traefik/traefik.git",
 		},
 		{
 			name:        "SSH with token",
-			url:         "git://github.com/containous/traefik.git",
+			url:         "git://github.com/traefik/traefik.git",
 			ssh:         true,
 			token:       "token",
-			expectedURL: "git@github.com:containous/traefik.git",
+			expectedURL: "git@github.com:traefik/traefik.git",
 		},
 	}
 
@@ -199,7 +199,7 @@ func createFakePR(sameRepo bool) *github.PullRequest {
 	}
 	pr.Base = &github.PullRequestBranch{
 		Repo: &github.Repository{
-			GitURL: github.String("git://github.com/containous/traefik.git"),
+			GitURL: github.String("git://github.com/traefik/traefik.git"),
 		},
 		Ref: github.String("master"),
 	}
@@ -207,7 +207,7 @@ func createFakePR(sameRepo bool) *github.PullRequest {
 	if sameRepo {
 		pr.Head = &github.PullRequestBranch{
 			Repo: &github.Repository{
-				GitURL: github.String("git://github.com/containous/traefik.git"),
+				GitURL: github.String("git://github.com/traefik/traefik.git"),
 			},
 			Ref: github.String("v1.3"),
 		}

@@ -10,10 +10,10 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/containous/lobicornis/v2/pkg/conf"
-	"github.com/containous/lobicornis/v2/pkg/repository"
-	"github.com/containous/lobicornis/v2/pkg/search"
 	"github.com/google/go-github/v32/github"
+	"github.com/traefik/lobicornis/v2/pkg/conf"
+	"github.com/traefik/lobicornis/v2/pkg/repository"
+	"github.com/traefik/lobicornis/v2/pkg/search"
 	"golang.org/x/oauth2"
 )
 

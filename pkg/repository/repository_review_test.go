@@ -3,8 +3,8 @@ package repository
 import (
 	"testing"
 
-	"github.com/containous/lobicornis/v2/pkg/conf"
 	"github.com/stretchr/testify/assert"
+	"github.com/traefik/lobicornis/v2/pkg/conf"
 )
 
 func TestRepository_getMinReview(t *testing.T) {

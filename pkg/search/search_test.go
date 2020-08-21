@@ -4,10 +4,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/containous/lobicornis/v2/pkg/conf"
 	"github.com/google/go-github/v32/github"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/traefik/lobicornis/v2/pkg/conf"
 )
 
 func TestFinder_GetCurrentPull(t *testing.T) {

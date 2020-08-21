@@ -5,7 +5,6 @@ import (
 	"log"
 	"strings"
 
-	"github.com/containous/lobicornis/v2/pkg/conf"
 	"github.com/google/go-github/v32/github"
 	"github.com/ldez/go-git-cmd-wrapper/checkout"
 	"github.com/ldez/go-git-cmd-wrapper/clone"
@@ -13,6 +12,7 @@ import (
 	"github.com/ldez/go-git-cmd-wrapper/fetch"
 	"github.com/ldez/go-git-cmd-wrapper/git"
 	"github.com/ldez/go-git-cmd-wrapper/remote"
+	"github.com/traefik/lobicornis/v2/pkg/conf"
 )
 
 type remoteModel struct {

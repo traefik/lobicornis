@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/containous/lobicornis/v2/pkg/conf"
 	"github.com/google/go-github/v32/github"
+	"github.com/traefik/lobicornis/v2/pkg/conf"
 )
 
 // Finder a pull request search manager.

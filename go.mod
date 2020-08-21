@@ -1,4 +1,4 @@
-module github.com/containous/lobicornis/v2
+module github.com/traefik/lobicornis/v2
 
 go 1.14
 
