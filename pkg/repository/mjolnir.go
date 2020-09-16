@@ -102,7 +102,7 @@ func (m Mjolnir) addComment(ctx context.Context, issueNumber int, message string
 }
 
 func (m Mjolnir) parseIssueFixes(text string) []int {
-	submatch := m.globalFixesIssueRE.FindStringSubmatch(strings.Replace(text, ":", "", -1))
+	submatch := m.globalFixesIssueRE.FindStringSubmatch(strings.ReplaceAll(text, ":", ""))
 
 	if len(submatch) == 0 {
 		return nil
