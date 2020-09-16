@@ -37,6 +37,7 @@
     "testpackage",
     "goerr113",
     "nestif",
+    "nlreturn",
   ]
 
 [issues]

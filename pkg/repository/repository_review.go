@@ -8,16 +8,16 @@ import (
 )
 
 const (
-	// Pending Check state
+	// Pending Check state.
 	Pending = "pending"
-	// Success Check state
+	// Success Check state.
 	Success = "success"
 
-	// Approved Review state
+	// Approved Review state.
 	Approved = "APPROVED"
-	// Commented Review state
+	// Commented Review state.
 	Commented = "COMMENTED"
-	// Dismissed Review state
+	// Dismissed Review state.
 	Dismissed = "DISMISSED"
 )
 

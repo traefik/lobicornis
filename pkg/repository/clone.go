@@ -5,7 +5,6 @@ import (
 	"log"
 	"strings"
 
-	"github.com/containous/lobicornis/v2/pkg/conf"
 	"github.com/google/go-github/v32/github"
 	"github.com/ldez/go-git-cmd-wrapper/checkout"
 	"github.com/ldez/go-git-cmd-wrapper/clone"
@@ -13,6 +12,7 @@ import (
 	"github.com/ldez/go-git-cmd-wrapper/fetch"
 	"github.com/ldez/go-git-cmd-wrapper/git"
 	"github.com/ldez/go-git-cmd-wrapper/remote"
+	"github.com/traefik/lobicornis/v2/pkg/conf"
 )
 
 type remoteModel struct {
@@ -167,7 +167,7 @@ func (c Clone) fromFork(origin, upstream remoteModel, remoteName string) (string
 
 func makeRepositoryURL(url string, ssh bool, token string) string {
 	if ssh {
-		return strings.Replace(url, "git://github.com/", "git@github.com:", -1)
+		return strings.ReplaceAll(url, "git://github.com/", "git@github.com:")
 	}
 
 	prefix := "https://"
@@ -175,7 +175,7 @@ func makeRepositoryURL(url string, ssh bool, token string) string {
 		prefix += token + "@"
 	}
 
-	return strings.Replace(url, "git://", prefix, -1)
+	return strings.ReplaceAll(url, "git://", prefix)
 }
 
 func configureGit(gitConfig conf.Git) (string, error) {
