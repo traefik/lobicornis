@@ -42,4 +42,4 @@ jobs:
         run: go test -v -cover ./...
 
       - name: Build
-        run: go build -v -ldflags "-s -w" -trimpath
+        run: go build -v -trimpath -ldflags "-s -w" -o lobicornis ./cmd/
