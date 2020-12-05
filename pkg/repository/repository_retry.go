@@ -47,7 +47,7 @@ func (r Repository) manageRetryLabel(ctx context.Context, pr *github.PullRequest
 	number := extractRetryNumber(currentRetryLabel, r.markers.MergeRetryPrefix)
 
 	if number >= r.retry.Number {
-		return fmt.Errorf("too many retry [%d/%d]: %v", number, r.retry.Number, rootErr)
+		return fmt.Errorf("too many retry [%d/%d]: %w", number, r.retry.Number, rootErr)
 	}
 
 	// retry

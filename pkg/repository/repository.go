@@ -87,7 +87,7 @@ func (r Repository) process(ctx context.Context, pr *github.PullRequest) error {
 
 	err := r.hasReviewsApprove(ctx, pr)
 	if err != nil {
-		return fmt.Errorf("error related to reviews: %v", err)
+		return fmt.Errorf("error related to reviews: %w", err)
 	}
 
 	status, err := r.getAggregatedState(ctx, pr)

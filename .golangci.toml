@@ -33,11 +33,17 @@
     "scopelint",
     "gomnd",
     "wsl",
-    "gocognit",
-    "testpackage",
-    "goerr113",
-    "nestif",
     "nlreturn",
+    "gocognit",
+    "nestif",
+    "testpackage",
+    "paralleltest",
+    "tparallel",
+    "goerr113",
+    "wrapcheck",
+    "exhaustive",
+    "exhaustivestruct",
+    "noctx",
   ]
 
 [issues]
@@ -50,7 +56,7 @@
     linters = ["funlen"]
   [[issues.exclude-rules]]
     path = "cmd/version.go"
-    text = "`(version|date|commit)` is a global variable"
+    text = "(version|date|commit) is a global variable"
   [[issues.exclude-rules]]
     path = "pkg/repository/repository.go"
     text = "Function 'Process' has too many statements \\(\\d+ > 40\\)" # FIXME must be changed
