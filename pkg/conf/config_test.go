@@ -1,6 +1,7 @@
 package conf
 
 import (
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -16,7 +17,7 @@ func TestLoad(t *testing.T) {
 	}{
 		{
 			desc:     "simple",
-			filename: "./fixtures/config.yml",
+			filename: filepath.FromSlash("./fixtures/config.yml"),
 			expected: Configuration{
 				Github: Github{
 					User:  "ldez",
@@ -86,7 +87,7 @@ func TestLoad(t *testing.T) {
 		},
 		{
 			desc:     "defaulting",
-			filename: "./fixtures/config_01.yml",
+			filename: filepath.FromSlash("./fixtures/config_01.yml"),
 			expected: Configuration{
 				Github: Github{
 					User:  "ldez",
