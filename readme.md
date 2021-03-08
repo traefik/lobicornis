@@ -2,7 +2,7 @@
 
 [![GitHub release](https://img.shields.io/github/release/traefik/lobicornis.svg)](https://github.com/traefik/lobicornis/releases/latest)
 [![Build Status](https://github.com/traefik/lobicornis/workflows/Main/badge.svg?branch=master)](https://github.com/traefik/lobicornis/actions)
-[![Docker Image Version (latest semver)](https://img.shields.io/docker/v/traefik/lobicornis?label=Docker%20Image))](https://hub.docker.com/r/traefik/lobicornis/builds/)
+[![Docker Image Version (latest semver)](https://img.shields.io/docker/v/traefik/lobicornis?label=Docker%20Image)](https://hub.docker.com/r/traefik/lobicornis/builds/)
 
 ## Description
 
