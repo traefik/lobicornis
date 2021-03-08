@@ -2,7 +2,7 @@
 
 [![GitHub release](https://img.shields.io/github/release/traefik/lobicornis.svg)](https://github.com/traefik/lobicornis/releases/latest)
 [![Build Status](https://github.com/traefik/lobicornis/workflows/Main/badge.svg?branch=master)](https://github.com/traefik/lobicornis/actions)
-[![Docker Build Status](https://img.shields.io/docker/build/traefik/lobicornis.svg)](https://hub.docker.com/r/traefik/lobicornis/builds/)
+[![Docker Image Version (latest semver)](https://img.shields.io/docker/v/traefik/lobicornis?label=Docker%20Image))](https://hub.docker.com/r/traefik/lobicornis/builds/)
 
 ## Description
 
@@ -141,6 +141,16 @@ lobicornis -server
 export GITHUB_TOKEN=xxx
 lobicornis -config="./my-config.yml"
 ```
+
+## The Mymirca colony
+
+- [Myrmica Lobicornis](https://github.com/traefik/lobicornis) 🐜: Update and merge pull requests.
+- [Myrmica Aloba](https://github.com/traefik/aloba) 🐜: Add labels and milestone on pull requests and issues.
+- [Messor Structor](https://github.com/traefik/structor) 🐜: Manage multiple documentation versions with Mkdocs.
+- [Lasius Mixtus](https://github.com/traefik/mixtus) 🐜: Publish documentation to a GitHub repository from another.
+- [Myrmica Bibikoffi](https://github.com/traefik/bibikoffi) 🐜: Closes stale issues
+- [Chalepoxenus Kutteri](https://github.com/traefik/kutteri) 🐜: Track a GitHub repository and publish on Slack.
+- [Myrmica Gallienii](https://github.com/traefik/gallienii) 🐜: Keep Forks Synchronized
 
 ## What does Myrmica Lobicornis mean?
 
