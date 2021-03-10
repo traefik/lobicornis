@@ -158,17 +158,6 @@ func (r Repository) process(ctx context.Context, pr *github.PullRequest) error {
 
 	// Need to be up to date?
 	if needUpdate {
-		if !pr.GetMaintainerCanModify() && !isOnMainRepository(pr) {
-			repo, _, err := r.client.Repositories.Get(ctx, r.owner, r.name)
-			if err != nil {
-				return fmt.Errorf("unable to get repository information about %s/%s: %w", r.owner, r.name, err)
-			}
-
-			if !repo.GetPrivate() && !repo.GetFork() {
-				return errors.New("the contributor doesn't allow maintainer modification (GitHub option)")
-			}
-		}
-
 		if upToDateBranch {
 			err := r.merge(ctx, pr, mergeMethod)
 			if err != nil {

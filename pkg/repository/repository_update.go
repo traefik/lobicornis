@@ -31,6 +31,21 @@ func (r *Repository) update(ctx context.Context, pr *github.PullRequest) error {
 		log.Println(err)
 	}
 
+	// use GitHub API (update button)
+	if !pr.GetMaintainerCanModify() && !isOnMainRepository(pr) {
+		if r.dryRun {
+			log.Println("Updated via a merge with the GitHub API.")
+			return nil
+		}
+
+		_, _, err := r.client.PullRequests.UpdateBranch(ctx, pr.Base.Repo.Owner.GetLogin(), pr.Base.Repo.GetName(), pr.GetNumber(), nil)
+		if err != nil {
+			return fmt.Errorf("update branch: %w", err)
+		}
+
+		return nil
+	}
+
 	return r.cloneAndUpdate(ctx, pr)
 }
 

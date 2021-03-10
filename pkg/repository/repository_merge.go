@@ -65,6 +65,12 @@ func (r Repository) getMergeMethod(pr *github.PullRequest) (string, error) {
 }
 
 func (r Repository) merge(ctx context.Context, pr *github.PullRequest, mergeMethod string) error {
+	if !pr.GetMaintainerCanModify() && !isOnMainRepository(pr) && mergeMethod == conf.MergeMethodFastForward {
+		// note: it's not possible to edit a PR from an organization.
+		return fmt.Errorf("the use of the merge method [%s] is impossible when a branch from an organization "+
+			"or if the contributor doesn't allow maintainer modification (GitHub option)", mergeMethod)
+	}
+
 	log.Printf("MERGE(%s)\n", mergeMethod)
 
 	err := r.removeLabel(ctx, pr, r.markers.MergeInProgress)
