@@ -26,6 +26,9 @@
   enable-all = true
   disable = [
     "maligned",
+    "interfacer",
+    "scopelint",
+    "cyclop",
     "lll",
     "gas",
     "dupl",
@@ -44,6 +47,7 @@
     "exhaustive",
     "exhaustivestruct",
     "noctx",
+    "ifshort",
   ]
 
 [issues]
