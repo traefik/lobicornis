@@ -78,7 +78,9 @@ func (r Repository) Process(ctx context.Context, prNumber int) error {
 
 // process try to merge a pull request.
 func (r Repository) process(ctx context.Context, pr *github.PullRequest) error {
-	log.Info().Msg(pr.GetHTMLURL())
+	logger := log.Ctx(ctx)
+
+	logger.Info().Msg(pr.GetHTMLURL())
 
 	if r.config.GetNeedMilestone() && pr.Milestone == nil {
 		return errors.New("the milestone is missing")
@@ -91,19 +93,19 @@ func (r Repository) process(ctx context.Context, pr *github.PullRequest) error {
 
 	status, err := r.getAggregatedState(ctx, pr)
 	if err != nil {
-		log.Err(err).Msgf("PR #%d: Checks status: %v", pr.GetNumber(), err)
+		logger.Error().Err(err).Msg("Checks status")
 
 		return r.manageRetryLabel(ctx, pr, r.retry.OnStatuses, fmt.Errorf("checks status: %w", err))
 	}
 
 	if status == Pending {
 		// skip
-		log.Info().Msgf("PR #%d: State: pending. Waiting for the CI.", pr.GetNumber())
+		logger.Info().Msg("State: pending. Waiting for the CI.")
 		return nil
 	}
 
 	if pr.GetMerged() {
-		log.Info().Msgf("the PR #%d is already merged", pr.GetNumber())
+		logger.Info().Msg("the PR is already merged")
 
 		labelsToRemove := []string{
 			r.markers.MergeInProgress,
@@ -121,7 +123,7 @@ func (r Repository) process(ctx context.Context, pr *github.PullRequest) error {
 	}
 
 	if !pr.GetMergeable() {
-		log.Info().Msgf("PR #%d: Conflicts must be resolved in the PR.", pr.GetNumber())
+		logger.Info().Msg("Conflicts must be resolved in the PR.")
 
 		return r.manageRetryLabel(ctx, pr, r.retry.OnMergeable, errors.New("conflicts must be resolved in the PR"))
 	}
@@ -197,13 +199,11 @@ func (r Repository) addComment(ctx context.Context, pr *github.PullRequest, mess
 	msg := strings.ReplaceAll(message, r.token, "xxx")
 
 	if r.dryRun {
-		log.Debug().Msgf("Add comment: %s", msg)
+		log.Ctx(ctx).Debug().Msgf("Add comment: %s", msg)
 		return nil
 	}
 
-	comment := &github.IssueComment{
-		Body: github.String(msg),
-	}
+	comment := &github.IssueComment{Body: github.String(msg)}
 
 	_, _, err := r.client.Issues.CreateComment(ctx, r.owner, r.name, pr.GetNumber(), comment)
 
@@ -212,6 +212,6 @@ func (r Repository) addComment(ctx context.Context, pr *github.PullRequest, mess
 
 func ignoreError(err error) {
 	if err != nil {
-		log.Err(err).Msg("ignored error")
+		log.Error().Err(err).Msg("ignored error")
 	}
 }

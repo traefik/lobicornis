@@ -114,7 +114,7 @@ func (m Mjolnir) parseIssueFixes(text string) []int {
 		if len(cleanIssueRaw) != 0 {
 			numb, err := strconv.ParseInt(cleanIssueRaw, 10, 16)
 			if err != nil {
-				log.Err(err).Str("cleanIssueRaw", cleanIssueRaw).Msg("unable to parse int")
+				log.Error().Err(err).Str("cleanIssueRaw", cleanIssueRaw).Msg("unable to parse int")
 			}
 
 			issueNumbers = append(issueNumbers, int(numb))

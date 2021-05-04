@@ -64,7 +64,7 @@ func extractRetryNumber(label, prefix string) int {
 
 	number, err := strconv.Atoi(raw)
 	if err != nil {
-		log.Err(err).Msg("unable to extract retry number")
+		log.Error().Err(err).Msg("unable to extract retry number")
 		return 0
 	}
 

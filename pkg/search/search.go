@@ -76,7 +76,7 @@ func (f Finder) Search(ctx context.Context, user string, parameters ...Parameter
 
 // GetCurrentPull gets the current pull request.
 // priorities: ff > retry > in progress > need merge
-func (f Finder) GetCurrentPull(issues []*github.Issue) (*github.Issue, error) {
+func (f Finder) GetCurrentPull(ctx context.Context, issues []*github.Issue) (*github.Issue, error) {
 	if len(issues) == 0 {
 		return nil, nil
 	}
@@ -115,9 +115,12 @@ func (f Finder) GetCurrentPull(issues []*github.Issue) (*github.Issue, error) {
 		}
 
 		if len(issuesRetry) > 0 {
+			logger := log.Ctx(ctx)
+
 			for _, issue := range issuesRetry {
 				if time.Since(issue.GetUpdatedAt()) > f.retry.Interval {
-					log.Debug().Msgf("Find PR #%d, updated at %v", issue.GetNumber(), issue.GetUpdatedAt())
+					logger.Debug().Msgf("Find PR updated at %v", issue.GetUpdatedAt())
+
 					return issue, nil
 				}
 			}
@@ -133,7 +136,7 @@ func (f Finder) GetCurrentPull(issues []*github.Issue) (*github.Issue, error) {
 
 func (f Finder) displayIssues(issues []*github.Issue) {
 	for _, issue := range issues {
-		log.Debug().Msgf("Find PR #%d, updated at %v", issue.GetNumber(), issue.GetUpdatedAt())
+		log.Debug().Int("pr", issue.GetNumber()).Msgf("Find PR updated at %v", issue.GetUpdatedAt())
 	}
 }
 

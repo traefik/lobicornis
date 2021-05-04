@@ -102,7 +102,7 @@ func (c Clone) pullRequest(pr *github.PullRequest, prModel prModel) (string, err
 
 		output, err := c.fromMainRepository(prModel.changed)
 		if err != nil {
-			log.Err(err).Msg(output)
+			log.Error().Err(err).Msg(output)
 			return "", err
 		}
 
@@ -112,7 +112,7 @@ func (c Clone) pullRequest(pr *github.PullRequest, prModel prModel) (string, err
 	remoteName := RemoteUpstream
 	output, err := c.fromFork(prModel.changed, prModel.unchanged, remoteName)
 	if err != nil {
-		log.Err(err).Msg(output)
+		log.Error().Err(err).Msg(output)
 		return "", err
 	}
 
