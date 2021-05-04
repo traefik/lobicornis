@@ -6,7 +6,6 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"regexp"
 	"strings"
@@ -15,6 +14,7 @@ import (
 	"github.com/ldez/go-git-cmd-wrapper/git"
 	"github.com/ldez/go-git-cmd-wrapper/merge"
 	"github.com/ldez/go-git-cmd-wrapper/push"
+	"github.com/rs/zerolog/log"
 	"github.com/traefik/lobicornis/v2/pkg/conf"
 )
 
@@ -71,7 +71,7 @@ func (r Repository) merge(ctx context.Context, pr *github.PullRequest, mergeMeth
 			"or if the contributor doesn't allow maintainer modification (GitHub option)", mergeMethod)
 	}
 
-	log.Printf("MERGE(%s)\n", mergeMethod)
+	log.Info().Msgf("MERGE(%s)\n", mergeMethod)
 
 	err := r.removeLabel(ctx, pr, r.markers.MergeInProgress)
 	ignoreError(err)
@@ -81,7 +81,7 @@ func (r Repository) merge(ctx context.Context, pr *github.PullRequest, mergeMeth
 		result, err = r.mergePullRequest(ctx, pr, mergeMethod)
 		ignoreError(err)
 
-		log.Println(result.Message)
+		log.Info().Msg(result.Message)
 
 		if !result.Merged {
 			return fmt.Errorf("failed to merge PR: %s", result.Message)
@@ -171,11 +171,11 @@ func (r Repository) fastForward(pr *github.PullRequest) (Result, error) {
 	}
 
 	tempDir, _ := os.Getwd()
-	log.Println(tempDir)
+	log.Info().Msg(tempDir)
 
 	output, err := r.clone.PullRequestForMerge(pr)
 	if err != nil {
-		log.Println(output)
+		log.Err(err).Msg(output)
 		return Result{Message: err.Error(), Merged: false}, err
 	}
 
@@ -188,7 +188,7 @@ func (r Repository) fastForward(pr *github.PullRequest) (Result, error) {
 
 	output, err = git.Merge(merge.FfOnly, merge.Commits(ref), git.Debugger(r.debug))
 	if err != nil {
-		log.Println(output)
+		log.Err(err).Msg(output)
 		return Result{Message: err.Error(), Merged: false}, err
 	}
 
@@ -198,7 +198,7 @@ func (r Repository) fastForward(pr *github.PullRequest) (Result, error) {
 		push.RefSpec(pr.Base.GetRef()),
 		git.Debugger(r.debug))
 	if err != nil {
-		log.Println(output)
+		log.Err(err).Msg(output)
 		return Result{Message: err.Error(), Merged: false}, err
 	}
 

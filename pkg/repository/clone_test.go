@@ -43,7 +43,7 @@ func TestClone_PullRequestForUpdate(t *testing.T) {
 		SSH:      false,
 	}
 
-	clone := newClone(gitConfig, "", true)
+	clone := newClone(gitConfig, "")
 
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
@@ -109,7 +109,7 @@ func TestClone_PullRequestForMerge(t *testing.T) {
 		SSH:      false,
 	}
 
-	clone := newClone(gitConfig, "", true)
+	clone := newClone(gitConfig, "")
 
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {

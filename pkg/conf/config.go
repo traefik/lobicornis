@@ -61,8 +61,8 @@ type Retry struct {
 
 // Extra the extra configuration.
 type Extra struct {
-	Debug  bool `yaml:"debug,omitempty"`
-	DryRun bool `yaml:"dryRun,omitempty"`
+	DryRun   bool   `yaml:"dryRun,omitempty"`
+	LogLevel string `yaml:"logLevel,omitempty"`
 }
 
 // Load loads the configuration.
@@ -102,8 +102,8 @@ func Load(filename string) (Configuration, error) {
 			CommitMessage:     String("empty"),
 		},
 		Extra: Extra{
-			Debug:  false,
-			DryRun: true,
+			LogLevel: "info",
+			DryRun:   true,
 		},
 		Repositories: map[string]*RepoConfig{},
 	}

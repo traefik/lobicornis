@@ -2,7 +2,6 @@ package repository
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/google/go-github/v32/github"
@@ -12,6 +11,8 @@ import (
 	"github.com/ldez/go-git-cmd-wrapper/fetch"
 	"github.com/ldez/go-git-cmd-wrapper/git"
 	"github.com/ldez/go-git-cmd-wrapper/remote"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"github.com/traefik/lobicornis/v2/pkg/conf"
 )
 
@@ -33,11 +34,11 @@ type Clone struct {
 	debug bool
 }
 
-func newClone(gitConfig conf.Git, token string, debug bool) Clone {
+func newClone(gitConfig conf.Git, token string) Clone {
 	return Clone{
 		git:   gitConfig,
 		token: token,
-		debug: debug,
+		debug: log.Logger.GetLevel() == zerolog.DebugLevel,
 	}
 }
 
@@ -95,13 +96,13 @@ func (c Clone) PullRequestForUpdate(pr *github.PullRequest) (string, error) {
 
 func (c Clone) pullRequest(pr *github.PullRequest, prModel prModel) (string, error) {
 	if isOnMainRepository(pr) {
-		log.Print("It's not a fork, it's a branch on the main repository.")
+		log.Info().Msg("It's not a fork, it's a branch on the main repository.")
 
 		remoteName := RemoteOrigin
 
 		output, err := c.fromMainRepository(prModel.changed)
 		if err != nil {
-			log.Print(output)
+			log.Err(err).Msg(output)
 			return "", err
 		}
 
@@ -111,7 +112,7 @@ func (c Clone) pullRequest(pr *github.PullRequest, prModel prModel) (string, err
 	remoteName := RemoteUpstream
 	output, err := c.fromFork(prModel.changed, prModel.unchanged, remoteName)
 	if err != nil {
-		log.Print(output)
+		log.Err(err).Msg(output)
 		return "", err
 	}
 

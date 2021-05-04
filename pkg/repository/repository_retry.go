@@ -3,11 +3,11 @@ package repository
 import (
 	"context"
 	"fmt"
-	"log"
 	"strconv"
 	"strings"
 
 	"github.com/google/go-github/v32/github"
+	"github.com/rs/zerolog/log"
 )
 
 func (r Repository) cleanRetryLabel(ctx context.Context, pr *github.PullRequest) {
@@ -64,7 +64,7 @@ func extractRetryNumber(label, prefix string) int {
 
 	number, err := strconv.Atoi(raw)
 	if err != nil {
-		log.Println(err)
+		log.Err(err).Msg("unable to extract retry number")
 		return 0
 	}
 

@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/google/go-github/v32/github"
+	"github.com/rs/zerolog/log"
 	"github.com/traefik/lobicornis/v2/pkg/conf"
 )
 
@@ -47,9 +47,8 @@ func New(client *github.Client, fullName, token string, markers conf.Markers, re
 
 	return &Repository{
 		client:  client,
-		clone:   newClone(gitConfig, token, extra.Debug),
-		mjolnir: newMjolnir(client, owner, repoName, extra.Debug, extra.DryRun),
-		debug:   extra.Debug,
+		clone:   newClone(gitConfig, token),
+		mjolnir: newMjolnir(client, owner, repoName, extra.DryRun),
 		dryRun:  extra.DryRun,
 		markers: markers,
 		retry:   retry,
@@ -79,7 +78,7 @@ func (r Repository) Process(ctx context.Context, prNumber int) error {
 
 // process try to merge a pull request.
 func (r Repository) process(ctx context.Context, pr *github.PullRequest) error {
-	log.Println(pr.GetHTMLURL())
+	log.Info().Msg(pr.GetHTMLURL())
 
 	if r.config.GetNeedMilestone() && pr.Milestone == nil {
 		return errors.New("the milestone is missing")
@@ -92,19 +91,19 @@ func (r Repository) process(ctx context.Context, pr *github.PullRequest) error {
 
 	status, err := r.getAggregatedState(ctx, pr)
 	if err != nil {
-		log.Printf("PR #%d: Checks status: %v", pr.GetNumber(), err)
+		log.Err(err).Msgf("PR #%d: Checks status: %v", pr.GetNumber(), err)
 
 		return r.manageRetryLabel(ctx, pr, r.retry.OnStatuses, fmt.Errorf("checks status: %w", err))
 	}
 
 	if status == Pending {
 		// skip
-		log.Printf("PR #%d: State: pending. Waiting for the CI.", pr.GetNumber())
+		log.Info().Msgf("PR #%d: State: pending. Waiting for the CI.", pr.GetNumber())
 		return nil
 	}
 
 	if pr.GetMerged() {
-		log.Printf("the PR #%d is already merged", pr.GetNumber())
+		log.Info().Msgf("the PR #%d is already merged", pr.GetNumber())
 
 		labelsToRemove := []string{
 			r.markers.MergeInProgress,
@@ -122,7 +121,7 @@ func (r Repository) process(ctx context.Context, pr *github.PullRequest) error {
 	}
 
 	if !pr.GetMergeable() {
-		log.Printf("PR #%d: Conflicts must be resolved in the PR.", pr.GetNumber())
+		log.Info().Msgf("PR #%d: Conflicts must be resolved in the PR.", pr.GetNumber())
 
 		return r.manageRetryLabel(ctx, pr, r.retry.OnMergeable, errors.New("conflicts must be resolved in the PR"))
 	}
@@ -198,7 +197,7 @@ func (r Repository) addComment(ctx context.Context, pr *github.PullRequest, mess
 	msg := strings.ReplaceAll(message, r.token, "xxx")
 
 	if r.dryRun {
-		log.Println("Add comment:", msg)
+		log.Debug().Msgf("Add comment: %s", msg)
 		return nil
 	}
 
@@ -213,6 +212,6 @@ func (r Repository) addComment(ctx context.Context, pr *github.PullRequest, mess
 
 func ignoreError(err error) {
 	if err != nil {
-		log.Println(err)
+		log.Err(err).Msg("ignored error")
 	}
 }

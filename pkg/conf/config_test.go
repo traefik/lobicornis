@@ -58,8 +58,8 @@ func TestLoad(t *testing.T) {
 					CommitMessage:     String("empty"),
 				},
 				Extra: Extra{
-					Debug:  false,
-					DryRun: true,
+					DryRun:   true,
+					LogLevel: "info",
 				},
 				Repositories: map[string]*RepoConfig{
 					"ldez/myrepo1": {
@@ -128,8 +128,8 @@ func TestLoad(t *testing.T) {
 					CommitMessage:     String("empty"),
 				},
 				Extra: Extra{
-					Debug:  false,
-					DryRun: true,
+					DryRun:   true,
+					LogLevel: "info",
 				},
 				Repositories: map[string]*RepoConfig{
 					"ldez/myrepo1": {

@@ -4,14 +4,15 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
 	"strconv"
 
 	"github.com/google/go-github/v32/github"
+	"github.com/rs/zerolog/log"
 	"github.com/traefik/lobicornis/v2/pkg/conf"
+	"github.com/traefik/lobicornis/v2/pkg/logger"
 	"github.com/traefik/lobicornis/v2/pkg/repository"
 	"github.com/traefik/lobicornis/v2/pkg/search"
 	"golang.org/x/oauth2"
@@ -48,18 +49,23 @@ func main() {
 
 	cfg, err := conf.Load(*filename)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal().Err(err).Msg("unable to load config")
 	}
 
+	logLevel := cfg.Extra.LogLevel
+	if cfg.Extra.DryRun {
+		logLevel = "debug"
+	}
+	logger.Setup(logLevel)
 	if *serverMode {
 		err = launch(cfg)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal().Err(err).Msg("unable to launch the server")
 		}
 	} else {
 		err = run(cfg)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal().Err(err).Msg("unable to run the command")
 		}
 	}
 }
@@ -67,21 +73,21 @@ func main() {
 func launch(cfg conf.Configuration) error {
 	handler := http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodGet {
-			log.Printf("Invalid http method: %s", req.Method)
+			log.Error().Str("method", req.Method).Msg("Invalid http method")
 			http.Error(rw, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 			return
 		}
 
 		err := run(cfg)
 		if err != nil {
-			log.Printf("Report error: %v", err)
+			log.Err(err).Msg("Report error")
 			http.Error(rw, "Report error.", http.StatusInternalServerError)
 			return
 		}
 
 		_, err = fmt.Fprint(rw, "Myrmica Lobicornis: Scheduled.\n")
 		if err != nil {
-			log.Printf("Report error: %v", err)
+			log.Err(err).Msg("Report error")
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -95,7 +101,7 @@ func run(cfg conf.Configuration) error {
 
 	client := newGitHubClient(ctx, cfg.Github.Token, cfg.Github.URL)
 
-	finder := search.New(client, cfg.Extra.Debug, cfg.Markers, cfg.Retry)
+	finder := search.New(client, cfg.Markers, cfg.Retry)
 
 	// search PRs with the FF merge method.
 	ffResults, err := finder.Search(ctx, cfg.Github.User,
@@ -114,10 +120,10 @@ func run(cfg conf.Configuration) error {
 	}
 
 	for fullName, issues := range results {
-		log.Println("Repository", fullName)
+		log.Info().Msgf("Repository %s", fullName)
 
 		if _, ok := ffResults[fullName]; ok {
-			log.Printf("Waiting for the merge of pull request with the label: %s", cfg.Markers.MergeMethodPrefix+conf.MergeMethodFastForward)
+			log.Info().Msgf("Waiting for the merge of pull request with the label: %s", cfg.Markers.MergeMethodPrefix+conf.MergeMethodFastForward)
 			continue
 		}
 
@@ -125,15 +131,12 @@ func run(cfg conf.Configuration) error {
 
 		issue, err := finder.GetCurrentPull(issues)
 		if err != nil {
-			log.Println(err)
+			log.Err(err).Msg("unable to get the current pull request")
 			continue
 		}
 
 		if issue == nil {
-			if cfg.Extra.Debug {
-				log.Printf("PR #%d: Nothing to merge.", issue.GetNumber())
-			}
-
+			log.Debug().Msgf("PR #%d: Nothing to merge.", issue.GetNumber())
 			continue
 		}
 
@@ -141,7 +144,7 @@ func run(cfg conf.Configuration) error {
 
 		err = repo.Process(ctx, issue.GetNumber())
 		if err != nil {
-			log.Printf("PR #%d: %v", issue.GetNumber(), err)
+			log.Err(err).Msgf("PR #%d", issue.GetNumber())
 		}
 	}
 

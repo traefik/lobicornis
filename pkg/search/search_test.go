@@ -28,7 +28,7 @@ func TestFinder_GetCurrentPull(t *testing.T) {
 		OnStatuses:  false,
 	}
 
-	finder := New(nil, true, markers, retry)
+	finder := New(nil, markers, retry)
 
 	testCases := []struct {
 		desc     string

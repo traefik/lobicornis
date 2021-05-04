@@ -3,12 +3,12 @@ package repository
 import (
 	"context"
 	"fmt"
-	"log"
 	"regexp"
 	"strconv"
 	"strings"
 
 	"github.com/google/go-github/v32/github"
+	"github.com/rs/zerolog/log"
 )
 
 // Mjolnir the hammer of Thor.
@@ -19,14 +19,13 @@ type Mjolnir struct {
 	fixesIssueRE       *regexp.Regexp
 	cleanNumberRE      *regexp.Regexp
 
-	debug  bool
 	dryRun bool
 
 	owner string
 	name  string
 }
 
-func newMjolnir(client *github.Client, owner, name string, debug, dryRun bool) Mjolnir {
+func newMjolnir(client *github.Client, owner, name string, dryRun bool) Mjolnir {
 	return Mjolnir{
 		client: client,
 
@@ -34,7 +33,6 @@ func newMjolnir(client *github.Client, owner, name string, debug, dryRun bool) M
 		fixesIssueRE:       regexp.MustCompile(`[\s,]+#`),
 		cleanNumberRE:      regexp.MustCompile(`[\n\r\s,]`),
 
-		debug:  debug,
 		dryRun: dryRun,
 
 		owner: owner,
@@ -47,7 +45,7 @@ func (m Mjolnir) CloseRelatedIssues(ctx context.Context, pr *github.PullRequest)
 	issueNumbers := m.parseIssueFixes(pr.GetBody())
 
 	for _, issueNumber := range issueNumbers {
-		log.Printf("closes issue #%d, add milestones %s", issueNumber, pr.Milestone.GetTitle())
+		log.Info().Msgf("closes issue #%d, add milestones %s", issueNumber, pr.Milestone.GetTitle())
 
 		if !m.dryRun {
 			err := m.closeIssue(ctx, pr, issueNumber)
@@ -64,7 +62,7 @@ func (m Mjolnir) CloseRelatedIssues(ctx context.Context, pr *github.PullRequest)
 
 		message := fmt.Sprintf("Closed by #%d.", pr.GetNumber())
 
-		log.Printf("issue #%d, add comment: %s", issueNumber, message)
+		log.Info().Msgf("issue #%d, add comment: %s", issueNumber, message)
 
 		if !m.dryRun {
 			err := m.addComment(ctx, issueNumber, message)
@@ -116,7 +114,7 @@ func (m Mjolnir) parseIssueFixes(text string) []int {
 		if len(cleanIssueRaw) != 0 {
 			numb, err := strconv.ParseInt(cleanIssueRaw, 10, 16)
 			if err != nil {
-				log.Println(err)
+				log.Err(err).Str("cleanIssueRaw", cleanIssueRaw).Msg("unable to parse int")
 			}
 
 			issueNumbers = append(issueNumbers, int(numb))
