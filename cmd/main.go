@@ -53,7 +53,7 @@ func main() {
 		log.Fatal().Err(err).Msg("unable to load config")
 	}
 
-	setupLogger(cfg)
+	setupLogger(cfg.Extra.DryRun, cfg.Extra.LogLevel)
 
 	if *serverMode {
 		err = launch(cfg)
@@ -185,20 +185,19 @@ func usage() {
 	flag.PrintDefaults()
 }
 
-// Setup is configuring the logger.
-func setupLogger(cfg conf.Configuration) {
-	level := cfg.Extra.LogLevel
-	if cfg.Extra.DryRun {
-		level = "debug"
-	}
-
+// setupLogger is configuring the logger.
+func setupLogger(dryRun bool, level string) {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 
 	log.Logger = zerolog.New(os.Stderr).With().Caller().Logger()
 
-	logLevel, err := zerolog.ParseLevel(strings.ToLower(level))
-	if err != nil {
-		logLevel = zerolog.InfoLevel
+	logLevel := zerolog.DebugLevel
+	if !dryRun {
+		var err error
+		logLevel, err = zerolog.ParseLevel(strings.ToLower(level))
+		if err != nil {
+			logLevel = zerolog.InfoLevel
+		}
 	}
 
 	zerolog.SetGlobalLevel(logLevel)
