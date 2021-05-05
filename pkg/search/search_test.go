@@ -1,6 +1,7 @@
 package search
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -28,7 +29,7 @@ func TestFinder_GetCurrentPull(t *testing.T) {
 		OnStatuses:  false,
 	}
 
-	finder := New(nil, true, markers, retry)
+	finder := New(nil, markers, retry)
 
 	testCases := []struct {
 		desc     string
@@ -143,7 +144,7 @@ func TestFinder_GetCurrentPull(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			pr, err := finder.GetCurrentPull(test.issues)
+			pr, err := finder.GetCurrentPull(context.Background(), test.issues)
 			require.NoError(t, err)
 
 			assert.Equal(t, test.expected, pr.GetNumber())

@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"strings"
 
@@ -15,6 +14,7 @@ import (
 	"github.com/ldez/go-git-cmd-wrapper/push"
 	"github.com/ldez/go-git-cmd-wrapper/rebase"
 	"github.com/ldez/go-git-cmd-wrapper/types"
+	"github.com/rs/zerolog/log"
 )
 
 // Merge action.
@@ -24,17 +24,18 @@ const (
 )
 
 func (r *Repository) update(ctx context.Context, pr *github.PullRequest) error {
-	log.Println("UPDATE")
+	logger := log.Ctx(ctx)
+	logger.Info().Msg("UPDATE")
 
 	err := r.addLabels(ctx, pr, r.markers.MergeInProgress)
 	if err != nil {
-		log.Println(err)
+		logger.Error().Err(err).Msg("unable to add labels")
 	}
 
 	// use GitHub API (update button)
 	if !pr.GetMaintainerCanModify() && !isOnMainRepository(pr) {
 		if r.dryRun {
-			log.Println("Updated via a merge with the GitHub API.")
+			logger.Debug().Msg("Updated via a merge with the GitHub API.")
 			return nil
 		}
 
@@ -51,7 +52,9 @@ func (r *Repository) update(ctx context.Context, pr *github.PullRequest) error {
 
 // Process clone a PR and update if needed.
 func (r *Repository) cloneAndUpdate(ctx context.Context, pr *github.PullRequest) error {
-	log.Println("Base branch: ", pr.Base.GetRef(), "- Fork branch: ", pr.Head.GetRef())
+	logger := log.Ctx(ctx)
+
+	logger.Info().Msgf("Base branch: %s - Fork branch: %s", pr.Base.GetRef(), pr.Head.GetRef())
 
 	dir, err := ioutil.TempDir("", "myrmica-lobicornis")
 	if err != nil {
@@ -66,7 +69,7 @@ func (r *Repository) cloneAndUpdate(ctx context.Context, pr *github.PullRequest)
 	}
 
 	tempDir, _ := os.Getwd()
-	log.Println(tempDir)
+	logger.Info().Msg(tempDir)
 
 	if isOnMainRepository(pr) && pr.Head.GetRef() == mainBranch {
 		return errors.New("the branch master on a main repository cannot be rebased")
@@ -78,7 +81,7 @@ func (r *Repository) cloneAndUpdate(ctx context.Context, pr *github.PullRequest)
 	}
 
 	output, err := r.updatePullRequest(ctx, pr, mainRemote)
-	log.Println(output)
+	logger.Info().Msg(output)
 
 	if err != nil {
 		return fmt.Errorf("failed to update the pull request: %w", err)
@@ -94,22 +97,24 @@ func (r *Repository) updatePullRequest(ctx context.Context, pr *github.PullReque
 		return "", err
 	}
 
+	logger := log.Ctx(ctx)
+
 	if action == ActionRebase {
-		log.Printf("Rebase PR #%d", pr.GetNumber())
+		logger.Info().Msg("Rebase")
 
 		// rebase
 		output, errRebase := rebasePR(pr, mainRemote, r.debug)
 		if errRebase != nil {
-			log.Print(errRebase)
+			logger.Error().Err(errRebase).Msg("unable to rebase PR")
 			return output, fmt.Errorf("failed to rebase:\n %s", output)
 		}
 	} else {
-		log.Printf("Merge PR #%d", pr.GetNumber())
+		logger.Info().Msg("Merge")
 
 		// merge
 		output, errMerge := mergeBaseHeadIntoPR(pr, mainRemote, r.debug)
 		if errMerge != nil {
-			log.Print(errMerge)
+			logger.Error().Err(errMerge).Msg("unable to merge base head into PR")
 			return output, fmt.Errorf("failed to merge base HEAD:\n %s", output)
 		}
 	}
@@ -142,7 +147,7 @@ func (r *Repository) getUpdateAction(ctx context.Context, pr *github.PullRequest
 		g.AddOptions(fmt.Sprintf("%s^..HEAD", firstCommit.GetSHA()))
 	})
 	if err != nil {
-		log.Println(output)
+		log.Ctx(ctx).Error().Err(err).Msg(output)
 		return "", fmt.Errorf("failed to display git log: %w", err)
 	}
 

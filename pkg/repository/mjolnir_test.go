@@ -56,7 +56,7 @@ func Test_parseIssueFixes(t *testing.T) {
 		},
 	}
 
-	mjolnir := newMjolnir(nil, "", "", true, true)
+	mjolnir := newMjolnir(nil, "", "", true)
 
 	for _, test := range testCases {
 		test := test

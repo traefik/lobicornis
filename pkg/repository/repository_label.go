@@ -3,11 +3,11 @@ package repository
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 
 	"github.com/google/go-github/v32/github"
+	"github.com/rs/zerolog/log"
 )
 
 // removeLabels remove some labels on an issue (PR).
@@ -43,10 +43,7 @@ func (r Repository) removeLabel(ctx context.Context, pr *github.PullRequest, lab
 		return nil
 	}
 
-	if r.dryRun || r.debug {
-		log.Printf("Remove label: %s. Dry run: %v", label, r.dryRun)
-	}
-
+	log.Debug().Msgf("Remove label: %s. Dry run: %v", label, r.dryRun)
 	if r.dryRun {
 		return nil
 	}
@@ -65,10 +62,7 @@ func (r Repository) removeLabel(ctx context.Context, pr *github.PullRequest, lab
 
 // addLabels add some labels on an issue (PR).
 func (r *Repository) addLabels(ctx context.Context, pr numbered, labels ...string) error {
-	if r.dryRun || r.debug {
-		log.Printf("Add labels: %s. Dry run: %v", labels, r.dryRun)
-	}
-
+	log.Debug().Msgf("Add labels: %s. Dry run: %v", labels, r.dryRun)
 	if r.dryRun {
 		return nil
 	}

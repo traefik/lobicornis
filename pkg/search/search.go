@@ -3,27 +3,25 @@ package search
 import (
 	"context"
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
 	"github.com/google/go-github/v32/github"
+	"github.com/rs/zerolog/log"
 	"github.com/traefik/lobicornis/v2/pkg/conf"
 )
 
 // Finder a pull request search manager.
 type Finder struct {
 	client  *github.Client
-	debug   bool
 	markers conf.Markers
 	retry   conf.Retry
 }
 
 // New creates a new finder.
-func New(client *github.Client, debug bool, markers conf.Markers, retry conf.Retry) Finder {
+func New(client *github.Client, markers conf.Markers, retry conf.Retry) Finder {
 	return Finder{
 		client:  client,
-		debug:   debug,
 		markers: markers,
 		retry:   retry,
 	}
@@ -39,9 +37,7 @@ func (f Finder) Search(ctx context.Context, user string, parameters ...Parameter
 		}
 	}
 
-	if f.debug {
-		log.Println(query)
-	}
+	log.Debug().Msg(query)
 
 	searchOpts := &github.SearchOptions{
 		Sort:        "updated",
@@ -73,16 +69,14 @@ func (f Finder) Search(ctx context.Context, user string, parameters ...Parameter
 		searchOpts.Page = resp.NextPage
 	}
 
-	if f.debug {
-		log.Println("search queries count:", count)
-	}
+	log.Debug().Msgf("search queries count: %d", count)
 
 	return overview, nil
 }
 
 // GetCurrentPull gets the current pull request.
 // priorities: ff > retry > in progress > need merge
-func (f Finder) GetCurrentPull(issues []*github.Issue) (*github.Issue, error) {
+func (f Finder) GetCurrentPull(ctx context.Context, issues []*github.Issue) (*github.Issue, error) {
 	if len(issues) == 0 {
 		return nil, nil
 	}
@@ -121,11 +115,11 @@ func (f Finder) GetCurrentPull(issues []*github.Issue) (*github.Issue, error) {
 		}
 
 		if len(issuesRetry) > 0 {
+			logger := log.Ctx(ctx)
+
 			for _, issue := range issuesRetry {
 				if time.Since(issue.GetUpdatedAt()) > f.retry.Interval {
-					if f.debug {
-						log.Printf("Find PR #%d, updated at %v", issue.GetNumber(), issue.GetUpdatedAt())
-					}
+					logger.Debug().Msgf("Find PR updated at %v", issue.GetUpdatedAt())
 
 					return issue, nil
 				}
@@ -141,10 +135,8 @@ func (f Finder) GetCurrentPull(issues []*github.Issue) (*github.Issue, error) {
 }
 
 func (f Finder) displayIssues(issues []*github.Issue) {
-	if f.debug {
-		for _, issue := range issues {
-			log.Printf("Find PR #%d, updated at %v", issue.GetNumber(), issue.GetUpdatedAt())
-		}
+	for _, issue := range issues {
+		log.Debug().Int("pr", issue.GetNumber()).Msgf("Find PR updated at %v", issue.GetUpdatedAt())
 	}
 }
 

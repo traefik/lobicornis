@@ -4,13 +4,15 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/google/go-github/v32/github"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"github.com/traefik/lobicornis/v2/pkg/conf"
 	"github.com/traefik/lobicornis/v2/pkg/repository"
 	"github.com/traefik/lobicornis/v2/pkg/search"
@@ -48,18 +50,20 @@ func main() {
 
 	cfg, err := conf.Load(*filename)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal().Err(err).Msg("unable to load config")
 	}
+
+	setupLogger(cfg)
 
 	if *serverMode {
 		err = launch(cfg)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal().Err(err).Msg("unable to launch the server")
 		}
 	} else {
 		err = run(cfg)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal().Err(err).Msg("unable to run the command")
 		}
 	}
 }
@@ -67,21 +71,21 @@ func main() {
 func launch(cfg conf.Configuration) error {
 	handler := http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodGet {
-			log.Printf("Invalid http method: %s", req.Method)
+			log.Error().Str("method", req.Method).Msg("Invalid http method")
 			http.Error(rw, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 			return
 		}
 
 		err := run(cfg)
 		if err != nil {
-			log.Printf("Report error: %v", err)
+			log.Error().Err(err).Msg("Report error")
 			http.Error(rw, "Report error.", http.StatusInternalServerError)
 			return
 		}
 
 		_, err = fmt.Fprint(rw, "Myrmica Lobicornis: Scheduled.\n")
 		if err != nil {
-			log.Printf("Report error: %v", err)
+			log.Error().Err(err).Msg("Report error")
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -95,7 +99,7 @@ func run(cfg conf.Configuration) error {
 
 	client := newGitHubClient(ctx, cfg.Github.Token, cfg.Github.URL)
 
-	finder := search.New(client, cfg.Extra.Debug, cfg.Markers, cfg.Retry)
+	finder := search.New(client, cfg.Markers, cfg.Retry)
 
 	// search PRs with the FF merge method.
 	ffResults, err := finder.Search(ctx, cfg.Github.User,
@@ -114,34 +118,33 @@ func run(cfg conf.Configuration) error {
 	}
 
 	for fullName, issues := range results {
-		log.Println("Repository", fullName)
+		logger := log.With().Str("repo", fullName).Logger()
 
 		if _, ok := ffResults[fullName]; ok {
-			log.Printf("Waiting for the merge of pull request with the label: %s", cfg.Markers.MergeMethodPrefix+conf.MergeMethodFastForward)
+			logger.Info().Msgf("Waiting for the merge of pull request with the label: %s", cfg.Markers.MergeMethodPrefix+conf.MergeMethodFastForward)
 			continue
 		}
 
 		repoConfig := getRepoConfig(cfg, fullName)
 
-		issue, err := finder.GetCurrentPull(issues)
+		issue, err := finder.GetCurrentPull(ctx, issues)
 		if err != nil {
-			log.Println(err)
+			logger.Error().Err(err).Msg("unable to get the current pull request")
 			continue
 		}
 
 		if issue == nil {
-			if cfg.Extra.Debug {
-				log.Printf("PR #%d: Nothing to merge.", issue.GetNumber())
-			}
-
+			logger.Debug().Msg("Nothing to merge.")
 			continue
 		}
 
 		repo := repository.New(client, fullName, cfg.Github.Token, cfg.Markers, cfg.Retry, cfg.Git, repoConfig, cfg.Extra)
 
-		err = repo.Process(ctx, issue.GetNumber())
+		loggerIssue := logger.With().Int("pr", issue.GetNumber()).Logger()
+
+		err = repo.Process(logger.WithContext(ctx), issue.GetNumber())
 		if err != nil {
-			log.Printf("PR #%d: %v", issue.GetNumber(), err)
+			loggerIssue.Error().Err(err).Msg("Failed to process")
 		}
 	}
 
@@ -180,4 +183,25 @@ func getRepoConfig(cfg conf.Configuration, repoName string) conf.RepoConfig {
 func usage() {
 	_, _ = os.Stderr.WriteString("Myrmica Lobicornis:\n")
 	flag.PrintDefaults()
+}
+
+// Setup is configuring the logger.
+func setupLogger(cfg conf.Configuration) {
+	level := cfg.Extra.LogLevel
+	if cfg.Extra.DryRun {
+		level = "debug"
+	}
+
+	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
+
+	log.Logger = zerolog.New(os.Stderr).With().Caller().Logger()
+
+	logLevel, err := zerolog.ParseLevel(strings.ToLower(level))
+	if err != nil {
+		logLevel = zerolog.InfoLevel
+	}
+
+	zerolog.SetGlobalLevel(logLevel)
+
+	log.Trace().Msgf("Log level set to %s.", logLevel)
 }

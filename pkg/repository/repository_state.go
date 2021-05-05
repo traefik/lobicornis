@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/google/go-github/v32/github"
+	"github.com/rs/zerolog/log"
 )
 
 // isUpToDateBranch check if a PR is up to date.
@@ -19,10 +19,8 @@ func (r *Repository) isUpToDateBranch(ctx context.Context, pr *github.PullReques
 		return false, fmt.Errorf("failed to compare commits: %w", err)
 	}
 
-	if r.debug {
-		log.Println("Merge Base Commit:", cc.MergeBaseCommit.GetSHA())
-		log.Println("Behind By:", cc.GetBehindBy())
-	}
+	log.Debug().Msgf("Merge Base Commit: %s", cc.MergeBaseCommit.GetSHA())
+	log.Debug().Msgf("Behind By: %d", cc.GetBehindBy())
 
 	return cc.GetBehindBy() == 0, nil
 }
