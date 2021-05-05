@@ -127,7 +127,7 @@ func run(cfg conf.Configuration) error {
 
 		repoConfig := getRepoConfig(cfg, fullName)
 
-		issue, err := finder.GetCurrentPull(ctx, issues)
+		issue, err := finder.GetCurrentPull(logger.WithContext(ctx), issues)
 		if err != nil {
 			logger.Error().Err(err).Msg("unable to get the current pull request")
 			continue
@@ -142,7 +142,7 @@ func run(cfg conf.Configuration) error {
 
 		loggerIssue := logger.With().Int("pr", issue.GetNumber()).Logger()
 
-		err = repo.Process(logger.WithContext(ctx), issue.GetNumber())
+		err = repo.Process(loggerIssue.WithContext(ctx), issue.GetNumber())
 		if err != nil {
 			loggerIssue.Error().Err(err).Msg("Failed to process")
 		}

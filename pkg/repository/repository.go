@@ -80,8 +80,6 @@ func (r Repository) Process(ctx context.Context, prNumber int) error {
 func (r Repository) process(ctx context.Context, pr *github.PullRequest) error {
 	logger := log.Ctx(ctx)
 
-	logger.Info().Msg(pr.GetHTMLURL())
-
 	if r.config.GetNeedMilestone() && pr.Milestone == nil {
 		return errors.New("the milestone is missing")
 	}

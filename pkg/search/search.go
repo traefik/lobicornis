@@ -37,8 +37,6 @@ func (f Finder) Search(ctx context.Context, user string, parameters ...Parameter
 		}
 	}
 
-	log.Debug().Msg(query)
-
 	searchOpts := &github.SearchOptions{
 		Sort:        "updated",
 		Order:       "asc",
@@ -69,7 +67,7 @@ func (f Finder) Search(ctx context.Context, user string, parameters ...Parameter
 		searchOpts.Page = resp.NextPage
 	}
 
-	log.Debug().Msgf("search queries count: %d", count)
+	log.Debug().Str("query", query).Int("count", count).Msg("search queries count")
 
 	return overview, nil
 }

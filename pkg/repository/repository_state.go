@@ -19,8 +19,7 @@ func (r *Repository) isUpToDateBranch(ctx context.Context, pr *github.PullReques
 		return false, fmt.Errorf("failed to compare commits: %w", err)
 	}
 
-	log.Debug().Msgf("Merge Base Commit: %s", cc.MergeBaseCommit.GetSHA())
-	log.Debug().Msgf("Behind By: %d", cc.GetBehindBy())
+	log.Ctx(ctx).Debug().Str("sha", cc.MergeBaseCommit.GetSHA()).Msgf("Merge base commit, behind By", cc.GetBehindBy())
 
 	return cc.GetBehindBy() == 0, nil
 }
