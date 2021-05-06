@@ -42,10 +42,12 @@ func newMjolnir(client *github.Client, owner, name string, dryRun bool) Mjolnir 
 
 // CloseRelatedIssues Closes issues listed in the PR description.
 func (m Mjolnir) CloseRelatedIssues(ctx context.Context, pr *github.PullRequest) error {
-	issueNumbers := m.parseIssueFixes(pr.GetBody())
+	logger := log.Ctx(ctx)
+
+	issueNumbers := m.parseIssueFixes(ctx, pr.GetBody())
 
 	for _, issueNumber := range issueNumbers {
-		log.Info().Msgf("closes issue #%d, add milestones %s", issueNumber, pr.Milestone.GetTitle())
+		logger.Info().Msgf("closes issue #%d, add milestones %s", issueNumber, pr.Milestone.GetTitle())
 
 		if !m.dryRun {
 			err := m.closeIssue(ctx, pr, issueNumber)
@@ -62,7 +64,7 @@ func (m Mjolnir) CloseRelatedIssues(ctx context.Context, pr *github.PullRequest)
 
 		message := fmt.Sprintf("Closed by #%d.", pr.GetNumber())
 
-		log.Info().Msgf("issue #%d, add comment: %s", issueNumber, message)
+		logger.Debug().Msgf("issue #%d, add comment: %s", issueNumber, message)
 
 		if !m.dryRun {
 			err := m.addComment(ctx, issueNumber, message)
@@ -99,7 +101,7 @@ func (m Mjolnir) addComment(ctx context.Context, issueNumber int, message string
 	return err
 }
 
-func (m Mjolnir) parseIssueFixes(text string) []int {
+func (m Mjolnir) parseIssueFixes(ctx context.Context, text string) []int {
 	submatch := m.globalFixesIssueRE.FindStringSubmatch(strings.ReplaceAll(text, ":", ""))
 
 	if len(submatch) == 0 {
