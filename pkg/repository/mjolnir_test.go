@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -63,7 +64,7 @@ func Test_parseIssueFixes(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 
-			issueNumbers := mjolnir.parseIssueFixes(test.text)
+			issueNumbers := mjolnir.parseIssueFixes(context.Background(), test.text)
 
 			assert.Equal(t, test.expectedNumbers, issueNumbers)
 		})
