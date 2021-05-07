@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -62,7 +63,7 @@ func TestClone_PullRequestForUpdate(t *testing.T) {
 
 			pr := createFakePR(test.sameRepo)
 
-			remoteName, err := clone.PullRequestForUpdate(pr)
+			remoteName, err := clone.PullRequestForUpdate(context.Background(), pr)
 			require.NoError(t, err)
 
 			assert.Equal(t, test.expectedRemoteName, remoteName)
@@ -128,7 +129,7 @@ func TestClone_PullRequestForMerge(t *testing.T) {
 
 			pr := createFakePR(test.sameRepo)
 
-			remoteName, err := clone.PullRequestForMerge(pr)
+			remoteName, err := clone.PullRequestForMerge(context.Background(), pr)
 			require.NoError(t, err)
 
 			assert.Equal(t, test.expectedRemoteName, remoteName)

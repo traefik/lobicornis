@@ -175,7 +175,7 @@ func (r Repository) fastForward(ctx context.Context, pr *github.PullRequest) (Re
 	logger := log.Ctx(ctx)
 	logger.Info().Msg(tempDir)
 
-	output, err := r.clone.PullRequestForMerge(pr)
+	output, err := r.clone.PullRequestForMerge(ctx, pr)
 	if err != nil {
 		logger.Error().Err(err).Msg(output)
 		return Result{Message: err.Error(), Merged: false}, err

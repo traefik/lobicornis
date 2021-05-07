@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -43,7 +44,7 @@ func newClone(gitConfig conf.Git, token string) Clone {
 }
 
 // PullRequestForMerge Clone a pull request for a merge.
-func (c Clone) PullRequestForMerge(pr *github.PullRequest) (string, error) {
+func (c Clone) PullRequestForMerge(ctx context.Context, pr *github.PullRequest) (string, error) {
 	var forkURL string
 	if pr.Base.Repo.GetPrivate() {
 		forkURL = makeRepositoryURL(pr.Head.Repo.GetGitURL(), c.git.SSH, c.token)
@@ -65,11 +66,11 @@ func (c Clone) PullRequestForMerge(pr *github.PullRequest) (string, error) {
 		},
 	}
 
-	return c.pullRequest(pr, model)
+	return c.pullRequest(ctx, pr, model)
 }
 
 // PullRequestForUpdate Clone a pull request for an update (rebase).
-func (c Clone) PullRequestForUpdate(pr *github.PullRequest) (string, error) {
+func (c Clone) PullRequestForUpdate(ctx context.Context, pr *github.PullRequest) (string, error) {
 	var unchangedURL string
 	if pr.Base.Repo.GetPrivate() {
 		unchangedURL = makeRepositoryURL(pr.Base.Repo.GetGitURL(), c.git.SSH, c.token)
@@ -91,18 +92,20 @@ func (c Clone) PullRequestForUpdate(pr *github.PullRequest) (string, error) {
 		},
 	}
 
-	return c.pullRequest(pr, model)
+	return c.pullRequest(ctx, pr, model)
 }
 
-func (c Clone) pullRequest(pr *github.PullRequest, prModel prModel) (string, error) {
+func (c Clone) pullRequest(ctx context.Context, pr *github.PullRequest, prModel prModel) (string, error) {
+	logger := log.Ctx(ctx)
+
 	if isOnMainRepository(pr) {
-		log.Info().Msg("It's not a fork, it's a branch on the main repository.")
+		logger.Info().Msg("It's not a fork, it's a branch on the main repository.")
 
 		remoteName := RemoteOrigin
 
 		output, err := c.fromMainRepository(prModel.changed)
 		if err != nil {
-			log.Error().Err(err).Msg(output)
+			logger.Error().Err(err).Msg(output)
 			return "", err
 		}
 
@@ -112,7 +115,7 @@ func (c Clone) pullRequest(pr *github.PullRequest, prModel prModel) (string, err
 	remoteName := RemoteUpstream
 	output, err := c.fromFork(prModel.changed, prModel.unchanged, remoteName)
 	if err != nil {
-		log.Error().Err(err).Msg(output)
+		logger.Error().Err(err).Msg(output)
 		return "", err
 	}
 

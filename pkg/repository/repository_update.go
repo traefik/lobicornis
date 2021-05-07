@@ -75,7 +75,7 @@ func (r *Repository) cloneAndUpdate(ctx context.Context, pr *github.PullRequest)
 		return errors.New("the branch master on a main repository cannot be rebased")
 	}
 
-	mainRemote, err := r.clone.PullRequestForUpdate(pr)
+	mainRemote, err := r.clone.PullRequestForUpdate(ctx, pr)
 	if err != nil {
 		return fmt.Errorf("failed to clone: %w", err)
 	}
