@@ -115,7 +115,7 @@ func (r Repository) process(ctx context.Context, pr *github.PullRequest) error {
 			r.markers.MergeMethodPrefix + conf.MergeMethodFastForward,
 		}
 		err = r.removeLabels(ctx, pr, labelsToRemove)
-		ignoreError(err)
+		ignoreError(ctx, err)
 
 		return nil
 	}
@@ -180,13 +180,13 @@ func (r Repository) process(ctx context.Context, pr *github.PullRequest) error {
 
 func (r Repository) callHuman(ctx context.Context, pr *github.PullRequest, message string) {
 	err := r.addComment(ctx, pr, ":no_entry_sign: "+message)
-	ignoreError(err)
+	ignoreError(ctx, err)
 
 	err = r.addLabels(ctx, pr, r.markers.NeedHumanMerge)
-	ignoreError(err)
+	ignoreError(ctx, err)
 
 	err = r.removeLabel(ctx, pr, r.markers.MergeInProgress)
-	ignoreError(err)
+	ignoreError(ctx, err)
 }
 
 func (r Repository) addComment(ctx context.Context, pr *github.PullRequest, message string) error {
@@ -208,8 +208,8 @@ func (r Repository) addComment(ctx context.Context, pr *github.PullRequest, mess
 	return err
 }
 
-func ignoreError(err error) {
+func ignoreError(ctx context.Context, err error) {
 	if err != nil {
-		log.Error().Err(err).Msg("ignored error")
+		log.Ctx(ctx).Debug().Err(err).Msg("ignored error")
 	}
 }

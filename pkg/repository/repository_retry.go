@@ -18,7 +18,7 @@ func (r Repository) cleanRetryLabel(ctx context.Context, pr *github.PullRequest)
 	currentRetryLabel := findLabelNameWithPrefix(pr.Labels, r.markers.MergeRetryPrefix)
 	if len(currentRetryLabel) > 0 {
 		err := r.removeLabel(ctx, pr, currentRetryLabel)
-		ignoreError(err)
+		ignoreError(ctx, err)
 	}
 }
 
@@ -33,16 +33,16 @@ func (r Repository) manageRetryLabel(ctx context.Context, pr *github.PullRequest
 		newRetryLabel := r.markers.MergeRetryPrefix + strconv.Itoa(1)
 
 		err := r.addLabels(ctx, pr, newRetryLabel)
-		ignoreError(err)
+		ignoreError(ctx, err)
 
 		err = r.addLabels(ctx, pr, r.markers.MergeInProgress)
-		ignoreError(err)
+		ignoreError(ctx, err)
 
 		return nil
 	}
 
 	err := r.removeLabel(ctx, pr, currentRetryLabel)
-	ignoreError(err)
+	ignoreError(ctx, err)
 
 	number := extractRetryNumber(currentRetryLabel, r.markers.MergeRetryPrefix)
 
@@ -54,7 +54,7 @@ func (r Repository) manageRetryLabel(ctx context.Context, pr *github.PullRequest
 	newRetryLabel := r.markers.MergeRetryPrefix + strconv.Itoa(number+1)
 
 	err = r.addLabels(ctx, pr, newRetryLabel)
-	ignoreError(err)
+	ignoreError(ctx, err)
 
 	return nil
 }

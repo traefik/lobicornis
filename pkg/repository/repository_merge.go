@@ -74,12 +74,12 @@ func (r Repository) merge(ctx context.Context, pr *github.PullRequest, mergeMeth
 	log.Ctx(ctx).Info().Msgf("MERGE(%s)\n", mergeMethod)
 
 	err := r.removeLabel(ctx, pr, r.markers.MergeInProgress)
-	ignoreError(err)
+	ignoreError(ctx, err)
 
 	if !r.dryRun {
 		var result Result
 		result, err = r.mergePullRequest(ctx, pr, mergeMethod)
-		ignoreError(err)
+		ignoreError(ctx, err)
 
 		log.Ctx(ctx).Info().Msg(result.Message)
 
@@ -96,11 +96,11 @@ func (r Repository) merge(ctx context.Context, pr *github.PullRequest, mergeMeth
 			r.markers.MergeMethodPrefix + conf.MergeMethodFastForward,
 		}
 		err = r.removeLabels(ctx, pr, labelsToRemove)
-		ignoreError(err)
+		ignoreError(ctx, err)
 	}
 
 	err = r.mjolnir.CloseRelatedIssues(ctx, pr)
-	ignoreError(err)
+	ignoreError(ctx, err)
 
 	return nil
 }
@@ -163,7 +163,7 @@ func (r Repository) fastForward(ctx context.Context, pr *github.PullRequest) (Re
 		return Result{Message: err.Error(), Merged: false}, err
 	}
 
-	defer func() { ignoreError(os.RemoveAll(dir)) }()
+	defer func() { ignoreError(ctx, os.RemoveAll(dir)) }()
 
 	err = os.Chdir(dir)
 	if err != nil {

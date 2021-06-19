@@ -61,7 +61,7 @@ func (r *Repository) cloneAndUpdate(ctx context.Context, pr *github.PullRequest)
 		return err
 	}
 
-	defer func() { ignoreError(os.RemoveAll(dir)) }()
+	defer func() { ignoreError(ctx, os.RemoveAll(dir)) }()
 
 	err = os.Chdir(dir)
 	if err != nil {
