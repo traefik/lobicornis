@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/google/go-github/v32/github"
+	"github.com/google/go-github/v41/github"
 	"github.com/rs/zerolog/log"
 )
 
@@ -14,7 +14,7 @@ import (
 func (r *Repository) isUpToDateBranch(ctx context.Context, pr *github.PullRequest) (bool, error) {
 	head := fmt.Sprintf("%s:%s", pr.Head.User.GetLogin(), pr.Head.GetRef())
 
-	cc, _, err := r.client.Repositories.CompareCommits(ctx, r.owner, r.name, pr.Base.GetRef(), head)
+	cc, _, err := r.client.Repositories.CompareCommits(ctx, r.owner, r.name, pr.Base.GetRef(), head, nil)
 	if err != nil {
 		return false, fmt.Errorf("failed to compare commits: %w", err)
 	}
