@@ -9,6 +9,8 @@ BUILD_DATE := $(shell date -u '+%Y-%m-%d_%I:%M:%S%p')
 
 BIN_OUTPUT := $(if $(filter $(shell go env GOOS), windows), lobicornis.exe, lobicornis)
 
+IMAGE_NAME := traefik/lobicornis
+
 default: clean check test build
 
 test: clean
@@ -26,3 +28,6 @@ check:
 
 release-test:
 	goreleaser --skip-publish --snapshot --rm-dist
+
+image:
+	docker build -t $(IMAGE_NAME) .
