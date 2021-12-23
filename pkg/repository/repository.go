@@ -86,7 +86,7 @@ func (r Repository) process(ctx context.Context, pr *github.PullRequest) error {
 
 	err := r.hasReviewsApprove(ctx, pr)
 	if err != nil {
-		return fmt.Errorf("error related to reviews: %w", err)
+		return fmt.Errorf("error related to review: %w", err)
 	}
 
 	status, err := r.getAggregatedState(ctx, pr)
@@ -124,6 +124,11 @@ func (r Repository) process(ctx context.Context, pr *github.PullRequest) error {
 		logger.Info().Msg("Conflicts must be resolved in the PR.")
 
 		return r.manageRetryLabel(ctx, pr, r.retry.OnMergeable, errors.New("conflicts must be resolved in the PR"))
+	}
+
+	switch pr.GetMergeableState() {
+	case MergeableStateDraft, MergeableStateBlocked, MergeableStateUnknown:
+		return fmt.Errorf("the mergeable state is %q", pr.GetMergeableState())
 	}
 
 	r.cleanRetryLabel(ctx, pr)
