@@ -49,6 +49,8 @@
     "exhaustivestruct",
     "noctx",
     "ifshort",
+    "varnamelen",
+    "nilnil",
   ]
 
 [issues]

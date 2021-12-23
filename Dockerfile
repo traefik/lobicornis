@@ -15,7 +15,7 @@ RUN go mod download
 COPY . .
 RUN make build
 
-FROM alpine:3.12
+FROM alpine:3.15
 RUN apk --no-cache --no-progress add ca-certificates git \
     && rm -rf /var/cache/apk/*
 
