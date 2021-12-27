@@ -14,8 +14,8 @@ github.com/google/go-github/v41 v41.0.0 h1:HseJrM2JFf2vfiZJ8anY2hqBjdfY1Vlj/K27u
 github.com/google/go-github/v41 v41.0.0/go.mod h1:XgmCA5H323A9rtgExdTcnDkcqp6S30AVACCBDOonIxg=
 github.com/google/go-querystring v1.1.0 h1:AnCroh3fv4ZBgVIf1Iwtovgjaw/GiKJo8M8yD/fhyJ8=
 github.com/google/go-querystring v1.1.0/go.mod h1:Kcdr2DB4koayq7X8pmAG4sNG59So17icRSOU623lUBU=
-github.com/ldez/go-git-cmd-wrapper v1.3.0 h1:6wC4jzU5d6CefnOPG2dFWHUprIZbyKh8/7j1/clY3cw=
-github.com/ldez/go-git-cmd-wrapper v1.3.0/go.mod h1:Nf4t6+pbkhWuCiS2bmPv5xfh9JXPAAboaF4KOoYA7wM=
+github.com/ldez/go-git-cmd-wrapper/v2 v2.3.0 h1:DFa0UMjHXPnPWsyca1Dj+C4w/zXCh1P59PEBN5/XJuo=
+github.com/ldez/go-git-cmd-wrapper/v2 v2.3.0/go.mod h1:657ooZ9WLGqP16DRl4kBbEXQYV7sdZBAPP9UCaVGYIU=
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=

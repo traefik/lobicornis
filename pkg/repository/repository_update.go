@@ -9,11 +9,11 @@ import (
 	"strings"
 
 	"github.com/google/go-github/v41/github"
-	"github.com/ldez/go-git-cmd-wrapper/git"
-	"github.com/ldez/go-git-cmd-wrapper/merge"
-	"github.com/ldez/go-git-cmd-wrapper/push"
-	"github.com/ldez/go-git-cmd-wrapper/rebase"
-	"github.com/ldez/go-git-cmd-wrapper/types"
+	"github.com/ldez/go-git-cmd-wrapper/v2/git"
+	"github.com/ldez/go-git-cmd-wrapper/v2/merge"
+	"github.com/ldez/go-git-cmd-wrapper/v2/push"
+	"github.com/ldez/go-git-cmd-wrapper/v2/rebase"
+	"github.com/ldez/go-git-cmd-wrapper/v2/types"
 	"github.com/rs/zerolog/log"
 )
 
@@ -180,7 +180,7 @@ func (r *Repository) findFirstCommit(ctx context.Context, pr *github.PullRequest
 
 func rebasePR(pr *github.PullRequest, remoteName string, debug bool) (string, error) {
 	return git.Rebase(
-		rebase.PreserveMerges,
+		rebase.RebaseMerges(""),
 		rebase.Branch(fmt.Sprintf("%s/%s", remoteName, pr.Base.GetRef())),
 		git.Debugger(debug))
 }

@@ -8,8 +8,8 @@ import (
 	"testing"
 
 	"github.com/google/go-github/v41/github"
-	"github.com/ldez/go-git-cmd-wrapper/git"
-	"github.com/ldez/go-git-cmd-wrapper/remote"
+	"github.com/ldez/go-git-cmd-wrapper/v2/git"
+	"github.com/ldez/go-git-cmd-wrapper/v2/remote"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/traefik/lobicornis/v2/pkg/conf"

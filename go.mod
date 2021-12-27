@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/google/go-github/v41 v41.0.0
-	github.com/ldez/go-git-cmd-wrapper v1.3.0
+	github.com/ldez/go-git-cmd-wrapper/v2 v2.3.0
 	github.com/rs/zerolog v1.26.1
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
