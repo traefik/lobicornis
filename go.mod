@@ -1,4 +1,4 @@
-module github.com/traefik/lobicornis/v2
+module github.com/traefik/lobicornis/v3
 
 go 1.17
 

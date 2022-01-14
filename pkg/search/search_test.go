@@ -8,7 +8,7 @@ import (
 	"github.com/google/go-github/v41/github"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/traefik/lobicornis/v2/pkg/conf"
+	"github.com/traefik/lobicornis/v3/pkg/conf"
 )
 
 func TestFinder_GetCurrentPull(t *testing.T) {

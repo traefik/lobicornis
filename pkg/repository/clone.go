@@ -14,7 +14,7 @@ import (
 	"github.com/ldez/go-git-cmd-wrapper/v2/remote"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"github.com/traefik/lobicornis/v2/pkg/conf"
+	"github.com/traefik/lobicornis/v3/pkg/conf"
 )
 
 type remoteModel struct {

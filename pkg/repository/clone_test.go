@@ -12,7 +12,7 @@ import (
 	"github.com/ldez/go-git-cmd-wrapper/v2/remote"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/traefik/lobicornis/v2/pkg/conf"
+	"github.com/traefik/lobicornis/v3/pkg/conf"
 )
 
 func TestClone_PullRequestForUpdate(t *testing.T) {

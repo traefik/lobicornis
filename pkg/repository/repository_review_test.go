@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/traefik/lobicornis/v2/pkg/conf"
+	"github.com/traefik/lobicornis/v3/pkg/conf"
 )
 
 func TestRepository_getMinReview(t *testing.T) {

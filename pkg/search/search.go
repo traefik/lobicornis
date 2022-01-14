@@ -8,7 +8,7 @@ import (
 
 	"github.com/google/go-github/v41/github"
 	"github.com/rs/zerolog/log"
-	"github.com/traefik/lobicornis/v2/pkg/conf"
+	"github.com/traefik/lobicornis/v3/pkg/conf"
 )
 
 // Finder a pull request search manager.

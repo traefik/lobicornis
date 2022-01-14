@@ -13,9 +13,9 @@ import (
 	"github.com/google/go-github/v41/github"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"github.com/traefik/lobicornis/v2/pkg/conf"
-	"github.com/traefik/lobicornis/v2/pkg/repository"
-	"github.com/traefik/lobicornis/v2/pkg/search"
+	"github.com/traefik/lobicornis/v3/pkg/conf"
+	"github.com/traefik/lobicornis/v3/pkg/repository"
+	"github.com/traefik/lobicornis/v3/pkg/search"
 	"golang.org/x/oauth2"
 )
 
