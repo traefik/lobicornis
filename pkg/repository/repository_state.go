@@ -118,7 +118,9 @@ func (r *Repository) getCheckRunsState(ctx context.Context, pr *github.PullReque
 
 	var msg []string
 	for _, v := range checkSuites.CheckSuites {
-		if v.App != nil && strings.EqualFold(v.GetApp().GetName(), "Dependabot") {
+		appName := v.GetApp().GetName()
+
+		if v.App != nil && (strings.EqualFold(appName, "Dependabot") || strings.EqualFold(appName, "Renovate")) {
 			continue
 		}
 
@@ -127,7 +129,7 @@ func (r *Repository) getCheckRunsState(ctx context.Context, pr *github.PullReque
 		}
 
 		if v.GetConclusion() == "success" || v.GetConclusion() == "neutral" {
-			msg = append(msg, fmt.Sprintf("%s %s %s", v.GetApp().GetName(), v.GetStatus(), v.GetConclusion()))
+			msg = append(msg, fmt.Sprintf("%s %s %s", appName, v.GetStatus(), v.GetConclusion()))
 		}
 	}
 

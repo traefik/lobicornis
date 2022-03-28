@@ -184,6 +184,8 @@ func (r Repository) process(ctx context.Context, pr *github.PullRequest) error {
 }
 
 func (r Repository) callHuman(ctx context.Context, pr *github.PullRequest, message string) {
+	log.Ctx(ctx).Warn().Msg(message)
+
 	err := r.addComment(ctx, pr, ":no_entry_sign: "+message)
 	ignoreError(ctx, err)
 
