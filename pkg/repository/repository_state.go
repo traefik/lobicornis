@@ -118,9 +118,9 @@ func (r *Repository) getCheckRunsState(ctx context.Context, pr *github.PullReque
 
 	var msg []string
 	for _, v := range checkSuites.CheckSuites {
-		appName := v.GetApp().GetName()
+		slug := v.GetApp().GetSlug()
 
-		if v.App != nil && (strings.EqualFold(appName, "Dependabot") || strings.EqualFold(appName, "Renovate")) {
+		if (slug == "dependabot" || slug == "renovate") && v.GetStatus() == "queued" {
 			continue
 		}
 
@@ -128,12 +128,12 @@ func (r *Repository) getCheckRunsState(ctx context.Context, pr *github.PullReque
 			return Pending, nil
 		}
 
-		if v.GetConclusion() == "success" || v.GetConclusion() == "neutral" {
-			msg = append(msg, fmt.Sprintf("%s %s %s", appName, v.GetStatus(), v.GetConclusion()))
+		if v.GetConclusion() != "success" && v.GetConclusion() != "neutral" {
+			msg = append(msg, fmt.Sprintf("%s %s %s", v.GetApp().GetName(), v.GetStatus(), v.GetConclusion()))
 		}
 	}
 
-	if len(msg) > 0 {
+	if len(msg) == 0 {
 		return Success, nil
 	}
 
