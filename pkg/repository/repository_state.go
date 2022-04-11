@@ -116,11 +116,13 @@ func (r *Repository) getCheckRunsState(ctx context.Context, pr *github.PullReque
 		return Success, nil
 	}
 
+	ignoredApps := []string{"dependabot", "renovate", "github-pages"}
+
 	var msg []string
 	for _, v := range checkSuites.CheckSuites {
 		slug := v.GetApp().GetSlug()
 
-		if (slug == "dependabot" || slug == "renovate") && v.GetStatus() == "queued" {
+		if contains(ignoredApps, slug) {
 			continue
 		}
 
