@@ -1,0 +1,72 @@
+run:
+  timeout: 2m
+  skip-files:
+    - ^unsecured/
+
+linters-settings:
+  govet:
+    check-shadowing: true
+  gocyclo:
+    min-complexity: 16
+  goconst:
+    min-len: 3
+    min-occurrences: 3
+  misspell:
+    locale: US
+
+linters:
+  enable-all: true
+  disable:
+    - maligned # deprecated
+    - interfacer # deprecated
+    - scopelint # deprecated
+    - golint # deprecated
+    - exhaustivestruct # deprecated
+    - execinquery # not relevant (SQL)
+    - sqlclosecheck # not relevant (SQL)
+    - rowserrcheck # not relevant (SQL)
+    - cyclop # duplicate of gocyclo
+    - lll
+    - gas
+    - dupl
+    - prealloc
+    - scopelint
+    - gomnd
+    - wsl
+    - nlreturn
+    - gocognit
+    - nestif
+    - testpackage
+    - paralleltest
+    - tparallel
+    - goerr113
+    - wrapcheck
+    - exhaustive
+    - exhaustruct
+    - noctx
+    - ifshort
+    - varnamelen
+    - nilnil
+
+issues:
+  exclude-use-default: false
+  max-per-linter: 0
+  max-same-issues: 0
+  exclude:
+    - 'ST1000: at least one file in a package should have a package comment'
+  exclude-rules:
+    - path: (.+)_test.go
+      linters:
+        - funlen
+    - path: cmd/version.go
+      text: (version|date|commit) is a global variable
+    - path: cmd/version.go
+      text: use of `fmt.Printf` forbidden by pattern
+    # FIXME must be changed
+    - path: pkg/repository/repository.go
+      text: Function 'Process' has too many statements \(\d+ > 40\)
+    # FIXME must be changed
+    - path: pkg/repository/repository.go
+      text: >-
+        cyclomatic complexity \d+ of func `\(Repository\)\.Process` is high \(>
+        16\)
