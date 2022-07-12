@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/google/go-github/v41/github"
 	"github.com/rs/zerolog/log"
@@ -59,11 +58,11 @@ func (r *Repository) getAggregatedState(ctx context.Context, pr *github.PullRequ
 		return "", err
 	}
 
-	if status == Pending {
+	if status == Pending || status == Success {
 		return status, nil
 	}
 
-	return r.getCheckRunsState(ctx, pr)
+	return "", fmt.Errorf("PR status: %s", status)
 }
 
 // getStatus provide checks status (status).
@@ -101,43 +100,4 @@ func (r *Repository) getStatus(ctx context.Context, pr *github.PullRequest) (str
 	}
 
 	return "", errors.New(summary)
-}
-
-// getCheckRunsState provide checks status (checksRun).
-func (r *Repository) getCheckRunsState(ctx context.Context, pr *github.PullRequest) (string, error) {
-	prRef := pr.Head.GetSHA()
-
-	checkSuites, _, err := r.client.Checks.ListCheckSuitesForRef(ctx, r.owner, r.name, prRef, nil)
-	if err != nil {
-		return "", err
-	}
-
-	if checkSuites.GetTotal() == 0 {
-		return Success, nil
-	}
-
-	ignoredApps := []string{"dependabot", "renovate", "github-pages"}
-
-	var msg []string
-	for _, v := range checkSuites.CheckSuites {
-		slug := v.GetApp().GetSlug()
-
-		if contains(ignoredApps, slug) {
-			continue
-		}
-
-		if v.GetStatus() != "completed" {
-			return Pending, nil
-		}
-
-		if v.GetConclusion() != "success" && v.GetConclusion() != "neutral" {
-			msg = append(msg, fmt.Sprintf("%s %s %s", v.GetApp().GetName(), v.GetStatus(), v.GetConclusion()))
-		}
-	}
-
-	if len(msg) == 0 {
-		return Success, nil
-	}
-
-	return "", errors.New(strings.Join(msg, ", "))
 }
