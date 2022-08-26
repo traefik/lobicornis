@@ -3,7 +3,7 @@ package repository
 import (
 	"testing"
 
-	"github.com/google/go-github/v41/github"
+	"github.com/google/go-github/v47/github"
 	"github.com/stretchr/testify/assert"
 	"github.com/traefik/lobicornis/v3/pkg/conf"
 )

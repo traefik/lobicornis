@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/google/go-github/v41/github"
+	"github.com/google/go-github/v47/github"
 	"github.com/rs/zerolog/log"
 )
 

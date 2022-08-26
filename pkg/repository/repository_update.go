@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/google/go-github/v41/github"
+	"github.com/google/go-github/v47/github"
 	"github.com/ldez/go-git-cmd-wrapper/v2/git"
 	"github.com/ldez/go-git-cmd-wrapper/v2/merge"
 	"github.com/ldez/go-git-cmd-wrapper/v2/push"
