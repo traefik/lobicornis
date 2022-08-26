@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"io/ioutil"
 	"os"
 	"strings"
 	"testing"
@@ -48,7 +47,7 @@ func TestClone_PullRequestForUpdate(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
-			dir, err := ioutil.TempDir("", "myrmica-lobicornis")
+			dir, err := os.MkdirTemp("", "myrmica-lobicornis")
 			require.NoError(t, err)
 
 			t.Cleanup(func() { _ = os.RemoveAll(dir) })
@@ -114,7 +113,7 @@ func TestClone_PullRequestForMerge(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
-			dir, err := ioutil.TempDir("", "myrmica-lobicornis")
+			dir, err := os.MkdirTemp("", "myrmica-lobicornis")
 			require.NoError(t, err)
 
 			t.Cleanup(func() { _ = os.RemoveAll(dir) })

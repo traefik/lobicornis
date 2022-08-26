@@ -1,6 +1,6 @@
 module github.com/traefik/lobicornis/v3
 
-go 1.17
+go 1.19
 
 require (
 	github.com/google/go-github/v41 v41.0.0

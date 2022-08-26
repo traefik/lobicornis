@@ -21,6 +21,11 @@ linters:
     - interfacer # deprecated
     - scopelint # deprecated
     - golint # deprecated
+    - ifshort  # deprecated
+    - varcheck  # deprecated
+    - deadcode  # deprecated
+    - nosnakecase  # deprecated
+    - structcheck  # deprecated
     - exhaustivestruct # deprecated
     - execinquery # not relevant (SQL)
     - sqlclosecheck # not relevant (SQL)
@@ -44,7 +49,6 @@ linters:
     - exhaustive
     - exhaustruct
     - noctx
-    - ifshort
     - varnamelen
     - nilnil
 
@@ -54,6 +58,7 @@ issues:
   max-same-issues: 0
   exclude:
     - 'ST1000: at least one file in a package should have a package comment'
+    - 'package-comments: should have a package comment'
   exclude-rules:
     - path: (.+)_test.go
       linters:

@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 
@@ -56,7 +55,7 @@ func (r *Repository) cloneAndUpdate(ctx context.Context, pr *github.PullRequest)
 
 	logger.Info().Msgf("Base branch: %s - Fork branch: %s", pr.Base.GetRef(), pr.Head.GetRef())
 
-	dir, err := ioutil.TempDir("", "myrmica-lobicornis")
+	dir, err := os.MkdirTemp("", "myrmica-lobicornis")
 	if err != nil {
 		return err
 	}
@@ -103,7 +102,7 @@ func (r *Repository) updatePullRequest(ctx context.Context, pr *github.PullReque
 		logger.Info().Msg("Rebase")
 
 		// rebase
-		output, errRebase := rebasePR(pr, mainRemote, r.debug)
+		output, errRebase := rebasePR(ctx, pr, mainRemote, r.debug)
 		if errRebase != nil {
 			logger.Error().Err(errRebase).Msg("unable to rebase PR")
 			return output, fmt.Errorf("failed to rebase:\n %s", output)
@@ -112,7 +111,7 @@ func (r *Repository) updatePullRequest(ctx context.Context, pr *github.PullReque
 		logger.Info().Msg("Merge")
 
 		// merge
-		output, errMerge := mergeBaseHeadIntoPR(pr, mainRemote, r.debug)
+		output, errMerge := mergeBaseHeadIntoPR(ctx, pr, mainRemote, r.debug)
 		if errMerge != nil {
 			logger.Error().Err(errMerge).Msg("unable to merge base head into PR")
 			return output, fmt.Errorf("failed to merge base HEAD:\n %s", output)
@@ -120,7 +119,7 @@ func (r *Repository) updatePullRequest(ctx context.Context, pr *github.PullReque
 	}
 
 	// push
-	output, err := git.Push(
+	output, err := git.PushWithContext(ctx,
 		git.Cond(r.dryRun, push.DryRun),
 		git.Cond(action == ActionRebase, push.ForceWithLease),
 		push.Remote(RemoteOrigin),
@@ -141,7 +140,7 @@ func (r *Repository) getUpdateAction(ctx context.Context, pr *github.PullRequest
 	}
 
 	// check if PR contains merges
-	output, err := git.Raw("log", func(g *types.Cmd) {
+	output, err := git.RawWithContext(ctx, "log", func(g *types.Cmd) {
 		g.AddOptions("--oneline")
 		g.AddOptions("--merges")
 		g.AddOptions(fmt.Sprintf("%s^..HEAD", firstCommit.GetSHA()))
@@ -178,15 +177,15 @@ func (r *Repository) findFirstCommit(ctx context.Context, pr *github.PullRequest
 	return commits[0], nil
 }
 
-func rebasePR(pr *github.PullRequest, remoteName string, debug bool) (string, error) {
-	return git.Rebase(
+func rebasePR(ctx context.Context, pr *github.PullRequest, remoteName string, debug bool) (string, error) {
+	return git.RebaseWithContext(ctx,
 		rebase.RebaseMerges(""),
 		rebase.Branch(fmt.Sprintf("%s/%s", remoteName, pr.Base.GetRef())),
 		git.Debugger(debug))
 }
 
-func mergeBaseHeadIntoPR(pr *github.PullRequest, remoteName string, debug bool) (string, error) {
-	return git.Merge(
+func mergeBaseHeadIntoPR(ctx context.Context, pr *github.PullRequest, remoteName string, debug bool) (string, error) {
+	return git.MergeWithContext(ctx,
 		merge.Commits(fmt.Sprintf("%s/%s", remoteName, pr.Base.GetRef())),
 		git.Debugger(debug))
 }

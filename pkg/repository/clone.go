@@ -103,7 +103,7 @@ func (c Clone) pullRequest(ctx context.Context, pr *github.PullRequest, prModel 
 
 		remoteName := RemoteOrigin
 
-		output, err := c.fromMainRepository(prModel.changed)
+		output, err := c.fromMainRepository(ctx, prModel.changed)
 		if err != nil {
 			logger.Error().Err(err).Msg(output)
 			return "", err
@@ -113,7 +113,7 @@ func (c Clone) pullRequest(ctx context.Context, pr *github.PullRequest, prModel 
 	}
 
 	remoteName := RemoteUpstream
-	output, err := c.fromFork(prModel.changed, prModel.unchanged, remoteName)
+	output, err := c.fromFork(ctx, prModel.changed, prModel.unchanged, remoteName)
 	if err != nil {
 		logger.Error().Err(err).Msg(output)
 		return "", err
@@ -122,18 +122,18 @@ func (c Clone) pullRequest(ctx context.Context, pr *github.PullRequest, prModel 
 	return remoteName, nil
 }
 
-func (c Clone) fromMainRepository(remoteModel remoteModel) (string, error) {
-	output, err := git.Clone(clone.Repository(remoteModel.url), clone.Directory("."), git.Debugger(c.debug))
+func (c Clone) fromMainRepository(ctx context.Context, remoteModel remoteModel) (string, error) {
+	output, err := git.CloneWithContext(ctx, clone.Repository(remoteModel.url), clone.Directory("."), git.Debugger(c.debug))
 	if err != nil {
 		return output, err
 	}
 
-	output, err = configureGit(c.git)
+	output, err = configureGit(ctx, c.git)
 	if err != nil {
 		return output, err
 	}
 
-	output, err = git.Checkout(checkout.Branch(remoteModel.ref), git.Debugger(c.debug))
+	output, err = git.CheckoutWithContext(ctx, checkout.Branch(remoteModel.ref), git.Debugger(c.debug))
 	if err != nil {
 		return output, fmt.Errorf("failed to checkout branch %s: %w", remoteModel.ref, err)
 	}
@@ -141,8 +141,8 @@ func (c Clone) fromMainRepository(remoteModel remoteModel) (string, error) {
 	return "", nil
 }
 
-func (c Clone) fromFork(origin, upstream remoteModel, remoteName string) (string, error) {
-	output, err := git.Clone(
+func (c Clone) fromFork(ctx context.Context, origin, upstream remoteModel, remoteName string) (string, error) {
+	output, err := git.CloneWithContext(ctx,
 		clone.Repository(origin.url),
 		clone.Branch(origin.ref),
 		clone.Directory("."),
@@ -151,17 +151,17 @@ func (c Clone) fromFork(origin, upstream remoteModel, remoteName string) (string
 		return output, err
 	}
 
-	output, err = configureGit(c.git)
+	output, err = configureGit(ctx, c.git)
 	if err != nil {
 		return output, err
 	}
 
-	output, err = git.Remote(remote.Add(remoteName, upstream.url), git.Debugger(c.debug))
+	output, err = git.RemoteWithContext(ctx, remote.Add(remoteName, upstream.url), git.Debugger(c.debug))
 	if err != nil {
 		return output, fmt.Errorf("failed to add remote: %w", err)
 	}
 
-	output, err = git.Fetch(fetch.NoTags, fetch.Remote(remoteName), fetch.RefSpec(upstream.ref), git.Debugger(c.debug))
+	output, err = git.FetchWithContext(ctx, fetch.NoTags, fetch.Remote(remoteName), fetch.RefSpec(upstream.ref), git.Debugger(c.debug))
 	if err != nil {
 		return output, fmt.Errorf("failed to fetch %s/%s : %w", remoteName, upstream.ref, err)
 	}
@@ -182,30 +182,30 @@ func makeRepositoryURL(url string, ssh bool, token string) string {
 	return strings.ReplaceAll(url, "git://", prefix)
 }
 
-func configureGit(gitConfig conf.Git) (string, error) {
-	output, err := git.Config(config.Entry("rebase.autoSquash", "true"))
+func configureGit(ctx context.Context, gitConfig conf.Git) (string, error) {
+	output, err := git.ConfigWithContext(ctx, config.Entry("rebase.autoSquash", "true"))
 	if err != nil {
 		return output, err
 	}
 
-	output, err = git.Config(config.Entry("push.default", "current"))
+	output, err = git.ConfigWithContext(ctx, config.Entry("push.default", "current"))
 	if err != nil {
 		return output, err
 	}
 
-	return configureGitUserInfo(gitConfig.UserName, gitConfig.Email)
+	return configureGitUserInfo(ctx, gitConfig.UserName, gitConfig.Email)
 }
 
-func configureGitUserInfo(gitUserName, gitUserEmail string) (string, error) {
+func configureGitUserInfo(ctx context.Context, gitUserName, gitUserEmail string) (string, error) {
 	if len(gitUserEmail) != 0 {
-		output, err := git.Config(config.Entry("user.email", gitUserEmail))
+		output, err := git.ConfigWithContext(ctx, config.Entry("user.email", gitUserEmail))
 		if err != nil {
 			return output, err
 		}
 	}
 
 	if len(gitUserName) != 0 {
-		output, err := git.Config(config.Entry("user.name", gitUserName))
+		output, err := git.ConfigWithContext(ctx, config.Entry("user.name", gitUserName))
 		if err != nil {
 			return output, err
 		}

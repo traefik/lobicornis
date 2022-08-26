@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"regexp"
 	"strings"
@@ -158,7 +157,7 @@ func (r Repository) getCommitMessage(mergeMethod string, pr *github.PullRequest)
 }
 
 func (r Repository) fastForward(ctx context.Context, pr *github.PullRequest) (Result, error) {
-	dir, err := ioutil.TempDir("", "myrmica-lobicornis")
+	dir, err := os.MkdirTemp("", "myrmica-lobicornis")
 	if err != nil {
 		return Result{Message: err.Error(), Merged: false}, err
 	}
@@ -188,13 +187,13 @@ func (r Repository) fastForward(ctx context.Context, pr *github.PullRequest) (Re
 
 	ref := fmt.Sprintf("%s/%s", remoteName, pr.Head.GetRef())
 
-	output, err = git.Merge(merge.FfOnly, merge.Commits(ref), git.Debugger(r.debug))
+	output, err = git.MergeWithContext(ctx, merge.FfOnly, merge.Commits(ref), git.Debugger(r.debug))
 	if err != nil {
 		logger.Error().Err(err).Msg(output)
 		return Result{Message: err.Error(), Merged: false}, err
 	}
 
-	output, err = git.Push(
+	output, err = git.PushWithContext(ctx,
 		git.Cond(r.dryRun, push.DryRun),
 		push.Remote(RemoteOrigin),
 		push.RefSpec(pr.Base.GetRef()),
@@ -208,7 +207,8 @@ func (r Repository) fastForward(ctx context.Context, pr *github.PullRequest) (Re
 }
 
 // getCoAuthors Extracts co-author from PR description.
-//     Co-authored-by: login <email@email.com>
+//
+//	Co-authored-by: login <email@email.com>
 func getCoAuthors(pr *github.PullRequest) []string {
 	exp := regexp.MustCompile(`^(?i)Co-authored-by:\s+(.+)\s+<(.+)>$`)
 
