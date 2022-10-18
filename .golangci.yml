@@ -31,6 +31,7 @@ linters:
     - sqlclosecheck # not relevant (SQL)
     - rowserrcheck # not relevant (SQL)
     - cyclop # duplicate of gocyclo
+    - contextcheck
     - lll
     - gas
     - dupl
