@@ -47,6 +47,20 @@ archives:
     files:
       - LICENSE
 
+docker_manifests:
+  - name_template: 'traefik/lobicornis:{{ .Tag }}'
+    image_templates:
+      - 'traefik/lobicornis:{{ .Tag }}-amd64'
+      - 'traefik/lobicornis:{{ .Tag }}-arm64'
+  - name_template: 'traefik/lobicornis:latest'
+    image_templates:
+      - 'traefik/lobicornis:{{ .Tag }}-amd64'
+      - 'traefik/lobicornis:{{ .Tag }}-arm64'
+  - name_template: 'traefik/lobicornis:v{{ .Major }}.{{ .Minor }}'
+    image_templates:
+      - 'traefik/lobicornis:v{{ .Major }}.{{ .Minor }}-amd64'
+      - 'traefik/lobicornis:v{{ .Major }}.{{ .Minor }}-arm64'
+
 dockers:
   - use: buildx
     goos: linux
