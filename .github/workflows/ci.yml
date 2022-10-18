@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - master
-    tags:
-      - v*
   pull_request:
 
 jobs:
@@ -15,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GO_VERSION: 1.19
-      GOLANGCI_LINT_VERSION: v1.49.0
+      GOLANGCI_LINT_VERSION: v1.50.0
       CGO_ENABLED: 0
 
     steps:
@@ -49,17 +47,12 @@ jobs:
 
       # https://golangci-lint.run/usage/install#other-ci
       - name: Install golangci-lint ${{ env.GOLANGCI_LINT_VERSION }}
-        run: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin ${GOLANGCI_LINT_VERSION}
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin ${GOLANGCI_LINT_VERSION}
+          golangci-lint --version
 
       - name: Make
         run: make
 
-      # https://goreleaser.com/ci/actions/
-      - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v2
-        if: startsWith(github.ref, 'refs/tags/v')
-        with:
-          version: latest
-          args: release --rm-dist
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Make Image
+        run: make image
