@@ -3,7 +3,7 @@ package repository
 import (
 	"testing"
 
-	"github.com/google/go-github/v47/github"
+	"github.com/google/go-github/v50/github"
 	"github.com/stretchr/testify/assert"
 	"github.com/traefik/lobicornis/v3/pkg/conf"
 )
@@ -147,6 +147,7 @@ func TestRepository_getMergeMethod(t *testing.T) {
 
 	for i, test := range testCases {
 		test := test
+		i := i
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 

@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/go-github/v47/github"
+	"github.com/google/go-github/v50/github"
 	"github.com/rs/zerolog/log"
 	"github.com/traefik/lobicornis/v3/pkg/conf"
 )
@@ -116,7 +116,7 @@ func (f Finder) GetCurrentPull(ctx context.Context, issues []*github.Issue) (*gi
 			logger := log.Ctx(ctx)
 
 			for _, issue := range issuesRetry {
-				if time.Since(issue.GetUpdatedAt()) > f.retry.Interval {
+				if time.Since(issue.GetUpdatedAt().Time) > f.retry.Interval {
 					logger.Debug().Msgf("Find PR updated at %v", issue.GetUpdatedAt())
 
 					return issue, nil
