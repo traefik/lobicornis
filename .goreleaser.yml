@@ -61,6 +61,19 @@ docker_manifests:
       - 'traefik/lobicornis:v{{ .Major }}.{{ .Minor }}-amd64'
       - 'traefik/lobicornis:v{{ .Major }}.{{ .Minor }}-arm64'
 
+  - name_template: 'ghcr.io/traefik/lobicornis:{{ .Tag }}'
+    image_templates:
+      - 'ghcr.io/traefik/lobicornis:{{ .Tag }}-amd64'
+      - 'ghcr.io/traefik/lobicornis:{{ .Tag }}-arm64'
+  - name_template: 'ghcr.io/traefik/lobicornis:latest'
+    image_templates:
+      - 'ghcr.io/traefik/lobicornis:{{ .Tag }}-amd64'
+      - 'ghcr.io/traefik/lobicornis:{{ .Tag }}-arm64'
+  - name_template: 'ghcr.io/traefik/lobicornis:v{{ .Major }}.{{ .Minor }}'
+    image_templates:
+      - 'ghcr.io/traefik/lobicornis:v{{ .Major }}.{{ .Minor }}-amd64'
+      - 'ghcr.io/traefik/lobicornis:v{{ .Major }}.{{ .Minor }}-arm64'
+
 dockers:
   - use: buildx
     goos: linux
@@ -70,6 +83,9 @@ dockers:
       - 'traefik/lobicornis:latest-amd64'
       - 'traefik/lobicornis:{{ .Tag }}-amd64'
       - 'traefik/lobicornis:v{{ .Major }}.{{ .Minor }}-amd64'
+      - 'ghcr.io/traefik/lobicornis:latest-amd64'
+      - 'ghcr.io/traefik/lobicornis:{{ .Tag }}-amd64'
+      - 'ghcr.io/traefik/lobicornis:v{{ .Major }}.{{ .Minor }}-amd64'
     build_flag_templates:
       - '--pull'
       # https://github.com/opencontainers/image-spec/blob/main/annotations.md#pre-defined-annotation-keys
@@ -91,6 +107,9 @@ dockers:
       - 'traefik/lobicornis:latest-arm64'
       - 'traefik/lobicornis:{{ .Tag }}-arm64'
       - 'traefik/lobicornis:v{{ .Major }}.{{ .Minor }}-arm64'
+      - 'ghcr.io/traefik/lobicornis:latest-arm64'
+      - 'ghcr.io/traefik/lobicornis:{{ .Tag }}-arm64'
+      - 'ghcr.io/traefik/lobicornis:v{{ .Major }}.{{ .Minor }}-arm64'
     build_flag_templates:
       - '--pull'
       # https://github.com/opencontainers/image-spec/blob/main/annotations.md#pre-defined-annotation-keys
