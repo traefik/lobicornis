@@ -9,7 +9,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/google/go-github/v50/github"
+	"github.com/google/go-github/v58/github"
 	"github.com/ldez/go-git-cmd-wrapper/v2/git"
 	"github.com/ldez/go-git-cmd-wrapper/v2/merge"
 	"github.com/ldez/go-git-cmd-wrapper/v2/push"
@@ -29,7 +29,7 @@ type Result struct {
 	Merged  bool
 }
 
-func (r Repository) getMergeMethod(pr *github.PullRequest) (string, error) {
+func (r *Repository) getMergeMethod(pr *github.PullRequest) (string, error) {
 	if r.markers.MergeMethodPrefix == "" {
 		return r.config.GetMergeMethod(), nil
 	}
@@ -63,7 +63,7 @@ func (r Repository) getMergeMethod(pr *github.PullRequest) (string, error) {
 	}
 }
 
-func (r Repository) merge(ctx context.Context, pr *github.PullRequest, mergeMethod string) error {
+func (r *Repository) merge(ctx context.Context, pr *github.PullRequest, mergeMethod string) error {
 	if !pr.GetMaintainerCanModify() && !isOnMainRepository(pr) && mergeMethod == conf.MergeMethodFastForward {
 		// note: it's not possible to edit a PR from an organization.
 		return fmt.Errorf("the use of the merge method [%s] is impossible when a branch from an organization "+
@@ -105,7 +105,7 @@ func (r Repository) merge(ctx context.Context, pr *github.PullRequest, mergeMeth
 }
 
 // mergePullRequest Merge a Pull Request.
-func (r Repository) mergePullRequest(ctx context.Context, pr *github.PullRequest, mergeMethod string) (Result, error) {
+func (r *Repository) mergePullRequest(ctx context.Context, pr *github.PullRequest, mergeMethod string) (Result, error) {
 	if mergeMethod == conf.MergeMethodFastForward {
 		return r.fastForward(ctx, pr)
 	}
@@ -113,7 +113,7 @@ func (r Repository) mergePullRequest(ctx context.Context, pr *github.PullRequest
 	return r.githubMerge(ctx, pr, mergeMethod)
 }
 
-func (r Repository) githubMerge(ctx context.Context, pr *github.PullRequest, mergeMethod string) (Result, error) {
+func (r *Repository) githubMerge(ctx context.Context, pr *github.PullRequest, mergeMethod string) (Result, error) {
 	if r.dryRun {
 		return Result{Message: "Fake merge: dry run", Merged: true}, nil
 	}
@@ -136,7 +136,7 @@ func (r Repository) githubMerge(ctx context.Context, pr *github.PullRequest, mer
 	}, nil
 }
 
-func (r Repository) getCommitMessage(mergeMethod string, pr *github.PullRequest) string {
+func (r *Repository) getCommitMessage(mergeMethod string, pr *github.PullRequest) string {
 	if mergeMethod != conf.MergeMethodSquash {
 		return ""
 	}
@@ -156,7 +156,7 @@ func (r Repository) getCommitMessage(mergeMethod string, pr *github.PullRequest)
 	}
 }
 
-func (r Repository) fastForward(ctx context.Context, pr *github.PullRequest) (Result, error) {
+func (r *Repository) fastForward(ctx context.Context, pr *github.PullRequest) (Result, error) {
 	dir, err := os.MkdirTemp("", "myrmica-lobicornis")
 	if err != nil {
 		return Result{Message: err.Error(), Merged: false}, err

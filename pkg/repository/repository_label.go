@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/google/go-github/v50/github"
+	"github.com/google/go-github/v58/github"
 	"github.com/rs/zerolog/log"
 )
 
@@ -38,7 +38,7 @@ func (r *Repository) removeLabels(ctx context.Context, pr numbered, labelsToRemo
 }
 
 // removeLabel remove a label on an issue (PR).
-func (r Repository) removeLabel(ctx context.Context, pr *github.PullRequest, label string) error {
+func (r *Repository) removeLabel(ctx context.Context, pr *github.PullRequest, label string) error {
 	if !hasLabel(pr, label) {
 		return nil
 	}
