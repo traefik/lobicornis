@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/google/go-github/v50/github"
+	"github.com/google/go-github/v58/github"
 	"github.com/rs/zerolog/log"
 )
 
@@ -69,6 +69,22 @@ func (r *Repository) getAggregatedState(ctx context.Context, pr *github.PullRequ
 func (r *Repository) getStatus(ctx context.Context, pr *github.PullRequest) (string, error) {
 	prRef := pr.Head.GetSHA()
 
+	checks, _, err := r.client.Checks.ListCheckRunsForRef(ctx, r.owner, r.name, prRef, nil)
+	if err != nil {
+		return "", err
+	}
+
+	for _, checkRun := range checks.CheckRuns {
+		if checkRun.GetConclusion() != Success && checkRun.GetConclusion() != Neutral {
+			if checkRun.GetStatus() == InProgress || checkRun.GetStatus() == Queued {
+				return Pending, nil
+			}
+
+			return checkRun.GetConclusion(), nil
+		}
+	}
+
+	// Github action check are not part of combined status.
 	sts, _, err := r.client.Repositories.GetCombinedStatus(ctx, r.owner, r.name, prRef, nil)
 	if err != nil {
 		return "", err

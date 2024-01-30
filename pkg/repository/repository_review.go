@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/google/go-github/v50/github"
+	"github.com/google/go-github/v58/github"
 )
 
 const (
@@ -12,6 +12,12 @@ const (
 	Pending = "pending"
 	// Success Check state.
 	Success = "success"
+	// Neutral Check state.
+	Neutral = "neutral"
+	// InProgress Check state.
+	InProgress = "in_progress"
+	// Queued Check state.
+	Queued = "queued"
 
 	// Approved Review state.
 	Approved = "APPROVED"
@@ -22,7 +28,7 @@ const (
 )
 
 // hasReviewsApprove check if a PR have the required number of review.
-func (r Repository) hasReviewsApprove(ctx context.Context, pr *github.PullRequest) error {
+func (r *Repository) hasReviewsApprove(ctx context.Context, pr *github.PullRequest) error {
 	minReview := r.getMinReview(pr)
 
 	if minReview == 0 {
@@ -69,7 +75,7 @@ func (r Repository) hasReviewsApprove(ctx context.Context, pr *github.PullReques
 }
 
 // getMinReview Get minimal number of review for an issue.
-func (r Repository) getMinReview(pr *github.PullRequest) int {
+func (r *Repository) getMinReview(pr *github.PullRequest) int {
 	if r.config.GetMinLightReview() != 0 && hasLabel(pr, r.markers.LightReview) {
 		return r.config.GetMinLightReview()
 	}

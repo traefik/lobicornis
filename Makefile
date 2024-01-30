@@ -27,7 +27,7 @@ check:
 	golangci-lint run
 
 release-test:
-	goreleaser --skip-publish --snapshot --rm-dist
+	goreleaser --skip=publish --snapshot --clean
 
 image:
 	docker build -t $(IMAGE_NAME) .

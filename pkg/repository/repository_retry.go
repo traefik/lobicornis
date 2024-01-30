@@ -6,11 +6,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/google/go-github/v50/github"
+	"github.com/google/go-github/v58/github"
 	"github.com/rs/zerolog/log"
 )
 
-func (r Repository) cleanRetryLabel(ctx context.Context, pr *github.PullRequest) {
+func (r *Repository) cleanRetryLabel(ctx context.Context, pr *github.PullRequest) {
 	if !r.retry.OnMergeable && !r.retry.OnStatuses {
 		return
 	}
@@ -22,7 +22,7 @@ func (r Repository) cleanRetryLabel(ctx context.Context, pr *github.PullRequest)
 	}
 }
 
-func (r Repository) manageRetryLabel(ctx context.Context, pr *github.PullRequest, retry bool, rootErr error) error {
+func (r *Repository) manageRetryLabel(ctx context.Context, pr *github.PullRequest, retry bool, rootErr error) error {
 	if !retry || r.retry.Number <= 0 {
 		return rootErr
 	}

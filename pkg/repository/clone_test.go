@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/google/go-github/v50/github"
+	"github.com/google/go-github/v58/github"
 	"github.com/ldez/go-git-cmd-wrapper/v2/git"
 	"github.com/ldez/go-git-cmd-wrapper/v2/remote"
 	"github.com/stretchr/testify/assert"

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/google/go-github/v50/github"
+	"github.com/google/go-github/v58/github"
 	"github.com/rs/zerolog/log"
 	"github.com/traefik/lobicornis/v3/pkg/conf"
 )
@@ -60,7 +60,7 @@ func New(client *github.Client, fullName, token string, markers conf.Markers, re
 }
 
 // Process try to merge a pull request.
-func (r Repository) Process(ctx context.Context, prNumber int) error {
+func (r *Repository) Process(ctx context.Context, prNumber int) error {
 	pr, _, err := r.client.PullRequests.Get(ctx, r.owner, r.name, prNumber)
 	if err != nil {
 		return fmt.Errorf("failed to get pull request: %w", err)
@@ -77,7 +77,7 @@ func (r Repository) Process(ctx context.Context, prNumber int) error {
 }
 
 // process try to merge a pull request.
-func (r Repository) process(ctx context.Context, pr *github.PullRequest) error {
+func (r *Repository) process(ctx context.Context, pr *github.PullRequest) error {
 	logger := log.Ctx(ctx)
 
 	if r.config.GetNeedMilestone() && pr.Milestone == nil {
@@ -96,7 +96,7 @@ func (r Repository) process(ctx context.Context, pr *github.PullRequest) error {
 		return r.manageRetryLabel(ctx, pr, r.retry.OnStatuses, fmt.Errorf("checks status: %w", err))
 	}
 
-	if status == Pending {
+	if status == Pending || status == Queued || status == InProgress {
 		// skip
 		logger.Info().Msg("State: pending. Waiting for the CI.")
 		return nil
@@ -183,7 +183,7 @@ func (r Repository) process(ctx context.Context, pr *github.PullRequest) error {
 	return nil
 }
 
-func (r Repository) callHuman(ctx context.Context, pr *github.PullRequest, message string) {
+func (r *Repository) callHuman(ctx context.Context, pr *github.PullRequest, message string) {
 	log.Ctx(ctx).Warn().Msg(message)
 
 	err := r.addComment(ctx, pr, ":no_entry_sign: "+message)
@@ -196,7 +196,7 @@ func (r Repository) callHuman(ctx context.Context, pr *github.PullRequest, messa
 	ignoreError(ctx, err)
 }
 
-func (r Repository) addComment(ctx context.Context, pr *github.PullRequest, message string) error {
+func (r *Repository) addComment(ctx context.Context, pr *github.PullRequest, message string) error {
 	if !r.config.GetAddErrorInComment() && !pr.Base.Repo.GetPrivate() {
 		return nil
 	}
