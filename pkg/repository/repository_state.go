@@ -58,7 +58,7 @@ func (r *Repository) getAggregatedState(ctx context.Context, pr *github.PullRequ
 		return "", err
 	}
 
-	if status == Pending || status == Success || status == InProgress || status == Queued {
+	if status == Pending || status == Success {
 		return status, nil
 	}
 
@@ -75,7 +75,11 @@ func (r *Repository) getStatus(ctx context.Context, pr *github.PullRequest) (str
 	}
 
 	for _, checkRun := range checks.CheckRuns {
-		if checkRun.GetConclusion() != Success {
+		if checkRun.GetConclusion() != Success && checkRun.GetConclusion() != Neutral {
+			if checkRun.GetStatus() == InProgress || checkRun.GetStatus() == Queued {
+				return Pending, nil
+			}
+
 			return checkRun.GetConclusion(), nil
 		}
 	}

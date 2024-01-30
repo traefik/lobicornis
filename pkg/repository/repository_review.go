@@ -12,6 +12,8 @@ const (
 	Pending = "pending"
 	// Success Check state.
 	Success = "success"
+	// Neutral Check state.
+	Neutral = "neutral"
 	// InProgress Check state.
 	InProgress = "in_progress"
 	// Queued Check state.
