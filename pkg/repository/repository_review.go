@@ -18,6 +18,8 @@ const (
 	InProgress = "in_progress"
 	// Queued Check state.
 	Queued = "queued"
+	// Skipped Check state.
+	Skipped = "skipped"
 
 	// Approved Review state.
 	Approved = "APPROVED"
