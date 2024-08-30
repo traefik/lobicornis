@@ -29,6 +29,7 @@ linters-settings:
 linters:
   enable-all: true
   disable:
+    - exportloopref # Deprecated
     - execinquery # not relevant (SQL)
     - sqlclosecheck # not relevant (SQL)
     - rowserrcheck # not relevant (SQL)

@@ -60,7 +60,6 @@ func Test_parseIssueFixes(t *testing.T) {
 	mjolnir := newMjolnir(nil, "", "", true)
 
 	for _, test := range testCases {
-		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 
