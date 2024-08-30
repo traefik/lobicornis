@@ -41,8 +41,6 @@ func TestRepository_getMinReview(t *testing.T) {
 	}
 
 	for i, test := range testCases {
-		test := test
-		i := i
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 

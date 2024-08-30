@@ -70,7 +70,6 @@ Goat port-salut st. agur blue cheese camembert de normandie manchego.
 	}
 
 	for _, test := range testCases {
-		test := test
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
@@ -146,8 +145,6 @@ func TestRepository_getMergeMethod(t *testing.T) {
 	}
 
 	for i, test := range testCases {
-		test := test
-		i := i
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 
