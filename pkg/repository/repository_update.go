@@ -143,7 +143,7 @@ func (r *Repository) getUpdateAction(ctx context.Context, pr *github.PullRequest
 	output, err := git.RawWithContext(ctx, "log", func(g *types.Cmd) {
 		g.AddOptions("--oneline")
 		g.AddOptions("--merges")
-		g.AddOptions(firstCommit.GetSHA() + "^..HEAD")
+		g.AddOptions(fmt.Sprintf("%s^..HEAD", firstCommit.GetSHA()))
 	})
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg(output)

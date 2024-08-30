@@ -3,7 +3,8 @@ run:
 
 linters-settings:
   govet:
-    shadow: true
+    enable:
+      - shadow
   gocyclo:
     min-complexity: 23
   goconst:
@@ -19,6 +20,11 @@ linters-settings:
             desc: not allowed
           - pkg: "github.com/pkg/errors"
             desc: Should be replaced by standard lib errors package
+  perfsprint:
+    err-error: true
+    errorf: true
+    sprintf1: true
+    strconcat: false
 
 linters:
   enable-all: true
