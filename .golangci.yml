@@ -1,11 +1,9 @@
 run:
   timeout: 2m
-  skip-files:
-    - ^unsecured/
 
 linters-settings:
   govet:
-    check-shadowing: true
+    shadow: true
   gocyclo:
     min-complexity: 23
   goconst:
@@ -25,26 +23,15 @@ linters-settings:
 linters:
   enable-all: true
   disable:
-    - maligned # deprecated
-    - interfacer # deprecated
-    - scopelint # deprecated
-    - golint # deprecated
-    - ifshort  # deprecated
-    - varcheck  # deprecated
-    - deadcode  # deprecated
-    - nosnakecase  # deprecated
-    - structcheck  # deprecated
-    - exhaustivestruct # deprecated
     - execinquery # not relevant (SQL)
     - sqlclosecheck # not relevant (SQL)
     - rowserrcheck # not relevant (SQL)
     - cyclop # duplicate of gocyclo
+    - mnd
     - contextcheck
     - lll
-    - gas
     - dupl
     - prealloc
-    - scopelint
     - gomnd
     - wsl
     - nlreturn
@@ -53,7 +40,7 @@ linters:
     - testpackage
     - paralleltest
     - tparallel
-    - goerr113
+    - err113
     - wrapcheck
     - exhaustive
     - exhaustruct
@@ -68,6 +55,8 @@ issues:
   exclude:
     - 'ST1000: at least one file in a package should have a package comment'
     - 'package-comments: should have a package comment'
+    - "G304: Potential file inclusion via variable"
+    - 'G114: Use of net/http serve function that has no support for setting timeouts'
   exclude-rules:
     - path: (.+)_test.go
       linters:

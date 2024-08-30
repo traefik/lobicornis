@@ -58,7 +58,7 @@ func (r *Repository) getAggregatedState(ctx context.Context, pr *github.PullRequ
 		return "", err
 	}
 
-	if status == Pending || status == Success {
+	if status == Pending || status == Success || status == Skipped {
 		return status, nil
 	}
 
