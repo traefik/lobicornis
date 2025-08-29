@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/go-github/v58/github"
+	"github.com/google/go-github/v74/github"
 	"github.com/rs/zerolog/log"
 	"github.com/traefik/lobicornis/v3/pkg/conf"
 )
