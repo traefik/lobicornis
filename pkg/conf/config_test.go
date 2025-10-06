@@ -40,6 +40,7 @@ func TestLoad(t *testing.T) {
 					MergeRetryPrefix:  "bot/merge-retry-",
 					NeedHumanMerge:    "bot/need-human-merge",
 					NoMerge:           "bot/no-merge",
+					NoRebase:          "bot/no-rebase",
 				},
 				Retry: Retry{
 					Interval:    1 * time.Minute,
@@ -110,6 +111,7 @@ func TestLoad(t *testing.T) {
 					MergeRetryPrefix:  "bot/merge-retry-",
 					NeedHumanMerge:    "bot/need-human-merge",
 					NoMerge:           "bot/no-merge",
+					NoRebase:          "bot/no-rebase",
 				},
 				Retry: Retry{
 					Interval:    1 * time.Minute,

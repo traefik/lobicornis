@@ -48,6 +48,7 @@ type Markers struct {
 	MergeMethodPrefix string `yaml:"mergeMethodPrefix,omitempty"`
 	MergeRetryPrefix  string `yaml:"mergeRetryPrefix,omitempty"`
 	NeedHumanMerge    string `yaml:"needHumanMerge,omitempty"`
+	NoRebase          string `yaml:"noRebase,omitempty"`
 	NoMerge           string `yaml:"noMerge,omitempty"`
 }
 
@@ -87,6 +88,7 @@ func Load(filename string) (Configuration, error) {
 			MergeRetryPrefix:  "bot/merge-retry-",
 			NeedHumanMerge:    "bot/need-human-merge",
 			NoMerge:           "bot/no-merge",
+			NoRebase:          "bot/no-rebase",
 		},
 		Retry: Retry{
 			Interval: 1 * time.Minute,
@@ -173,6 +175,7 @@ func validate(cfg Configuration) error {
 		"markers.mergeMethodPrefix": cfg.Markers.MergeMethodPrefix,
 		"markers.needHumanMerge":    cfg.Markers.NeedHumanMerge,
 		"markers.noMerge":           cfg.Markers.NoMerge,
+		"markers.noRebase":          cfg.Markers.NoRebase,
 	}
 
 	for field, value := range fields {

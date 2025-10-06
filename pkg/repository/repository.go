@@ -113,6 +113,7 @@ func (r *Repository) process(ctx context.Context, pr *github.PullRequest) error 
 			r.markers.MergeMethodPrefix + conf.MergeMethodMerge,
 			r.markers.MergeMethodPrefix + conf.MergeMethodRebase,
 			r.markers.MergeMethodPrefix + conf.MergeMethodFastForward,
+			r.markers.NoRebase,
 		}
 		err = r.removeLabels(ctx, pr, labelsToRemove)
 		ignoreError(ctx, err)
@@ -168,9 +169,16 @@ func (r *Repository) process(ctx context.Context, pr *github.PullRequest) error 
 				return err
 			}
 		} else {
-			err := r.update(ctx, pr)
-			if err != nil {
-				return fmt.Errorf("failed to update: %w", err)
+			if hasLabel(pr, r.markers.NoRebase) {
+				err := r.merge(ctx, pr, mergeMethod)
+				if err != nil {
+					return err
+				}
+			} else {
+				err := r.update(ctx, pr)
+				if err != nil {
+					return fmt.Errorf("failed to update: %w", err)
+				}
 			}
 		}
 	} else {
