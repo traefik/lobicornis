@@ -93,7 +93,7 @@ func (r *Repository) merge(ctx context.Context, pr *github.PullRequest, mergeMet
 			r.markers.MergeMethodPrefix + conf.MergeMethodMerge,
 			r.markers.MergeMethodPrefix + conf.MergeMethodRebase,
 			r.markers.MergeMethodPrefix + conf.MergeMethodFastForward,
-			r.markers.NoRebase,
+			r.markers.NoUpdate,
 		}
 		err = r.removeLabels(ctx, pr, labelsToRemove)
 		ignoreError(ctx, err)

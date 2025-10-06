@@ -155,7 +155,7 @@ func (r *Repository) getUpdateAction(ctx context.Context, pr *github.PullRequest
 		return ActionMerge, nil
 	}
 
-	if hasLabel(pr, r.markers.NoRebase) {
+	if hasLabel(pr, r.markers.NoUpdate) {
 		return ActionMerge, nil
 	}
 
