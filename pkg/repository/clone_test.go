@@ -48,8 +48,13 @@ func TestClone_PullRequestForUpdate(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
 			dir := t.TempDir()
+			cwd, err := os.Getwd()
+			require.NoError(t, err)
+			t.Cleanup(func() {
+				_ = os.Chdir(cwd)
+			})
 
-			err := os.Chdir(dir)
+			err = os.Chdir(dir)
 			require.NoError(t, err)
 
 			tempDir, err := os.Getwd()
@@ -111,8 +116,13 @@ func TestClone_PullRequestForMerge(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
 			dir := t.TempDir()
+			cwd, err := os.Getwd()
+			require.NoError(t, err)
+			t.Cleanup(func() {
+				_ = os.Chdir(cwd)
+			})
 
-			err := os.Chdir(dir)
+			err = os.Chdir(dir)
 			require.NoError(t, err)
 
 			tempDir, err := os.Getwd()
