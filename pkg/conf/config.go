@@ -107,6 +107,7 @@ func Load(filename string) (Configuration, error) {
 		},
 		Repositories: map[string]*RepoConfig{},
 	}
+
 	err = yaml.NewDecoder(file).Decode(&cfg)
 	if err != nil {
 		return Configuration{}, err

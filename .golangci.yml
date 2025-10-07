@@ -1,82 +1,93 @@
-run:
-  timeout: 2m
-
-linters-settings:
-  govet:
-    enable:
-      - shadow
-  gocyclo:
-    min-complexity: 23
-  goconst:
-    min-len: 3
-    min-occurrences: 3
-  misspell:
-    locale: US
-  depguard:
-    rules:
-      main:
-        deny:
-          - pkg: "github.com/instana/testify"
-            desc: not allowed
-          - pkg: "github.com/pkg/errors"
-            desc: Should be replaced by standard lib errors package
-  perfsprint:
-    err-error: true
-    errorf: true
-    sprintf1: true
-    strconcat: false
-
+version: "2"
 linters:
-  enable-all: true
+  default: all
   disable:
-    - exportloopref # Deprecated
-    - execinquery # not relevant (SQL)
-    - sqlclosecheck # not relevant (SQL)
-    - rowserrcheck # not relevant (SQL)
-    - cyclop # duplicate of gocyclo
-    - mnd
     - contextcheck
-    - lll
+    - cyclop # duplicate of gocyclo
     - dupl
-    - prealloc
-    - gomnd
-    - wsl
-    - nlreturn
-    - gocognit
-    - nestif
-    - testpackage
-    - paralleltest
-    - tparallel
     - err113
-    - wrapcheck
     - exhaustive
     - exhaustruct
-    - noctx
-    - varnamelen
+    - gocognit
+    - lll
+    - mnd
+    - nestif
     - nilnil
-
+    - nlreturn
+    - noctx
+    - paralleltest
+    - prealloc
+    - rowserrcheck # not relevant (SQL)
+    - sqlclosecheck # not relevant (SQL)
+    - testpackage
+    - tparallel
+    - varnamelen
+    - wrapcheck
+    - wsl
+  settings:
+    depguard:
+      rules:
+        main:
+          deny:
+            - pkg: github.com/instana/testify
+              desc: not allowed
+            - pkg: github.com/pkg/errors
+              desc: Should be replaced by standard lib errors package
+    goconst:
+      min-len: 3
+      min-occurrences: 3
+    gocyclo:
+      min-complexity: 23
+    govet:
+      enable:
+        - shadow
+    misspell:
+      locale: US
+    perfsprint:
+      err-error: true
+      errorf: true
+      sprintf1: true
+      strconcat: false
+  exclusions:
+    generated: lax
+    rules:
+      - linters:
+          - funlen
+        path: (.+)_test.go
+      - path: cmd/version.go
+        text: (version|date|commit) is a global variable
+      - path: cmd/version.go
+        text: use of `fmt.Printf` forbidden by pattern
+      # FIXME must be changed
+      - path: pkg/repository/repository.go
+        text: Function 'Process' has too many statements \(\d+ > 40\)
+      # FIXME must be changed
+      - path: pkg/repository/repository.go
+        text: cyclomatic complexity \d+ of func `\(Repository\)\.Process` is high \(> 16\)
+      - path: (.+)\.go$
+        text: 'ST1000: at least one file in a package should have a package comment'
+      - path: (.+)\.go$
+        text: 'package-comments: should have a package comment'
+      - path: (.+)\.go$
+        text: 'G304: Potential file inclusion via variable'
+      - path: (.+)\.go$
+        text: 'G114: Use of net/http serve function that has no support for setting timeouts'
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
 issues:
-  exclude-use-default: false
   max-issues-per-linter: 0
   max-same-issues: 0
-  exclude:
-    - 'ST1000: at least one file in a package should have a package comment'
-    - 'package-comments: should have a package comment'
-    - "G304: Potential file inclusion via variable"
-    - 'G114: Use of net/http serve function that has no support for setting timeouts'
-  exclude-rules:
-    - path: (.+)_test.go
-      linters:
-        - funlen
-    - path: cmd/version.go
-      text: (version|date|commit) is a global variable
-    - path: cmd/version.go
-      text: use of `fmt.Printf` forbidden by pattern
-    # FIXME must be changed
-    - path: pkg/repository/repository.go
-      text: Function 'Process' has too many statements \(\d+ > 40\)
-    # FIXME must be changed
-    - path: pkg/repository/repository.go
-      text: >-
-        cyclomatic complexity \d+ of func `\(Repository\)\.Process` is high \(>
-        16\)
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - gofumpt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

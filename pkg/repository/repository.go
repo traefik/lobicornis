@@ -77,6 +77,8 @@ func (r *Repository) Process(ctx context.Context, prNumber int) error {
 }
 
 // process try to merge a pull request.
+//
+//nolint:funlen // process does many independent checks (kept here for readability)
 func (r *Repository) process(ctx context.Context, pr *github.PullRequest) error {
 	logger := log.Ctx(ctx)
 
@@ -135,6 +137,7 @@ func (r *Repository) process(ctx context.Context, pr *github.PullRequest) error 
 
 	// Get status checks
 	var needUpdate bool
+
 	if r.config.GetCheckNeedUpToDate() {
 		rcs, _, errCheck := r.client.Repositories.GetRequiredStatusChecks(ctx, r.owner, r.name, pr.Base.GetRef())
 		if errCheck != nil {

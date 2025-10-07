@@ -104,8 +104,8 @@ func (f Finder) GetCurrentPull(ctx context.Context, issues []*github.Issue) (*gi
 
 	if f.retry.Number > 0 {
 		// find retries
-
 		var issuesRetry []*github.Issue
+
 		for _, issue := range inProgress {
 			if findLabelPrefix(issue.Labels, f.markers.MergeRetryPrefix) != "" {
 				issuesRetry = append(issuesRetry, issue)

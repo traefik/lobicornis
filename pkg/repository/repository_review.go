@@ -42,6 +42,7 @@ func (r *Repository) hasReviewsApprove(ctx context.Context, pr *github.PullReque
 	}
 
 	reviewsState := make(map[string]string)
+
 	for {
 		reviews, resp, err := r.client.PullRequests.ListReviews(ctx, r.owner, r.name, pr.GetNumber(), opt)
 		if err != nil {

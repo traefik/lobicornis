@@ -27,6 +27,7 @@ func main() {
 
 	flag.Usage = usage
 	flag.Parse()
+
 	if *help {
 		usage()
 		return
@@ -73,6 +74,7 @@ func launch(cfg conf.Configuration) error {
 		if req.Method != http.MethodGet {
 			log.Error().Str("method", req.Method).Msg("Invalid http method")
 			http.Error(rw, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
+
 			return
 		}
 
@@ -80,6 +82,7 @@ func launch(cfg conf.Configuration) error {
 		if err != nil {
 			log.Error().Err(err).Msg("Report error")
 			http.Error(rw, "Report error.", http.StatusInternalServerError)
+
 			return
 		}
 
@@ -87,6 +90,7 @@ func launch(cfg conf.Configuration) error {
 		if err != nil {
 			log.Error().Err(err).Msg("Report error")
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
+
 			return
 		}
 	})
@@ -182,6 +186,7 @@ func getRepoConfig(cfg conf.Configuration, repoName string) conf.RepoConfig {
 
 func usage() {
 	_, _ = os.Stderr.WriteString("Myrmica Lobicornis:\n")
+
 	flag.PrintDefaults()
 }
 
@@ -192,8 +197,10 @@ func setupLogger(dryRun bool, level string) {
 	log.Logger = zerolog.New(os.Stderr).With().Caller().Logger()
 
 	logLevel := zerolog.DebugLevel
+
 	if !dryRun {
 		var err error
+
 		logLevel, err = zerolog.ParseLevel(strings.ToLower(level))
 		if err != nil {
 			logLevel = zerolog.InfoLevel

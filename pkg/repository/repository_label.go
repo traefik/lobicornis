@@ -18,6 +18,7 @@ func (r *Repository) removeLabels(ctx context.Context, pr numbered, labelsToRemo
 	}
 
 	var newLabels []string
+
 	for _, lbl := range freshIssue.Labels {
 		if !contains(labelsToRemove, lbl.GetName()) {
 			newLabels = append(newLabels, lbl.GetName())
@@ -34,6 +35,7 @@ func (r *Repository) removeLabels(ctx context.Context, pr numbered, labelsToRemo
 	}
 
 	_, _, err = r.client.Issues.ReplaceLabelsForIssue(ctx, r.owner, r.name, pr.GetNumber(), newLabels)
+
 	return err
 }
 
@@ -44,6 +46,7 @@ func (r *Repository) removeLabel(ctx context.Context, pr *github.PullRequest, la
 	}
 
 	log.Ctx(ctx).Debug().Msgf("Remove label: %s. Dry run: %v", label, r.dryRun)
+
 	if r.dryRun {
 		return nil
 	}
@@ -108,5 +111,6 @@ func contains(values []string, value string) bool {
 			return true
 		}
 	}
+
 	return false
 }

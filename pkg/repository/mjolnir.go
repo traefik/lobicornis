@@ -89,6 +89,7 @@ func (m Mjolnir) closeIssue(ctx context.Context, pr *github.PullRequest, issueNu
 	}
 
 	_, _, err := m.client.Issues.Edit(ctx, m.owner, m.name, issueNumber, issueRequest)
+
 	return err
 }
 
@@ -98,6 +99,7 @@ func (m Mjolnir) addComment(ctx context.Context, issueNumber int, message string
 	}
 
 	_, _, err := m.client.Issues.CreateComment(ctx, m.owner, m.name, issueNumber, issueComment)
+
 	return err
 }
 
@@ -111,6 +113,7 @@ func (m Mjolnir) parseIssueFixes(ctx context.Context, text string) []int {
 	issuesRaw := m.fixesIssueRE.Split(submatch[1], -1)
 
 	var issueNumbers []int
+
 	for _, issueRaw := range issuesRaw {
 		cleanIssueRaw := m.cleanNumberRE.ReplaceAllString(issueRaw, "")
 		if len(cleanIssueRaw) != 0 {
@@ -122,5 +125,6 @@ func (m Mjolnir) parseIssueFixes(ctx context.Context, text string) []int {
 			issueNumbers = append(issueNumbers, int(numb))
 		}
 	}
+
 	return issueNumbers
 }

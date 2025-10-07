@@ -100,6 +100,7 @@ func (r *Repository) getStatus(ctx context.Context, pr *github.PullRequest) (str
 		if sts.GetTotalCount() == 0 {
 			return Success, nil
 		}
+
 		return sts.GetState(), nil
 	}
 
@@ -109,6 +110,7 @@ func (r *Repository) getStatus(ctx context.Context, pr *github.PullRequest) (str
 	}
 
 	var summary string
+
 	for _, stat := range statuses {
 		if stat.GetState() != Success {
 			summary += stat.GetDescription() + "\n"

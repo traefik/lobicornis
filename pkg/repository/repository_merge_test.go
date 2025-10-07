@@ -164,6 +164,7 @@ func TestRepository_getMergeMethod(t *testing.T) {
 			if test.expectedError && err == nil {
 				t.Fatalf("Got no error, expected an error.")
 			}
+
 			if !test.expectedError && err != nil {
 				t.Fatalf("Got error %v, expected no error.", err)
 			}

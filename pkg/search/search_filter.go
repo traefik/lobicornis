@@ -15,11 +15,13 @@ func Cond(apply bool, parameters ...Parameter) Parameter {
 	if apply {
 		return func() string {
 			var filter string
+
 			for _, param := range parameters {
 				if param != nil {
 					filter += param()
 				}
 			}
+
 			return filter
 		}
 	}

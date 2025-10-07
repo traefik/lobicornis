@@ -113,6 +113,7 @@ func (c Clone) pullRequest(ctx context.Context, pr *github.PullRequest, prModel 
 	}
 
 	remoteName := RemoteUpstream
+
 	output, err := c.fromFork(ctx, prModel.changed, prModel.unchanged, remoteName)
 	if err != nil {
 		logger.Error().Err(err).Msg(output)

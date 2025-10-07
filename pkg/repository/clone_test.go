@@ -47,12 +47,9 @@ func TestClone_PullRequestForUpdate(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
-			dir, err := os.MkdirTemp("", "myrmica-lobicornis")
-			require.NoError(t, err)
+			dir := t.TempDir()
 
-			t.Cleanup(func() { _ = os.RemoveAll(dir) })
-
-			err = os.Chdir(dir)
+			err := os.Chdir(dir)
 			require.NoError(t, err)
 
 			tempDir, err := os.Getwd()
@@ -113,12 +110,9 @@ func TestClone_PullRequestForMerge(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
-			dir, err := os.MkdirTemp("", "myrmica-lobicornis")
-			require.NoError(t, err)
+			dir := t.TempDir()
 
-			t.Cleanup(func() { _ = os.RemoveAll(dir) })
-
-			err = os.Chdir(dir)
+			err := os.Chdir(dir)
 			require.NoError(t, err)
 
 			tempDir, err := os.Getwd()
@@ -183,6 +177,7 @@ func Test_makeRepositoryURL(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
+
 			url := makeRepositoryURL(test.url, test.ssh, test.token)
 
 			if url != test.expectedURL {

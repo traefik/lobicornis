@@ -35,6 +35,7 @@ func (r *Repository) getMergeMethod(pr *github.PullRequest) (string, error) {
 	}
 
 	var labels []string
+
 	for _, lbl := range pr.Labels {
 		if strings.HasPrefix(lbl.GetName(), r.markers.MergeMethodPrefix) {
 			labels = append(labels, lbl.GetName())
@@ -77,6 +78,7 @@ func (r *Repository) merge(ctx context.Context, pr *github.PullRequest, mergeMet
 
 	if !r.dryRun {
 		var result Result
+
 		result, err = r.mergePullRequest(ctx, pr, mergeMethod)
 		ignoreError(ctx, err)
 
@@ -152,6 +154,7 @@ func (r *Repository) getCommitMessage(mergeMethod string, pr *github.PullRequest
 			// force the description in the commit message to be empty.
 			message = "\n"
 		}
+
 		return message
 	}
 }
@@ -213,7 +216,9 @@ func getCoAuthors(pr *github.PullRequest) []string {
 	exp := regexp.MustCompile(`^(?i)Co-authored-by:\s+(.+)\s+<(.+)>$`)
 
 	var coAuthors []string
+
 	scanner := bufio.NewScanner(bytes.NewBufferString(pr.GetBody()))
+
 	for scanner.Scan() {
 		line := scanner.Text()
 		if exp.MatchString(line) {
