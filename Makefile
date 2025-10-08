@@ -16,15 +16,15 @@ default: clean check test build
 test: clean
 	go test -v -cover ./...
 
+lint:
+	golangci-lint run
+
 clean:
 	rm -rf dist/ cover.out
 
 build: clean
 	@echo Version: $(VERSION) $(BUILD_DATE)
 	CGO_ENABLED=0 go build -trimpath -ldflags '-s -w -X "main.version=${VERSION}" -X "main.commit=${SHA}" -X "main.date=${BUILD_DATE}"' -o ${BIN_OUTPUT} ./cmd/
-
-check:
-	golangci-lint run
 
 release-test:
 	goreleaser --skip=publish --snapshot --clean

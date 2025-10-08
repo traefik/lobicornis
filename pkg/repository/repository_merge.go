@@ -9,7 +9,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/google/go-github/v58/github"
+	"github.com/google/go-github/v74/github"
 	"github.com/ldez/go-git-cmd-wrapper/v2/git"
 	"github.com/ldez/go-git-cmd-wrapper/v2/merge"
 	"github.com/ldez/go-git-cmd-wrapper/v2/push"

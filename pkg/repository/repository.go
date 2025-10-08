@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/google/go-github/v58/github"
+	"github.com/google/go-github/v74/github"
 	"github.com/rs/zerolog/log"
 	"github.com/traefik/lobicornis/v3/pkg/conf"
 )
@@ -208,7 +208,7 @@ func (r *Repository) addComment(ctx context.Context, pr *github.PullRequest, mes
 		return nil
 	}
 
-	comment := &github.IssueComment{Body: github.String(msg)}
+	comment := &github.IssueComment{Body: github.Ptr(msg)}
 
 	_, _, err := r.client.Issues.CreateComment(ctx, r.owner, r.name, pr.GetNumber(), comment)
 

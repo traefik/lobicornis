@@ -3,7 +3,7 @@ package repository
 import (
 	"testing"
 
-	"github.com/google/go-github/v58/github"
+	"github.com/google/go-github/v74/github"
 	"github.com/stretchr/testify/assert"
 	"github.com/traefik/lobicornis/v3/pkg/conf"
 )
@@ -74,7 +74,7 @@ Goat port-salut st. agur blue cheese camembert de normandie manchego.
 			t.Parallel()
 
 			pr := &github.PullRequest{
-				Body: github.String(test.body),
+				Body: github.Ptr(test.body),
 			}
 
 			coAuthors := getCoAuthors(pr)
@@ -177,9 +177,9 @@ func makePullRequestWithLabels(labelNames []string, issueNumber int) *github.Pul
 	var labels []*github.Label
 	for _, labelName := range labelNames {
 		labels = append(labels, &github.Label{
-			Name: github.String(labelName),
+			Name: github.Ptr(labelName),
 		})
 	}
 
-	return &github.PullRequest{Labels: labels, Number: github.Int(issueNumber)}
+	return &github.PullRequest{Labels: labels, Number: github.Ptr(issueNumber)}
 }

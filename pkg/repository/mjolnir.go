@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/google/go-github/v58/github"
+	"github.com/google/go-github/v74/github"
 	"github.com/rs/zerolog/log"
 )
 
@@ -85,7 +85,7 @@ func (m Mjolnir) closeIssue(ctx context.Context, pr *github.PullRequest, issueNu
 
 	issueRequest := &github.IssueRequest{
 		Milestone: milestone,
-		State:     github.String("closed"),
+		State:     github.Ptr("closed"),
 	}
 
 	_, _, err := m.client.Issues.Edit(ctx, m.owner, m.name, issueNumber, issueRequest)
@@ -94,7 +94,7 @@ func (m Mjolnir) closeIssue(ctx context.Context, pr *github.PullRequest, issueNu
 
 func (m Mjolnir) addComment(ctx context.Context, issueNumber int, message string) error {
 	issueComment := &github.IssueComment{
-		Body: github.String(message),
+		Body: github.Ptr(message),
 	}
 
 	_, _, err := m.client.Issues.CreateComment(ctx, m.owner, m.name, issueNumber, issueComment)

@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/google/go-github/v58/github"
+	"github.com/google/go-github/v74/github"
 	"github.com/ldez/go-git-cmd-wrapper/v2/git"
 	"github.com/ldez/go-git-cmd-wrapper/v2/remote"
 	"github.com/stretchr/testify/assert"
@@ -47,13 +47,8 @@ func TestClone_PullRequestForUpdate(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
-			dir, err := os.MkdirTemp("", "myrmica-lobicornis")
-			require.NoError(t, err)
-
-			t.Cleanup(func() { _ = os.RemoveAll(dir) })
-
-			err = os.Chdir(dir)
-			require.NoError(t, err)
+			dir := t.TempDir()
+			t.Chdir(dir)
 
 			tempDir, err := os.Getwd()
 			require.NoError(t, err)
@@ -113,13 +108,8 @@ func TestClone_PullRequestForMerge(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
-			dir, err := os.MkdirTemp("", "myrmica-lobicornis")
-			require.NoError(t, err)
-
-			t.Cleanup(func() { _ = os.RemoveAll(dir) })
-
-			err = os.Chdir(dir)
-			require.NoError(t, err)
+			dir := t.TempDir()
+			t.Chdir(dir)
 
 			tempDir, err := os.Getwd()
 			require.NoError(t, err)
@@ -194,28 +184,28 @@ func Test_makeRepositoryURL(t *testing.T) {
 
 func createFakePR(sameRepo bool) *github.PullRequest {
 	pr := &github.PullRequest{
-		Number: github.Int(666),
+		Number: github.Ptr(666),
 	}
 	pr.Base = &github.PullRequestBranch{
 		Repo: &github.Repository{
-			GitURL: github.String("git://github.com/traefik/traefik.git"),
+			GitURL: github.Ptr("git://github.com/traefik/traefik.git"),
 		},
-		Ref: github.String("master"),
+		Ref: github.Ptr("master"),
 	}
 
 	if sameRepo {
 		pr.Head = &github.PullRequestBranch{
 			Repo: &github.Repository{
-				GitURL: github.String("git://github.com/traefik/traefik.git"),
+				GitURL: github.Ptr("git://github.com/traefik/traefik.git"),
 			},
-			Ref: github.String("v1.3"),
+			Ref: github.Ptr("v1.3"),
 		}
 	} else {
 		pr.Head = &github.PullRequestBranch{
 			Repo: &github.Repository{
-				GitURL: github.String("git://github.com/ldez/traefik.git"),
+				GitURL: github.Ptr("git://github.com/ldez/traefik.git"),
 			},
-			Ref: github.String("v1.3"),
+			Ref: github.Ptr("v1.3"),
 		}
 	}
 

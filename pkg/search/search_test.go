@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/go-github/v58/github"
+	"github.com/google/go-github/v74/github"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/traefik/lobicornis/v3/pkg/conf"
@@ -45,9 +45,9 @@ func TestFinder_GetCurrentPull(t *testing.T) {
 			desc: "one pull request",
 			issues: []*github.Issue{
 				{
-					Number: github.Int(1),
+					Number: github.Ptr(1),
 					Labels: []*github.Label{
-						{Name: github.String("status/3-needs-merge")},
+						{Name: github.Ptr("status/3-needs-merge")},
 					},
 				},
 			},
@@ -57,15 +57,15 @@ func TestFinder_GetCurrentPull(t *testing.T) {
 			desc: "take the most pull request",
 			issues: []*github.Issue{
 				{
-					Number: github.Int(2),
+					Number: github.Ptr(2),
 					Labels: []*github.Label{
-						{Name: github.String("status/3-needs-merge")},
+						{Name: github.Ptr("status/3-needs-merge")},
 					},
 				},
 				{
-					Number: github.Int(1),
+					Number: github.Ptr(1),
 					Labels: []*github.Label{
-						{Name: github.String("status/3-needs-merge")},
+						{Name: github.Ptr("status/3-needs-merge")},
 					},
 				},
 			},
@@ -75,16 +75,16 @@ func TestFinder_GetCurrentPull(t *testing.T) {
 			desc: "take the pull request with merge in progress",
 			issues: []*github.Issue{
 				{
-					Number: github.Int(2),
+					Number: github.Ptr(2),
 					Labels: []*github.Label{
-						{Name: github.String("status/3-needs-merge")},
+						{Name: github.Ptr("status/3-needs-merge")},
 					},
 				},
 				{
-					Number: github.Int(1),
+					Number: github.Ptr(1),
 					Labels: []*github.Label{
-						{Name: github.String("status/3-needs-merge")},
-						{Name: github.String("status/4-merge-in-progress")},
+						{Name: github.Ptr("status/3-needs-merge")},
+						{Name: github.Ptr("status/4-merge-in-progress")},
 					},
 				},
 			},
@@ -94,23 +94,23 @@ func TestFinder_GetCurrentPull(t *testing.T) {
 			desc: "take the pull request with ff merge method",
 			issues: []*github.Issue{
 				{
-					Number: github.Int(2),
+					Number: github.Ptr(2),
 					Labels: []*github.Label{
-						{Name: github.String("status/3-needs-merge")},
+						{Name: github.Ptr("status/3-needs-merge")},
 					},
 				},
 				{
-					Number: github.Int(1),
+					Number: github.Ptr(1),
 					Labels: []*github.Label{
-						{Name: github.String("status/3-needs-merge")},
-						{Name: github.String("bot/merge-method-ff")},
+						{Name: github.Ptr("status/3-needs-merge")},
+						{Name: github.Ptr("bot/merge-method-ff")},
 					},
 				},
 				{
-					Number: github.Int(3),
+					Number: github.Ptr(3),
 					Labels: []*github.Label{
-						{Name: github.String("status/3-needs-merge")},
-						{Name: github.String("status/4-merge-in-progress")},
+						{Name: github.Ptr("status/3-needs-merge")},
+						{Name: github.Ptr("status/4-merge-in-progress")},
 					},
 				},
 			},
@@ -120,18 +120,18 @@ func TestFinder_GetCurrentPull(t *testing.T) {
 			desc: "take the pull request with retry",
 			issues: []*github.Issue{
 				{
-					Number: github.Int(2),
+					Number: github.Ptr(2),
 					Labels: []*github.Label{
-						{Name: github.String("status/3-needs-merge")},
-						{Name: github.String("status/4-merge-in-progress")},
+						{Name: github.Ptr("status/3-needs-merge")},
+						{Name: github.Ptr("status/4-merge-in-progress")},
 					},
 				},
 				{
-					Number: github.Int(1),
+					Number: github.Ptr(1),
 					Labels: []*github.Label{
-						{Name: github.String("status/3-needs-merge")},
-						{Name: github.String("status/4-merge-in-progress")},
-						{Name: github.String("bot/merge-retry-1")},
+						{Name: github.Ptr("status/3-needs-merge")},
+						{Name: github.Ptr("status/4-merge-in-progress")},
+						{Name: github.Ptr("bot/merge-retry-1")},
 					},
 				},
 			},
