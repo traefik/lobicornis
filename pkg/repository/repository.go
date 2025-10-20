@@ -113,7 +113,7 @@ func (r *Repository) process(ctx context.Context, pr *github.PullRequest) error 
 			r.markers.MergeMethodPrefix + conf.MergeMethodMerge,
 			r.markers.MergeMethodPrefix + conf.MergeMethodRebase,
 			r.markers.MergeMethodPrefix + conf.MergeMethodFastForward,
-			r.markers.NoUpdate,
+			r.markers.MergeNoRebase,
 		}
 		err = r.removeLabels(ctx, pr, labelsToRemove)
 		ignoreError(ctx, err)
@@ -169,7 +169,7 @@ func (r *Repository) process(ctx context.Context, pr *github.PullRequest) error 
 				return err
 			}
 		} else {
-			if hasLabel(pr, r.markers.NoUpdate) {
+			if hasLabel(pr, r.markers.MergeNoRebase) {
 				err := r.merge(ctx, pr, mergeMethod)
 				if err != nil {
 					return err
