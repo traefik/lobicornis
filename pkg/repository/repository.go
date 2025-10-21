@@ -162,33 +162,15 @@ func (r *Repository) process(ctx context.Context, pr *github.PullRequest) error 
 	}
 
 	// Need to be up to date?
-	if needUpdate {
-		if upToDateBranch {
-			err := r.merge(ctx, pr, mergeMethod)
-			if err != nil {
-				return err
-			}
-		} else {
-			if hasLabel(pr, r.markers.MergeNoRebase) {
-				err := r.merge(ctx, pr, mergeMethod)
-				if err != nil {
-					return err
-				}
-			} else {
-				err := r.update(ctx, pr)
-				if err != nil {
-					return fmt.Errorf("failed to update: %w", err)
-				}
-			}
-		}
-	} else {
-		err := r.merge(ctx, pr, mergeMethod)
+	if needUpdate && !upToDateBranch && !hasLabel(pr, r.markers.MergeNoRebase) {
+		err := r.update(ctx, pr)
 		if err != nil {
-			return err
+			err = fmt.Errorf("failed to update: %w", err)
 		}
+		return err
 	}
 
-	return nil
+	return r.merge(ctx, pr, mergeMethod)
 }
 
 func (r *Repository) callHuman(ctx context.Context, pr *github.PullRequest, message string) {
