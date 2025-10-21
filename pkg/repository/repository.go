@@ -113,6 +113,7 @@ func (r *Repository) process(ctx context.Context, pr *github.PullRequest) error 
 			r.markers.MergeMethodPrefix + conf.MergeMethodMerge,
 			r.markers.MergeMethodPrefix + conf.MergeMethodRebase,
 			r.markers.MergeMethodPrefix + conf.MergeMethodFastForward,
+			r.markers.MergeNoRebase,
 		}
 		err = r.removeLabels(ctx, pr, labelsToRemove)
 		ignoreError(ctx, err)
@@ -161,26 +162,15 @@ func (r *Repository) process(ctx context.Context, pr *github.PullRequest) error 
 	}
 
 	// Need to be up to date?
-	if needUpdate {
-		if upToDateBranch {
-			err := r.merge(ctx, pr, mergeMethod)
-			if err != nil {
-				return err
-			}
-		} else {
-			err := r.update(ctx, pr)
-			if err != nil {
-				return fmt.Errorf("failed to update: %w", err)
-			}
-		}
-	} else {
-		err := r.merge(ctx, pr, mergeMethod)
+	if needUpdate && !upToDateBranch && !hasLabel(pr, r.markers.MergeNoRebase) {
+		err := r.update(ctx, pr)
 		if err != nil {
-			return err
+			err = fmt.Errorf("failed to update: %w", err)
 		}
+		return err
 	}
 
-	return nil
+	return r.merge(ctx, pr, mergeMethod)
 }
 
 func (r *Repository) callHuman(ctx context.Context, pr *github.PullRequest, message string) {
