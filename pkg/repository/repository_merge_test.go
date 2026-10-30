@@ -58,6 +58,21 @@ Goat port-salut st. agur blue cheese camembert de normandie manchego.
 			},
 		},
 		{
+			desc: "AI agent co-authors",
+			body: `
+Co-authored-by: test <test@test.com>
+Co-Authored-By: Claude <noreply@anthropic.com>
+Co-authored-by: Codex <CODEX@openai.com>
+Co-authored-by: Copilot <198982749+Copilot@users.noreply.github.com>
+Co-authored-by: claude[bot] <claude[bot]@users.noreply.github.com>
+Co-authored-by: renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>
+`,
+			expected: []string{
+				"Co-authored-by: test <test@test.com>",
+				"Co-authored-by: renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>",
+			},
+		},
+		{
 			desc:     "spaces before co-author",
 			body:     "           Co-authored-by: test <test@test.com>",
 			expected: nil,
@@ -80,6 +95,51 @@ Goat port-salut st. agur blue cheese camembert de normandie manchego.
 			coAuthors := getCoAuthors(pr)
 
 			assert.Equal(t, test.expected, coAuthors)
+		})
+	}
+}
+
+func Test_getCommitAgent(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		commit   *github.RepositoryCommit
+		expected string
+	}{
+		{
+			desc: "no AI agent",
+			commit: makeCommit("test", "test@test.com", "web-flow", "noreply@github.com",
+				"fix: something\n\nCo-authored-by: renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>"),
+		},
+		{
+			desc:     "author login",
+			commit:   makeCommit("Copilot", "test@test.com", "web-flow", "noreply@github.com", "fix: something"),
+			expected: "author test <test@test.com>",
+		},
+		{
+			desc:     "author email",
+			commit:   makeCommit("", "cursoragent@cursor.com", "web-flow", "noreply@github.com", "fix: something"),
+			expected: "author test <cursoragent@cursor.com>",
+		},
+		{
+			desc:     "committer",
+			commit:   makeCommit("test", "test@test.com", "", "209825114+Claude[bot]@users.noreply.github.com", "fix: something"),
+			expected: "committer test <209825114+Claude[bot]@users.noreply.github.com>",
+		},
+		{
+			desc: "co-author",
+			commit: makeCommit("test", "test@test.com", "test", "test@test.com",
+				"fix: something\n\nCo-Authored-By: Claude Opus <noreply@anthropic.com>"),
+			expected: "co-author Claude Opus <noreply@anthropic.com>",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			agent := getCommitAgent(test.commit)
+
+			assert.Equal(t, test.expected, agent)
 		})
 	}
 }
@@ -182,4 +242,16 @@ func makePullRequestWithLabels(labelNames []string, issueNumber int) *github.Pul
 	}
 
 	return &github.PullRequest{Labels: labels, Number: github.Ptr(issueNumber)}
+}
+
+func makeCommit(authorLogin, authorEmail, committerLogin, committerEmail, message string) *github.RepositoryCommit {
+	return &github.RepositoryCommit{
+		Author:    &github.User{Login: github.Ptr(authorLogin)},
+		Committer: &github.User{Login: github.Ptr(committerLogin)},
+		Commit: &github.Commit{
+			Author:    &github.CommitAuthor{Name: github.Ptr("test"), Email: github.Ptr(authorEmail)},
+			Committer: &github.CommitAuthor{Name: github.Ptr("test"), Email: github.Ptr(committerEmail)},
+			Message:   github.Ptr(message),
+		},
+	}
 }
