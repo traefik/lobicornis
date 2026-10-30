@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/google/go-github/v74/github"
@@ -68,6 +69,23 @@ func (r *Repository) merge(ctx context.Context, pr *github.PullRequest, mergeMet
 		// note: it's not possible to edit a PR from an organization.
 		return fmt.Errorf("the use of the merge method [%s] is impossible when a branch from an organization "+
 			"or if the contributor doesn't allow maintainer modification (GitHub option)", mergeMethod)
+	}
+
+	// the squash commit author is the PR opener.
+	if login := pr.GetUser().GetLogin(); isAgentLogin(login) {
+		return fmt.Errorf("the use of the merge method [%s] is impossible when an AI agent opened the pull request: %s", mergeMethod, login)
+	}
+
+	if mergeMethod != conf.MergeMethodSquash {
+		agent, err := r.findAgentInCommits(ctx, pr)
+		if err != nil {
+			return fmt.Errorf("unable to get commits: %w", err)
+		}
+
+		if agent != "" {
+			return fmt.Errorf("the use of the merge method [%s] is impossible when an AI agent is the author, "+
+				"the committer or a co-author of a commit: %s", mergeMethod, agent)
+		}
 	}
 
 	log.Ctx(ctx).Info().Msgf("MERGE(%s)\n", mergeMethod)
@@ -207,23 +225,140 @@ func (r *Repository) fastForward(ctx context.Context, pr *github.PullRequest) (R
 	return Result{Merged: true, Message: "Merged"}, nil
 }
 
-// getCoAuthors Extracts co-author from PR description.
+// findAgentInCommits returns the first commit of a PR that has an AI agent as author, committer or co-author.
+func (r *Repository) findAgentInCommits(ctx context.Context, pr *github.PullRequest) (string, error) {
+	opt := &github.ListOptions{
+		PerPage: 100,
+	}
+
+	for {
+		commits, resp, err := r.client.PullRequests.ListCommits(ctx, r.owner, r.name, pr.GetNumber(), opt)
+		if err != nil {
+			return "", err
+		}
+
+		for _, commit := range commits {
+			if agent := getCommitAgent(commit); agent != "" {
+				return fmt.Sprintf("%.7s has the %s", commit.GetSHA(), agent), nil
+			}
+		}
+
+		if resp.NextPage == 0 {
+			break
+		}
+
+		opt.Page = resp.NextPage
+	}
+
+	return "", nil
+}
+
+// getCommitAgent returns the AI agent that is the author, the committer or a co-author of a commit.
+func getCommitAgent(commit *github.RepositoryCommit) string {
+	author := commit.GetCommit().GetAuthor()
+	if isAgentLogin(commit.GetAuthor().GetLogin()) || isAgentEmail(author.GetEmail()) {
+		return fmt.Sprintf("author %s <%s>", author.GetName(), author.GetEmail())
+	}
+
+	committer := commit.GetCommit().GetCommitter()
+	if isAgentLogin(commit.GetCommitter().GetLogin()) || isAgentEmail(committer.GetEmail()) {
+		return fmt.Sprintf("committer %s <%s>", committer.GetName(), committer.GetEmail())
+	}
+
+	for _, ca := range parseCoAuthors(commit.GetCommit().GetMessage()) {
+		if isAgentEmail(ca.email) {
+			return fmt.Sprintf("co-author %s <%s>", ca.name, ca.email)
+		}
+	}
+
+	return ""
+}
+
+// getCoAuthors Extracts co-author from PR description, without the AI agents.
 //
 //	Co-authored-by: login <email@email.com>
 func getCoAuthors(pr *github.PullRequest) []string {
-	exp := regexp.MustCompile(`^(?i)Co-authored-by:\s+(.+)\s+<(.+)>$`)
-
 	var coAuthors []string
-	scanner := bufio.NewScanner(bytes.NewBufferString(pr.GetBody()))
-	for scanner.Scan() {
-		line := scanner.Text()
-		if exp.MatchString(line) {
-			s := exp.FindStringSubmatch(line)
-			coAuthors = append(coAuthors, fmt.Sprintf("Co-authored-by: %s <%s>", s[1], s[2]))
+	for _, ca := range parseCoAuthors(pr.GetBody()) {
+		if !isAgentEmail(ca.email) {
+			coAuthors = append(coAuthors, fmt.Sprintf("Co-authored-by: %s <%s>", ca.name, ca.email))
 		}
 	}
 
 	return coAuthors
+}
+
+type coAuthor struct {
+	name  string
+	email string
+}
+
+// parseCoAuthors Extracts the Co-authored-by lines from a text.
+func parseCoAuthors(text string) []coAuthor {
+	exp := regexp.MustCompile(`^(?i)Co-authored-by:\s+(.+)\s+<(.+)>$`)
+
+	var coAuthors []coAuthor
+	scanner := bufio.NewScanner(bytes.NewBufferString(text))
+	for scanner.Scan() {
+		line := scanner.Text()
+		if exp.MatchString(line) {
+			s := exp.FindStringSubmatch(line)
+			coAuthors = append(coAuthors, coAuthor{name: s[1], email: s[2]})
+		}
+	}
+
+	return coAuthors
+}
+
+// isAgentLogin checks if a GitHub account is an AI agent.
+func isAgentLogin(login string) bool {
+	logins := []string{
+		"Copilot",
+		"copilot-swe-agent[bot]",
+		"claude",
+		"claude[bot]",
+		"anthropic-claude[bot]",
+		"codex",
+		"chatgpt-codex-connector[bot]",
+		"openai-codex[bot]",
+		"cursoragent",
+		"cursor-agent",
+		"cursor[bot]",
+		"google-labs-jules[bot]",
+		"gemini-code-assist[bot]",
+		"devin-ai-integration[bot]",
+		"amazon-q-developer[bot]",
+		"openhands-agent",
+		"windsurf-bot[bot]",
+		"factory-droid[bot]",
+		"kiro-agent",
+		"junie-agent",
+		"opencode-agent[bot]",
+		"augmentcode[bot]",
+		"mistral-vibe",
+	}
+
+	return slices.ContainsFunc(logins, func(l string) bool { return strings.EqualFold(l, login) })
+}
+
+// isAgentEmail checks if an email is the one of an AI agent, or the GitHub noreply email of an AI agent account.
+func isAgentEmail(email string) bool {
+	emails := []string{
+		"noreply@anthropic.com",
+		"noreply@openai.com",
+		"codex@openai.com",
+		"cursoragent@cursor.com",
+	}
+
+	if slices.ContainsFunc(emails, func(e string) bool { return strings.EqualFold(e, email) }) {
+		return true
+	}
+
+	exp := regexp.MustCompile(`^(?i)(?:\d+\+)?(.+)@users\.noreply\.github\.com$`)
+
+	s := exp.FindStringSubmatch(email)
+
+	return s != nil && isAgentLogin(s[1])
 }
 
 // isOnMainRepository checks if the branch of the Pull Request in on the main repository.
